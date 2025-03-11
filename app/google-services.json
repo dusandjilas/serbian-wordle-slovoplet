@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "848720501632",
+    "project_id": "razvojma",
+    "storage_bucket": "razvojma.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:848720501632:android:d91cf4a2519a2d138bbf65",
+        "android_client_info": {
+          "package_name": "com.example.rma"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "848720501632-rdccovq9j5ntkq7o0uerfuci7a2ve0q9.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDb73zvkJG7vVYQSA-P6zGdcNJ49JJSonk"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "848720501632-rdccovq9j5ntkq7o0uerfuci7a2ve0q9.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
