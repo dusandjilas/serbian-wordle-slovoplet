@@ -3,7 +3,6 @@ package com.example.rma
 import android.app.Dialog
 import android.content.Intent
 import android.os.Bundle
-import android.view.MotionEvent
 import android.view.ViewGroup
 import android.widget.Button
 import androidx.activity.enableEdgeToEdge
@@ -48,6 +47,7 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.platform.ComposeView
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
@@ -59,6 +59,11 @@ import androidx.compose.ui.window.Dialog as ComposeDialog
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import com.google.firebase.auth.FirebaseAuth
+import androidx.compose.ui.viewinterop.AndroidView
+import com.google.android.gms.ads.AdRequest
+import com.google.android.gms.ads.AdSize
+import com.google.android.gms.ads.AdView
+import com.google.android.gms.ads.MobileAds
 import kotlin.math.max
 
 class MainActivity : AppCompatActivity() {
@@ -91,11 +96,7 @@ class MainActivity : AppCompatActivity() {
             firebaseStatsRepository.syncStats(profileManager)
         }
 
-        val btnHowTo = findViewById<Button>(R.id.buttonLogika)
-        addPressAnimation(btnHowTo)
-        btnHowTo.setOnClickListener {
-            dijalogObjasnjenjeMain()
-        }
+        MobileAds.initialize(this)
 
         val composeContainer = findViewById<ComposeView>(R.id.composeMenu)
         composeContainer.setContent {
@@ -106,38 +107,48 @@ class MainActivity : AppCompatActivity() {
                     Column(
                         modifier = Modifier.fillMaxSize()
                     ) {
-                        MainHeader(
-                            isGuest = isGuest || user == null,
-                            coins = coins,
-                            level = level,
-                            xpProgress = xpProgress,
-                            onNoAdsClick = {
-                                // TODO later
-                            },
-                            onSettingsClick = {
-                                // TODO later
-                            }
+                        Column(modifier = Modifier.weight(1f)) {
+                            MainHeader(
+                                isGuest = isGuest || user == null,
+                                coins = coins,
+                                level = level,
+                                xpProgress = xpProgress,
+                                onNoAdsClick = {
+                                    // TODO later
+                                },
+                                onSettingsClick = {
+                                    // TODO later
+                                }
+                            )
+
+                            Spacer(modifier = Modifier.height(14.dp))
+
+                            WordleMenuSection(
+                                classicStreak = classicStreak,
+                                bestClassicStreak = bestClassicStreak,
+                                onStatsClick = { showStats = true },
+                                onClassicClick = {
+                                    startActivity(
+                                        Intent(this@MainActivity, SlovopletIgra::class.java)
+                                            .putExtra("game_mode", "CLASSIC")
+                                    )
+                                },
+                                onDailyClick = {
+                                    startActivity(
+                                        Intent(this@MainActivity, SlovopletIgra::class.java)
+                                            .putExtra("game_mode", "DAILY")
+                                    )
+                                }
+                            )
+                        }
+
+                        FooterButtons(
+                            onStoreClick = {},
+                            onHowToClick = { dijalogObjasnjenjeMain() },
+                            onSettingsClick = {}
                         )
 
-                        Spacer(modifier = Modifier.height(14.dp))
-
-                        WordleMenuSection(
-                            classicStreak = classicStreak,
-                            bestClassicStreak = bestClassicStreak,
-                            onStatsClick = { showStats = true },
-                            onClassicClick = {
-                                startActivity(
-                                    Intent(this@MainActivity, SlovopletIgra::class.java)
-                                        .putExtra("game_mode", "CLASSIC")
-                                )
-                            },
-                            onDailyClick = {
-                                startActivity(
-                                    Intent(this@MainActivity, SlovopletIgra::class.java)
-                                        .putExtra("game_mode", "DAILY")
-                                )
-                            }
-                        )
+                        BannerAdContainer()
 
                         if (showStats) {
                             ComposeDialog(
@@ -360,20 +371,6 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    private fun addPressAnimation(button: Button) {
-        button.setOnTouchListener { v, event ->
-            when (event.action) {
-                MotionEvent.ACTION_DOWN -> {
-                    v.animate().scaleX(0.96f).scaleY(0.96f).setDuration(80).start()
-                }
-
-                MotionEvent.ACTION_UP, MotionEvent.ACTION_CANCEL -> {
-                    v.animate().scaleX(1f).scaleY(1f).setDuration(80).start()
-                }
-            }
-            false
-        }
-    }
 }
 
 /* ---------------- COMPOSE UI ---------------- */
@@ -694,22 +691,46 @@ private fun MainHeader(
     onNoAdsClick: () -> Unit,
     onSettingsClick: () -> Unit
 ) {
-    Row(
+    Column(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(horizontal = 18.dp, vertical = 14.dp),
-        verticalAlignment = Alignment.CenterVertically
+            .padding(horizontal = 18.dp, vertical = 10.dp)
     ) {
-        HeaderIconButton(
-            text = "AD",
-            background = Color(0xFFE34B3F),
-            onClick = onNoAdsClick
-        )
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            HeaderIconButton(
+                text = "AD",
+                background = Color(0xFFE34B3F),
+                onClick = onNoAdsClick
+            )
 
-        Spacer(modifier = Modifier.width(12.dp))
+            Spacer(modifier = Modifier.width(8.dp))
+
+            MiniHeaderBadge(title = "SPIN", subtitle = "1")
+
+            Spacer(modifier = Modifier.width(8.dp))
+
+            MiniHeaderBadge(title = "PIG", subtitle = "385")
+
+            Spacer(modifier = Modifier.weight(1f))
+
+            HeaderIconButton(
+                text = "⚙",
+                background = Color(0xFFF5A623),
+                onClick = onSettingsClick
+            )
+
+            Spacer(modifier = Modifier.width(8.dp))
+
+            CoinPill(coins = coins)
+        }
 
         Box(
-            modifier = Modifier.weight(1f),
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(top = 8.dp),
             contentAlignment = Alignment.Center
         ) {
             ProfileXpAvatar(
@@ -718,18 +739,97 @@ private fun MainHeader(
                 isGuest = isGuest
             )
         }
+    }
+}
 
-        Spacer(modifier = Modifier.width(12.dp))
-
-        HeaderIconButton(
-            text = "⚙",
-            background = Color(0xFFF5A623),
-            onClick = onSettingsClick
+@Composable
+private fun MiniHeaderBadge(
+    title: String,
+    subtitle: String
+) {
+    Column(
+        horizontalAlignment = Alignment.CenterHorizontally,
+        modifier = Modifier
+            .clip(RoundedCornerShape(12.dp))
+            .background(Color(0x30FFFFFF))
+            .padding(horizontal = 8.dp, vertical = 6.dp)
+    ) {
+        Text(
+            text = subtitle,
+            color = Color.White,
+            fontWeight = FontWeight.ExtraBold,
+            fontSize = 14.sp
         )
+        Text(
+            text = title,
+            color = Color.White,
+            fontWeight = FontWeight.Bold,
+            fontSize = 10.sp
+        )
+    }
+}
 
-        Spacer(modifier = Modifier.width(12.dp))
+@Composable
+private fun FooterButtons(
+    onStoreClick: () -> Unit,
+    onHowToClick: () -> Unit,
+    onSettingsClick: () -> Unit
+) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 10.dp, vertical = 8.dp),
+        horizontalArrangement = Arrangement.spacedBy(8.dp)
+    ) {
+        FooterButton(label = "SHOP", modifier = Modifier.weight(1f), onClick = onStoreClick)
+        FooterButton(label = "HOW TO", modifier = Modifier.weight(1f), onClick = onHowToClick)
+        FooterButton(label = "SETTINGS", modifier = Modifier.weight(1f), onClick = onSettingsClick)
+    }
+}
 
-        CoinPill(coins = coins)
+@Composable
+private fun FooterButton(
+    label: String,
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    Box(
+        modifier = modifier
+            .height(58.dp)
+            .clip(RoundedCornerShape(10.dp))
+            .background(Color(0x339E6F64))
+            .clickable { onClick() },
+        contentAlignment = Alignment.Center
+    ) {
+        Text(
+            text = label,
+            color = Color.White,
+            fontWeight = FontWeight.ExtraBold,
+            fontSize = 14.sp
+        )
+    }
+}
+
+@Composable
+private fun BannerAdContainer() {
+    val context = LocalContext.current
+
+    Box(
+        modifier = Modifier
+            .fillMaxWidth()
+            .background(Color(0xFF8B4E3C))
+            .padding(vertical = 4.dp),
+        contentAlignment = Alignment.Center
+    ) {
+        AndroidView(
+            factory = {
+                AdView(context).apply {
+                    setAdSize(AdSize.BANNER)
+                    adUnitId = "ca-app-pub-3940256099942544/6300978111"
+                    loadAd(AdRequest.Builder().build())
+                }
+            }
+        )
     }
 }
 

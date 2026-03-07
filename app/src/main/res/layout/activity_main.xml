@@ -4,28 +4,11 @@
     xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:orientation="vertical"
-    android:padding="16dp">
+    android:orientation="vertical">
 
-
-
-    <!-- ✅ Compose UI goes here (below the top bar) -->
     <androidx.compose.ui.platform.ComposeView
         android:id="@+id/composeMenu"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="20dp" />
-
-    <!-- Buttons -->
-
-
-    <Button
-        android:id="@+id/buttonLogika"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="How to Play"
-        android:background="@drawable/button_game"
-        android:layout_marginTop="8dp" />
-
+        android:layout_height="match_parent" />
 
 </LinearLayout>
