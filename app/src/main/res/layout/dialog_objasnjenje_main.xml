@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:padding="16dp">
+
+    <TextView
+        android:id="@+id/naslov"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:fontFamily="@font/helvetica"
+        android:text="Како смо бирали речи?"
+        android:textColor="#0E2441"
+        android:textSize="24sp"
+        android:textStyle="bold"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <Button
+        android:id="@+id/buttonIskljuci"
+        android:layout_width="52dp"
+        android:layout_height="46dp"
+        android:layout_marginStart="24dp"
+        android:backgroundTint="#0E2441"
+        android:text="X"
+        android:textColor="@color/white"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.0"
+        app:layout_constraintStart_toEndOf="@+id/naslov"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <TextView
+        android:id="@+id/objasnjenje1"
+        android:layout_width="279dp"
+        android:layout_height="59dp"
+        android:layout_marginTop="8dp"
+        android:fontFamily="@font/helvetica"
+        android:text="Извор речи је Речник спрког језика, издавач Матица српска, Нови Сад, из 2011 године. Од врста речи има само глаголе, именице, придеве и прилоге."
+        android:textColor="#223652"
+        android:textSize="12sp"
+        app:layout_constraintEnd_toStartOf="@+id/buttonIskljuci"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/naslov" />
+
+    <TextView
+        android:id="@+id/objasnjenje2"
+        android:layout_width="297dp"
+        android:layout_height="67dp"
+        android:fontFamily="@font/helvetica"
+        android:text=" Промењиве врсте речи немају све облике: глаголи - само инфинитив именице - само номинатив, само једнина придеви - само мушки род, само номинатив, само једнина."
+        android:textColor="#223652"
+        android:textSize="12sp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/objasnjenje1"
+        app:layout_constraintVertical_bias="0.095" />
+
+    <TextView
+        android:id="@+id/objasnjenje3"
+        android:layout_width="296dp"
+        android:layout_height="70dp"
+        android:layout_marginStart="4dp"
+        android:fontFamily="@font/helvetica"
+        android:text=" такође нема ни: властитих именица, присвојних придева изведених од властитих именица, глаголских придева, глаголских пилога..."
+        android:textColor="#223652"
+        android:textSize="12sp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/objasnjenje2"
+        app:layout_constraintVertical_bias="0.0" />
+
+
+</androidx.constraintlayout.widget.ConstraintLayout>

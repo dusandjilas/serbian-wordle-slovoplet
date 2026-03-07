@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<selector xmlns:android="http://schemas.android.com/apk/res/android">
+    <layer-list xmlns:android="http://schemas.android.com/apk/res/android">
+
+        <!-- shadow layer -->
+        <item android:top="6dp">
+            <shape android:shape="rectangle">
+                <solid android:color="#B07A2A"/> <!-- darker shadow -->
+                <corners android:radius="18dp"/>
+            </shape>
+        </item>
+
+        <!-- main face -->
+        <item android:bottom="6dp">
+            <shape android:shape="rectangle">
+                <solid android:color="#F2C15A"/> <!-- main gold -->
+                <stroke android:width="3dp" android:color="#FFF3C8"/>
+                <corners android:radius="18dp"/>
+            </shape>
+        </item>
+
+    </layer-list>
+</selector>
