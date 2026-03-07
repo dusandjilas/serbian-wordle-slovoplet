@@ -12,59 +12,56 @@ import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.interaction.collectIsPressedAsState
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxHeight
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.offset
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.layout.widthIn
+import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Surface
-import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.drawBehind
+import androidx.compose.ui.geometry.CornerRadius
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.drawscope.Stroke
+import androidx.compose.ui.graphics.drawscope.withTransform
 import androidx.compose.ui.platform.ComposeView
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.viewinterop.AndroidView
 import androidx.compose.ui.window.Dialog as ComposeDialog
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
-import com.google.firebase.auth.FirebaseAuth
-import androidx.compose.ui.viewinterop.AndroidView
 import com.google.android.gms.ads.AdRequest
 import com.google.android.gms.ads.AdSize
 import com.google.android.gms.ads.AdView
 import com.google.android.gms.ads.MobileAds
-import kotlin.math.max
+import com.google.firebase.auth.FirebaseAuth
+import androidx.compose.animation.core.rememberInfiniteTransition
+import androidx.compose.animation.core.animateFloat
+import androidx.compose.animation.core.infiniteRepeatable
+import androidx.compose.animation.core.LinearEasing
+import androidx.compose.animation.core.tween
+
+// ── Palette ───────────────────────────────────────────────────────────────────
+private val BG_TOP       = Color(0xFFE8845A)
+private val BG_BOT       = Color(0xFFD4694A)
+private val STRIPE_COLOR = Color(0x18FFFFFF)
+private val GOLD_LIGHT   = Color(0xFFFFD754)
+private val GOLD_MID     = Color(0xFFFFC430)
+private val GOLD_DARK    = Color(0xFFE8A800)
+private val GOLD_STRIPE  = Color(0x22FFFFFF)
+private val FOOTER_BG    = Color(0xFFC05A3A)
+private val FOOTER_DARK  = Color(0xFF8B3A20)
 
 class MainActivity : AppCompatActivity() {
 
@@ -82,93 +79,124 @@ class MainActivity : AppCompatActivity() {
         firebaseAuth = FirebaseAuth.getInstance()
         val user = firebaseAuth.currentUser
 
-        val profileManager = GameProfileManager(this)
-        val firebaseStatsRepository = FirebaseStatsRepository()
+        val profileManager    = GameProfileManager(this)
+        val firebaseStatsRepo = FirebaseStatsRepository()
+        val coinManager       = CoinManager(this)
 
-        val classicStreak = profileManager.getClassicStreak()
+        val classicStreak     = profileManager.getClassicStreak()
         val bestClassicStreak = profileManager.getBestClassicStreak()
+        val level             = if (isGuest || user == null) 1 else profileManager.getLevel()
+        val xpProgress        = if (isGuest || user == null) 0f else profileManager.getXpProgress()
 
-        val coins = if (isGuest || user == null) null else profileManager.getStoredCoins()
-        val level = if (isGuest || user == null) 1 else profileManager.getLevel()
-        val xpProgress = if (isGuest || user == null) 0f else profileManager.getXpProgress()
-
-        if (!isGuest && user != null) {
-            firebaseStatsRepository.syncStats(profileManager)
-        }
+        if (!isGuest && user != null) firebaseStatsRepo.syncStats(profileManager)
 
         MobileAds.initialize(this)
 
         val composeContainer = findViewById<ComposeView>(R.id.composeMenu)
         composeContainer.setContent {
             MaterialTheme {
-                var showStats by remember { mutableStateOf(false) }
+                // ── Firebase coin load ────────────────────────────────────
+                var coins by remember { mutableStateOf(coinManager.getCoins()) }
+                LaunchedEffect(Unit) {
+                    if (!isGuest && user != null) {
+                        firebaseStatsRepo.loadStats(
+                            onSuccess = { data ->
+                                val remote = (data["storedCoins"] as? Long)?.toInt()
+                                if (remote != null) { coins = remote; coinManager.setCoins(remote) }
+                            },
+                            onNoData  = {},
+                            onFailure = {}
+                        )
+                    }
+                }
 
-                Surface(color = Color.Transparent) {
-                    Column(
-                        modifier = Modifier.fillMaxSize()
-                    ) {
-                        Column(modifier = Modifier.weight(1f)) {
-                            MainHeader(
-                                isGuest = isGuest || user == null,
-                                coins = coins,
-                                level = level,
+                var showStats     by remember { mutableStateOf(false) }
+                var showRemoveAds by remember { mutableStateOf(false) }
+                var showWip       by remember { mutableStateOf(false) }
+
+                // ── Diagonal-stripe background ────────────────────────────
+                Box(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .background(Brush.verticalGradient(listOf(BG_TOP, BG_BOT)))
+                        .drawBehind {
+                            val sw    = 28.dp.toPx()
+                            val total = sw * 2f
+                            var x     = -size.height.toFloat()
+                            while (x < size.width + size.height) {
+                                withTransform({
+                                    rotate(-35f, Offset(size.width / 2f, size.height / 2f))
+                                }) {
+                                    drawRect(STRIPE_COLOR, Offset(x, -size.height),
+                                        Size(sw, size.height * 3))
+                                }
+                                x += total
+                            }
+                        }
+                ) {
+                    Column(Modifier.fillMaxSize()) {
+                        Column(
+                            Modifier
+                                .weight(1f)
+                                .verticalScroll(rememberScrollState())
+                        ) {
+                            TopHeaderBar(
+                                isGuest    = isGuest || user == null,
+                                coins      = coins,
+                                level      = level,
                                 xpProgress = xpProgress,
-                                onNoAdsClick = {
-                                    // TODO later
-                                },
-                                onSettingsClick = {
-                                    // TODO later
-                                }
+                                onAdClick  = { showRemoveAds = true }
                             )
-
-                            Spacer(modifier = Modifier.height(14.dp))
-
-                            WordleMenuSection(
-                                classicStreak = classicStreak,
-                                bestClassicStreak = bestClassicStreak,
-                                onStatsClick = { showStats = true },
+                            Spacer(Modifier.height(14.dp))
+                            Box(Modifier.fillMaxWidth(), contentAlignment = Alignment.Center) {
+                                WordleBubblesRow()
+                            }
+                            Spacer(Modifier.height(14.dp))
+                            GameButtonsSection(
+                                classicStreak  = classicStreak,
+                                onStatsClick   = { showStats = true },
                                 onClassicClick = {
-                                    startActivity(
-                                        Intent(this@MainActivity, SlovopletIgra::class.java)
-                                            .putExtra("game_mode", "CLASSIC")
-                                    )
+                                    startActivity(Intent(this@MainActivity, SlovopletIgra::class.java)
+                                        .putExtra("game_mode", "CLASSIC"))
                                 },
-                                onDailyClick = {
-                                    startActivity(
-                                        Intent(this@MainActivity, SlovopletIgra::class.java)
-                                            .putExtra("game_mode", "DAILY")
-                                    )
-                                }
+                                onDailyClick   = {
+                                    startActivity(Intent(this@MainActivity, SlovopletIgra::class.java)
+                                        .putExtra("game_mode", "DAILY"))
+                                },
+                                onWipClick     = { showWip = true }
                             )
+                            Spacer(Modifier.height(14.dp))
                         }
 
-                        FooterButtons(
-                            onStoreClick = {},
-                            onHowToClick = { dijalogObjasnjenjeMain() },
-                            onSettingsClick = {}
+                        FooterIconBar(
+                            onHowToClick    = { dijalogObjasnjenjeMain() },
+                            onWipClick      = { showWip = true }
                         )
-
                         BannerAdContainer()
+                    }
 
-                        if (showStats) {
-                            ComposeDialog(
-                                onDismissRequest = { showStats = false }
-                            ) {
-                                MaterialTheme {
-                                    StatsDialogContent(
-                                        classicStreak = profileManager.getClassicStreak(),
-                                        bestClassicStreak = profileManager.getBestClassicStreak(),
-                                        classicWins = profileManager.getClassicWins(),
-                                        classicLosses = profileManager.getClassicLosses(),
-                                        classicGamesPlayed = profileManager.getClassicGamesPlayed(),
-                                        winRate = profileManager.getClassicWinRate(),
-                                        guessDistribution = profileManager.getAllGuessDistribution(),
-                                        onClose = { showStats = false }
-                                    )
-                                }
+                    // Dialogs
+                    if (showStats) {
+                        ComposeDialog(onDismissRequest = { showStats = false }) {
+                            MaterialTheme {
+                                StatsDialogContent(
+                                    classicStreak      = profileManager.getClassicStreak(),
+                                    bestClassicStreak  = profileManager.getBestClassicStreak(),
+                                    classicWins        = profileManager.getClassicWins(),
+                                    classicLosses      = profileManager.getClassicLosses(),
+                                    classicGamesPlayed = profileManager.getClassicGamesPlayed(),
+                                    winRate            = profileManager.getClassicWinRate(),
+                                    guessDistribution  = profileManager.getAllGuessDistribution(),
+                                    onClose            = { showStats = false }
+                                )
                             }
                         }
                     }
+                    if (showRemoveAds) RemoveAdsDialog(
+                        onDismiss = { showRemoveAds = false },
+                        onBuy     = { /* TODO: wire IAP */ showRemoveAds = false }
+                    )
+                    if (showWip) WipDialog(onDismiss = { showWip = false })
                 }
             }
         }
@@ -183,770 +211,547 @@ class MainActivity : AppCompatActivity() {
     private fun dijalogObjasnjenjeMain() {
         val dialog = Dialog(this)
         dialog.setContentView(R.layout.dialog_objasnjenje_main)
-        dialog.window?.setLayout(
-            ViewGroup.LayoutParams.MATCH_PARENT,
-            ViewGroup.LayoutParams.WRAP_CONTENT
-        )
+        dialog.window?.setLayout(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT)
         dialog.setCancelable(true)
-
-        val dialogBtnCancel = dialog.findViewById<Button>(R.id.buttonIskljuci)
-        dialogBtnCancel.setOnClickListener { dialog.dismiss() }
+        dialog.findViewById<Button>(R.id.buttonIskljuci).setOnClickListener { dialog.dismiss() }
         dialog.show()
     }
 
     @Composable
     private fun StatsDialogContent(
-        classicStreak: Int,
-        bestClassicStreak: Int,
-        classicWins: Int,
-        classicLosses: Int,
-        classicGamesPlayed: Int,
-        winRate: Int,
-        guessDistribution: List<Int>,
-        onClose: () -> Unit
+        classicStreak: Int, bestClassicStreak: Int,
+        classicWins: Int, classicLosses: Int,
+        classicGamesPlayed: Int, winRate: Int,
+        guessDistribution: List<Int>, onClose: () -> Unit
     ) {
         val maxValue = (guessDistribution.maxOrNull() ?: 1).coerceAtLeast(1)
-
         Column(
             modifier = Modifier
-                .fillMaxWidth()
-                .padding(20.dp)
-                .clip(RoundedCornerShape(24.dp))
-                .background(Color(0xFF162B4A))
-                .padding(20.dp),
+                .fillMaxWidth().padding(16.dp)
+                .clip(RoundedCornerShape(28.dp))
+                .background(Brush.verticalGradient(listOf(Color(0xFF1E3560), Color(0xFF162B4A))))
+                .padding(24.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            Text(
-                text = "СТАТИСТИКА",
-                color = Color.White,
-                fontSize = 26.sp,
-                fontWeight = FontWeight.ExtraBold
-            )
-
-            Spacer(modifier = Modifier.height(18.dp))
-
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceEvenly
-            ) {
-                StatBox(value = classicGamesPlayed.toString(), label = "ИГРЕ")
-                StatBox(value = classicWins.toString(), label = "ПОБЕДЕ")
-                StatBox(value = "$winRate%", label = "WIN %")
+            Text("СТАТИСТИКА", color = Color.White, fontSize = 22.sp, fontWeight = FontWeight.ExtraBold)
+            Spacer(Modifier.height(16.dp))
+            Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceEvenly) {
+                StatBox(classicGamesPlayed.toString(), "ИГРЕ")
+                StatBox(classicWins.toString(), "ПОБЕДЕ")
+                StatBox("$winRate%", "WIN %")
             }
-
-            Spacer(modifier = Modifier.height(12.dp))
-
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceEvenly
-            ) {
-                StatBox(value = classicStreak.toString(), label = "STREAK")
-                StatBox(value = bestClassicStreak.toString(), label = "BEST")
-                StatBox(value = classicLosses.toString(), label = "ПОРАЗИ")
+            Spacer(Modifier.height(10.dp))
+            Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceEvenly) {
+                StatBox(classicStreak.toString(), "STREAK")
+                StatBox(bestClassicStreak.toString(), "BEST")
+                StatBox(classicLosses.toString(), "ПОРАЗИ")
             }
-
-            Spacer(modifier = Modifier.height(20.dp))
-
-            Text(
-                text = "Расподела погађања",
-                color = Color.White,
-                fontSize = 18.sp,
-                fontWeight = FontWeight.Bold
-            )
-
-            Spacer(modifier = Modifier.height(12.dp))
-
-            Column(
-                modifier = Modifier.fillMaxWidth(),
-                verticalArrangement = Arrangement.spacedBy(8.dp)
-            ) {
-                guessDistribution.forEachIndexed { index, value ->
-                    GuessDistributionRow(
-                        attempt = index + 1,
-                        value = value,
-                        maxValue = maxValue
-                    )
+            Spacer(Modifier.height(18.dp))
+            Text("Расподела погађања", color = Color.White, fontSize = 15.sp, fontWeight = FontWeight.Bold)
+            Spacer(Modifier.height(10.dp))
+            Column(Modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(6.dp)) {
+                guessDistribution.forEachIndexed { i, v ->
+                    Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
+                        Text((i+1).toString(), color = Color.White, fontWeight = FontWeight.Bold,
+                            modifier = Modifier.width(20.dp))
+                        Spacer(Modifier.width(8.dp))
+                        Box(Modifier.weight(1f).height(26.dp)
+                            .clip(RoundedCornerShape(10.dp)).background(Color(0xFF2A355A))
+                        ) {
+                            val frac = if (maxValue == 0) 0f else v.toFloat() / maxValue
+                            Box(Modifier.fillMaxHeight().fillMaxWidth(frac.coerceIn(0f,1f))
+                                .clip(RoundedCornerShape(10.dp)).background(Color(0xFFC11521)))
+                            Box(Modifier.fillMaxSize(), contentAlignment = Alignment.CenterEnd) {
+                                Text(v.toString(), color = Color.White, fontWeight = FontWeight.Bold,
+                                    modifier = Modifier.padding(end = 8.dp))
+                            }
+                        }
+                    }
                 }
             }
-
-            Spacer(modifier = Modifier.height(20.dp))
-
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(54.dp)
-                    .clip(RoundedCornerShape(18.dp))
-                    .background(Color(0xFFC11521))
-                    .clickable { onClose() },
-                contentAlignment = Alignment.Center
-            ) {
-                Text(
-                    text = "ЗАТВОРИ",
-                    color = Color.White,
-                    fontSize = 18.sp,
-                    fontWeight = FontWeight.ExtraBold
-                )
-            }
+            Spacer(Modifier.height(20.dp))
+            GoldButton("ЗАТВОРИ", onClose)
         }
     }
 
     @Composable
-    private fun StatBox(
-        value: String,
-        label: String
-    ) {
+    private fun StatBox(value: String, label: String) {
         Column(
             horizontalAlignment = Alignment.CenterHorizontally,
-            modifier = Modifier
-                .width(90.dp)
-                .clip(RoundedCornerShape(16.dp))
-                .background(Color(0xFF31406B))
-                .padding(vertical = 12.dp, horizontal = 8.dp)
+            modifier = Modifier.width(86.dp).clip(RoundedCornerShape(14.dp))
+                .background(Color(0xFF31406B)).padding(vertical = 10.dp, horizontal = 6.dp)
         ) {
-            Text(
-                text = value,
-                color = Color.White,
-                fontSize = 24.sp,
-                fontWeight = FontWeight.ExtraBold
-            )
-            Spacer(modifier = Modifier.height(4.dp))
-            Text(
-                text = label,
-                color = Color(0xFFD6D9E0),
-                fontSize = 12.sp,
-                fontWeight = FontWeight.Bold,
-                textAlign = TextAlign.Center
-            )
+            Text(value, color = Color.White, fontSize = 20.sp, fontWeight = FontWeight.ExtraBold)
+            Text(label, color = Color(0xFFD6D9E0), fontSize = 10.sp, fontWeight = FontWeight.Bold,
+                textAlign = TextAlign.Center)
         }
     }
-
-    @Composable
-    private fun GuessDistributionRow(
-        attempt: Int,
-        value: Int,
-        maxValue: Int
-    ) {
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Text(
-                text = attempt.toString(),
-                color = Color.White,
-                fontWeight = FontWeight.Bold,
-                modifier = Modifier.width(20.dp)
-            )
-
-            Spacer(modifier = Modifier.width(8.dp))
-
-            Box(
-                modifier = Modifier
-                    .weight(1f)
-                    .height(28.dp)
-                    .clip(RoundedCornerShape(10.dp))
-                    .background(Color(0xFF2A355A))
-            ) {
-                val fraction = if (maxValue == 0) 0f else value.toFloat() / maxValue.toFloat()
-
-                Box(
-                    modifier = Modifier
-                        .fillMaxHeight()
-                        .fillMaxWidth(fraction.coerceIn(0f, 1f))
-                        .clip(RoundedCornerShape(10.dp))
-                        .background(Color(0xFFC11521))
-                )
-
-                Box(
-                    modifier = Modifier.fillMaxSize(),
-                    contentAlignment = Alignment.CenterEnd
-                ) {
-                    Text(
-                        text = value.toString(),
-                        color = Color.White,
-                        fontWeight = FontWeight.Bold,
-                        modifier = Modifier.padding(end = 10.dp)
-                    )
-                }
-            }
-        }
-    }
-
 }
 
-/* ---------------- COMPOSE UI ---------------- */
-
+// ── TOP HEADER ────────────────────────────────────────────────────────────────
 @Composable
-fun WordleMenuSection(
-    classicStreak: Int,
-    bestClassicStreak: Int,
-    onStatsClick: () -> Unit,
-    onClassicClick: () -> Unit,
-    onDailyClick: () -> Unit
+private fun TopHeaderBar(
+    isGuest: Boolean, coins: Int, level: Int, xpProgress: Float, onAdClick: () -> Unit
 ) {
-    Column(
-        modifier = Modifier.fillMaxWidth(),
-        horizontalAlignment = Alignment.CenterHorizontally
+    Box(
+        modifier = Modifier.fillMaxWidth().padding(horizontal = 12.dp, vertical = 10.dp)
     ) {
-        Column(
+        // Left – AD button
+        Box(
             modifier = Modifier
-                .fillMaxWidth()
-                .widthIn(max = 420.dp)
-                .padding(horizontal = 18.dp, vertical = 12.dp),
-            horizontalAlignment = Alignment.CenterHorizontally
+                .align(Alignment.CenterStart)
+                .size(52.dp)
+                .clip(CircleShape)
+                .background(Color.Black)
+                .border(3.dp, Color(0xFFCC2222), CircleShape)
+                .clickable { onAdClick() },
+            contentAlignment = Alignment.Center
         ) {
-            WordleBubblesRow()
+            Text("AD", color = Color.White, fontWeight = FontWeight.ExtraBold, fontSize = 16.sp)
+        }
 
-            Spacer(modifier = Modifier.height(18.dp))
+        // Center – big trophy/avatar
+        Box(Modifier.align(Alignment.Center)) {
+            CenterAvatar(level = level, xpProgress = xpProgress, isGuest = isGuest)
+        }
 
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .clip(RoundedCornerShape(24.dp))
-                    .background(Color(0xFFC2B2DA))
-                    .drawBehind {
-                        val strokeWidth = 6.dp.toPx()
-                        drawRoundRect(
-                            color = Color(0x3C986CDA),
-                            size = size,
-                            cornerRadius = androidx.compose.ui.geometry.CornerRadius(
-                                24.dp.toPx(),
-                                24.dp.toPx()
-                            ),
-                            style = Stroke(width = strokeWidth)
-                        )
-                    }
-                    .padding(12.dp)
-            ) {
-                Column {
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.spacedBy(10.dp)
-                    ) {
-                        StatsButton(
-                            onClick = onStatsClick,
-                            modifier = Modifier.size(width = 92.dp, height = 86.dp)
-                        )
-
-                        FancyMenuButton(
-                            title = "Класичан",
-                            rightTop = classicStreak.toString(),
-                            rightBottom = "STREAK",
-                            onClick = onClassicClick,
-                            modifier = Modifier
-                                .weight(1f)
-                                .height(86.dp)
-                        )
-                    }
-
-                    Spacer(modifier = Modifier.height(10.dp))
-
-                    FancyMenuButton(
-                        title = "РЕЧ ДАНА",
-                        rightTop = "MAR",
-                        rightBottom = "5",
-                        onClick = onDailyClick,
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .height(86.dp)
-                    )
-                }
-            }
+        // Right – coin pill
+        Box(Modifier.align(Alignment.CenterEnd)) {
+            CoinPill(coins = coins, isGuest = isGuest)
         }
     }
 }
 
-@Preview(showBackground = true)
 @Composable
-fun WordleMenuPreview() {
-    WordleMenuSection(
-        classicStreak = 3,
-        bestClassicStreak = 8,
-        onStatsClick = {},
-        onClassicClick = {},
-        onDailyClick = {}
-    )
+private fun CenterAvatar(level: Int, xpProgress: Float, isGuest: Boolean) {
+    Box(contentAlignment = Alignment.Center, modifier = Modifier.size(120.dp)) {
+        // Outer brown ring
+        Box(
+            Modifier.size(116.dp).clip(CircleShape)
+                .background(Color(0xFF6B3A1F))
+                .border(5.dp, Color(0xFF9B6A3F), CircleShape)
+        )
+        // XP arc
+        CircularProgressIndicator(
+            progress   = { xpProgress.coerceIn(0f, 1f) },
+            modifier   = Modifier.size(108.dp),
+            strokeWidth = 7.dp,
+            color      = Color(0xFF60DDFF),
+            trackColor = Color(0x33004466)
+        )
+        // Green avatar
+        Box(
+            modifier = Modifier.size(90.dp).clip(CircleShape)
+                .background(Brush.verticalGradient(listOf(Color(0xFFCCF870), Color(0xFF88D030))))
+                .border(4.dp, Color(0xFF558820), CircleShape),
+            contentAlignment = Alignment.Center
+        ) {
+            Text(if (isGuest) "?" else "🍎", fontSize = 40.sp)
+        }
+        // Level chip – top
+        Box(
+            modifier = Modifier.align(Alignment.TopCenter).offset(y = 2.dp)
+                .clip(RoundedCornerShape(14.dp))
+                .background(Brush.verticalGradient(listOf(Color(0xFF70DAFF), Color(0xFF1A90D8))))
+                .border(2.dp, Color(0xFF006BB0), RoundedCornerShape(14.dp))
+                .padding(horizontal = 14.dp, vertical = 3.dp)
+        ) {
+            Text(level.toString(), color = Color.White, fontWeight = FontWeight.ExtraBold, fontSize = 18.sp)
+        }
+        // W badge – bottom
+        Box(
+            modifier = Modifier.align(Alignment.BottomCenter).offset(y = 2.dp)
+                .size(28.dp).clip(CircleShape)
+                .background(Color(0xFFE8A800))
+                .border(2.dp, Color(0xFFA06000), CircleShape),
+            contentAlignment = Alignment.Center
+        ) {
+            Text("W", color = Color.White, fontWeight = FontWeight.ExtraBold, fontSize = 12.sp)
+        }
+    }
 }
 
+@Composable
+private fun CoinPill(coins: Int, isGuest: Boolean) {
+    Row(verticalAlignment = Alignment.CenterVertically) {
+        Box(
+            modifier = Modifier.height(38.dp).widthIn(min = 90.dp)
+                .clip(RoundedCornerShape(19.dp))
+                .background(Color(0xFF5A3A1A))
+                .border(2.dp, Color(0xFF8B5A2B), RoundedCornerShape(19.dp))
+                .padding(horizontal = 12.dp),
+            contentAlignment = Alignment.Center
+        ) {
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Text(if (isGuest) "--" else coins.toString(),
+                    color = Color.White, fontWeight = FontWeight.ExtraBold, fontSize = 20.sp)
+                Spacer(Modifier.width(6.dp))
+                Box(
+                    Modifier.size(26.dp).clip(CircleShape)
+                        .background(Color(0xFFE8A800))
+                        .border(2.dp, Color(0xFFA06000), CircleShape),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text("W", color = Color.White, fontWeight = FontWeight.ExtraBold, fontSize = 12.sp)
+                }
+            }
+        }
+        Spacer(Modifier.width(4.dp))
+        Box(
+            Modifier.size(30.dp).clip(CircleShape)
+                .background(Color(0xFF44BB55))
+                .border(2.dp, Color(0xFF226622), CircleShape),
+            contentAlignment = Alignment.Center
+        ) {
+            Text("+", color = Color.White, fontWeight = FontWeight.ExtraBold, fontSize = 20.sp)
+        }
+    }
+}
+
+// ── WORD BUBBLES ──────────────────────────────────────────────────────────────
 @Composable
 private fun WordleBubblesRow() {
-    val items = listOf(
-        Bubble("С", Color(0xFF162B4A), Color(0xFF8995A3)),
-        Bubble("Л", Color(0xFF162B4A), Color(0xFF8995A3)),
-        Bubble("О", Color(0xFF162B4A), Color(0xFF8995A3)),
-        Bubble("В", Color(0xFF162B4A), Color(0xFF8995A3)),
-        Bubble("О", Color(0xFF162B4A), Color(0xFF8995A3)),
-        Bubble("П", Color(0xFFC11521), Color(0xFF8995A3)),
-        Bubble("Л", Color(0xFFC11521), Color(0xFF8995A3)),
-        Bubble("Е", Color(0xFFC11521), Color(0xFF8995A3)),
-        Bubble("Т", Color(0xFFC11521), Color(0xFF8995A3))
+    data class Bub(val ch: String, val bg: Color, val shadow: Color)
+    val bubbles = listOf(
+        Bub("С", Color(0xFFE8A0C8), Color(0xFFB06090)),
+        Bub("Л", Color(0xFFD0C8E8), Color(0xFF8870B0)),
+        Bub("О", Color(0xFF70C8E8), Color(0xFF3090B8)),
+        Bub("В", Color(0xFFB0D890), Color(0xFF5A9040)),
+        Bub("О", Color(0xFFE8D070), Color(0xFFB09030)),
+        Bub("П", Color(0xFFE89060), Color(0xFFB05020)),
+        Bub("Л", Color(0xFF80C888), Color(0xFF408840)),
+        Bub("Е", Color(0xFFE8B890), Color(0xFFB07050)),
+        Bub("Т", Color(0xFFE87070), Color(0xFFB03030)),
     )
-
-    Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
-        items.forEach { bubble ->
+    Row(horizontalArrangement = Arrangement.spacedBy(5.dp), modifier = Modifier.padding(horizontal = 10.dp)) {
+        bubbles.forEach { b ->
             Box(
-                modifier = Modifier
-                    .size(34.dp)
+                modifier = Modifier.size(38.dp)
                     .drawBehind {
-                        drawCircle(
-                            color = bubble.shadow,
-                            radius = size.minDimension / 2f,
-                            center = Offset(
-                                size.width / 2f + 1.5.dp.toPx(),
-                                size.height / 2f + 2.dp.toPx()
-                            )
-                        )
+                        drawCircle(b.shadow, size.minDimension / 2f,
+                            Offset(size.width / 2f, size.height / 2f + 3.dp.toPx()))
                     }
                     .clip(CircleShape)
-                    .background(
-                        Brush.verticalGradient(
-                            colors = listOf(
-                                lighten(bubble.color, 0.12f),
-                                bubble.color
-                            )
-                        )
-                    ),
+                    .background(Brush.verticalGradient(listOf(lightenColor(b.bg, 0.22f), b.bg)))
+                    .border(2.dp, b.shadow.copy(alpha = 0.45f), CircleShape),
                 contentAlignment = Alignment.Center
             ) {
-                ShadowText(
-                    text = bubble.text,
-                    fontSize = 18.sp
-                )
+                Text(b.ch, fontSize = 18.sp, fontWeight = FontWeight.ExtraBold,
+                    color = b.shadow.copy(alpha = 0.55f), modifier = Modifier.offset(y = 1.5.dp))
+                Text(b.ch, fontSize = 18.sp, fontWeight = FontWeight.ExtraBold, color = Color.White)
             }
         }
     }
 }
 
-private data class Bubble(
-    val text: String,
-    val color: Color,
-    val shadow: Color
-)
-
+// ── GAME BUTTONS ──────────────────────────────────────────────────────────────
 @Composable
-private fun StatsButton(
-    onClick: () -> Unit,
-    modifier: Modifier = Modifier
+private fun GameButtonsSection(
+    classicStreak: Int,
+    onStatsClick: () -> Unit,
+    onClassicClick: () -> Unit,
+    onDailyClick: () -> Unit,
+    onWipClick: () -> Unit
 ) {
-    val interactionSource = remember { MutableInteractionSource() }
-    val pressed by interactionSource.collectIsPressedAsState()
-
-    val offsetY = if (pressed) 6.dp else 0.dp
-    val shadowOffset = if (pressed) 0.dp else 4.dp
-
-    Box(
-        modifier = modifier
-            .offset { IntOffset(0, offsetY.roundToPx()) }
-            .drawBehind {
-                if (!pressed) {
-                    drawRoundRect(
-                        color = Color(0xFFC7CCD3),
-                        topLeft = Offset(0f, shadowOffset.toPx()),
-                        size = Size(size.width, size.height),
-                        cornerRadius = androidx.compose.ui.geometry.CornerRadius(
-                            12.dp.toPx(),
-                            12.dp.toPx()
-                        )
-                    )
+    Column(
+        modifier = Modifier.fillMaxWidth().padding(horizontal = 12.dp)
+            .clip(RoundedCornerShape(26.dp))
+            .background(Color(0x55A03018))
+            .border(2.dp, Color(0x44FFFFFF), RoundedCornerShape(26.dp))
+            .padding(12.dp),
+        verticalArrangement = Arrangement.spacedBy(10.dp)
+    ) {
+        // Stats + Classic
+        Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+            GoldSquareButton(modifier = Modifier.size(82.dp), onClick = onStatsClick) {
+                Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                    Text("📊", fontSize = 26.sp)
+                    Text("Stats", color = Color.White, fontWeight = FontWeight.ExtraBold, fontSize = 11.sp)
                 }
             }
-            .clip(RoundedCornerShape(12.dp))
-            .background(Color(0xFF162B4A))
-            .clickable(
-                interactionSource = interactionSource,
-                indication = null
-            ) { onClick() },
-        contentAlignment = Alignment.Center
-    ) {
-        Text(
-            text = "Stats",
-            color = Color.White,
-            fontWeight = FontWeight.ExtraBold
+            GoldWideButton(
+
+                title = "КЛАСИЧАН", rightTop = classicStreak.toString(), rightBottom = "BEST",
+                modifier = Modifier.weight(1f).height(82.dp), onClick = onClassicClick
+            )
+        }
+        // Daily
+        GoldWideButton(
+            title = "РЕЧ ДАНА", rightTop = "MAR", rightBottom = "7",
+            modifier = Modifier.fillMaxWidth().height(82.dp), onClick = onDailyClick
         )
+        // Two WIP mini buttons
+        Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+            GoldWideButton(
+                title = "РЕЧЕНИЦА", rightTop = "0", rightBottom = "BEST",
+                modifier = Modifier.weight(1f).height(72.dp),
+                onClick = onWipClick, titleSize = 14.sp
+            )
+            GoldWideButton(
+                title = "ТАЈНА РЕЧ", rightTop = "0", rightBottom = "BEST",
+                modifier = Modifier.weight(1f).height(72.dp),
+                onClick = onWipClick, titleSize = 14.sp
+            )
+        }
     }
 }
 
+// ── GOLD COMPONENTS ───────────────────────────────────────────────────────────
 @Composable
-private fun FancyMenuButton(
+fun GoldSquareButton(
+    modifier: Modifier = Modifier,
+    onClick: () -> Unit,
+    content: @Composable BoxScope.() -> Unit
+) {
+    val src     = remember { MutableInteractionSource() }
+    val pressed by src.collectIsPressedAsState()
+    val infiniteTransition = rememberInfiniteTransition(label = "stripe")
+    val stripeOffset by infiniteTransition.animateFloat(
+        initialValue = 0f,
+        targetValue  = 1f,
+        animationSpec = infiniteRepeatable(
+            animation = tween(durationMillis = 1800, easing = LinearEasing)
+        ),
+        label = "stripeOffset"
+    )
+    Box(
+        modifier = modifier
+            .offset { IntOffset(0, if (pressed) 4.dp.roundToPx() else 0) }
+            .drawBehind {
+                if (!pressed) drawRoundRect(GOLD_DARK, Offset(0f, 5.dp.toPx()),
+                    Size(size.width, size.height), CornerRadius(16.dp.toPx()))
+            }
+            .clip(RoundedCornerShape(16.dp))
+            .background(Brush.verticalGradient(listOf(GOLD_LIGHT, GOLD_MID)))
+            .drawBehind {
+                val sw    = 18.dp.toPx()   // stripe width (use 14.dp for square)
+                val total = sw * 2f         // stripe + gap
+                // stripeOffset moves from 0..1, multiply by total to get one full cycle
+                var x = -size.height.toFloat() + (stripeOffset * total)
+                while (x < size.width + size.height) {
+                    withTransform({ rotate(-35f, Offset(size.width / 2f, size.height / 2f)) }) {
+                        drawRect(GOLD_STRIPE, Offset(x, -size.height), Size(sw, size.height * 3))
+                    }
+                    x += total
+                }
+            }
+            .clickable(interactionSource = src, indication = null) { onClick() },
+        contentAlignment = Alignment.Center,
+        content = content
+    )
+}
+
+@Composable
+fun GoldWideButton(
     title: String,
     rightTop: String,
     rightBottom: String,
+    modifier: Modifier = Modifier,
     onClick: () -> Unit,
-    modifier: Modifier = Modifier
+    titleSize: TextUnit = 20.sp
 ) {
-    val interactionSource = remember { MutableInteractionSource() }
-    val pressed by interactionSource.collectIsPressedAsState()
-
-    val offsetY = if (pressed) 6.dp else 0.dp
-    val shadowOffset = if (pressed) 0.dp else 4.dp
-
+    val infiniteTransition = rememberInfiniteTransition(label = "stripe")
+    val stripeOffset by infiniteTransition.animateFloat(
+        initialValue = 0f,
+        targetValue  = 1f,
+        animationSpec = infiniteRepeatable(
+            animation = tween(durationMillis = 1800, easing = LinearEasing)
+        ),
+        label = "stripeOffset"
+    )
+    val src     = remember { MutableInteractionSource() }
+    val pressed by src.collectIsPressedAsState()
     Row(
         modifier = modifier
-            .offset { IntOffset(0, offsetY.roundToPx()) }
+            .offset { IntOffset(0, if (pressed) 4.dp.roundToPx() else 0) }
             .drawBehind {
-                if (!pressed) {
-                    drawRoundRect(
-                        color = Color(0xFFC7CCD3),
-                        topLeft = Offset(0f, shadowOffset.toPx()),
-                        size = Size(size.width, size.height),
-                        cornerRadius = androidx.compose.ui.geometry.CornerRadius(
-                            14.dp.toPx(),
-                            14.dp.toPx()
-                        )
-                    )
+                if (!pressed) drawRoundRect(GOLD_DARK, Offset(0f, 5.dp.toPx()),
+                    Size(size.width, size.height), CornerRadius(18.dp.toPx()))
+            }
+            .clip(RoundedCornerShape(18.dp))
+            .background(Brush.verticalGradient(listOf(GOLD_LIGHT, GOLD_MID)))
+            .drawBehind {
+                val sw    = 18.dp.toPx()   // stripe width (use 14.dp for square)
+                val total = sw * 2f         // stripe + gap
+                // stripeOffset moves from 0..1, multiply by total to get one full cycle
+                var x = -size.height.toFloat() + (stripeOffset * total)
+                while (x < size.width + size.height) {
+                    withTransform({ rotate(-35f, Offset(size.width / 2f, size.height / 2f)) }) {
+                        drawRect(GOLD_STRIPE, Offset(x, -size.height), Size(sw, size.height * 3))
+                    }
+                    x += total
                 }
             }
-            .clip(RoundedCornerShape(12.dp))
-            .background(
-                Brush.horizontalGradient(
-                    colors = listOf(Color(0xFF162B4A), Color(0xFF31406B))
-                )
-            )
-            .stripeOverlay()
-            .clickable(
-                interactionSource = interactionSource,
-                indication = null
-            ) { onClick() },
+            .clickable(interactionSource = src, indication = null) { onClick() },
         verticalAlignment = Alignment.CenterVertically
     ) {
         Box(
-            modifier = Modifier
-                .weight(1f)
-                .fillMaxHeight(),
-            contentAlignment = Alignment.Center
+            Modifier.weight(1f).fillMaxHeight().padding(start = 16.dp),
+            contentAlignment = Alignment.CenterStart
         ) {
-            ShadowText(
-                text = title,
-                fontSize = 22.sp
-            )
+            Text(title, fontSize = titleSize, fontWeight = FontWeight.ExtraBold,
+                color = Color(0x99894A00), modifier = Modifier.offset(y = 2.dp))
+            Text(title, fontSize = titleSize, fontWeight = FontWeight.ExtraBold, color = Color.White)
         }
-
         Box(
-            modifier = Modifier
-                .fillMaxHeight()
-                .width(86.dp)
-                .background(
-                    Brush.verticalGradient(
-                        colors = listOf(Color(0x603F51B5), Color(0xFF3F51B5))
-                    )
-                ),
+            Modifier.fillMaxHeight().width(70.dp)
+                .clip(RoundedCornerShape(topEnd = 18.dp, bottomEnd = 18.dp))
+                .background(Brush.verticalGradient(listOf(Color(0xFFFFB020), Color(0xFFE89000)))),
             contentAlignment = Alignment.Center
         ) {
-            Column(
-                horizontalAlignment = Alignment.CenterHorizontally,
-                verticalArrangement = Arrangement.Center
-            ) {
-                ShadowText(
-                    text = rightTop,
-                    fontSize = if (rightTop.length <= 2) 22.sp else 16.sp
-                )
-
-                ShadowText(
-                    text = rightBottom,
-                    fontSize = 16.sp
-                )
+            Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                Text(rightTop, fontSize = if (rightTop.length <= 2) 22.sp else 15.sp,
+                    fontWeight = FontWeight.ExtraBold, color = Color.White)
+                Text(rightBottom, fontSize = 12.sp, fontWeight = FontWeight.ExtraBold,
+                    color = Color(0xDDFFFFFF))
             }
         }
     }
 }
 
-private fun Modifier.stripeOverlay(): Modifier = this.drawBehind {
-    drawRoundRect(
-        color = Color.White.copy(alpha = 0.16f),
-        size = Size(size.width, max(4.dp.toPx(), size.height * 0.10f)),
-        cornerRadius = androidx.compose.ui.geometry.CornerRadius(20.dp.toPx(), 20.dp.toPx())
-    )
-}
-
 @Composable
-private fun ShadowText(
-    text: String,
-    fontSize: TextUnit,
-    modifier: Modifier = Modifier
-) {
-    Box(modifier = modifier, contentAlignment = Alignment.Center) {
-        Text(
-            text = text,
-            fontSize = fontSize,
-            fontWeight = FontWeight.ExtraBold,
-            color = Color(0x990A0905),
-            textAlign = TextAlign.Center,
-            modifier = Modifier.offset(y = 2.dp)
-        )
-        Text(
-            text = text,
-            fontSize = fontSize,
-            fontWeight = FontWeight.ExtraBold,
-            color = Color.White,
-            textAlign = TextAlign.Center
-        )
-    }
-}
-
-@Composable
-private fun MainHeader(
-    isGuest: Boolean,
-    coins: Int?,
-    level: Int,
-    xpProgress: Float,
-    onNoAdsClick: () -> Unit,
-    onSettingsClick: () -> Unit
-) {
-    Column(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(horizontal = 18.dp, vertical = 10.dp)
-    ) {
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            HeaderIconButton(
-                text = "AD",
-                background = Color(0xFFE34B3F),
-                onClick = onNoAdsClick
-            )
-
-            Spacer(modifier = Modifier.width(8.dp))
-
-            MiniHeaderBadge(title = "SPIN", subtitle = "1")
-
-            Spacer(modifier = Modifier.width(8.dp))
-
-            MiniHeaderBadge(title = "PIG", subtitle = "385")
-
-            Spacer(modifier = Modifier.weight(1f))
-
-            HeaderIconButton(
-                text = "⚙",
-                background = Color(0xFFF5A623),
-                onClick = onSettingsClick
-            )
-
-            Spacer(modifier = Modifier.width(8.dp))
-
-            CoinPill(coins = coins)
-        }
-
-        Box(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(top = 8.dp),
-            contentAlignment = Alignment.Center
-        ) {
-            ProfileXpAvatar(
-                level = level,
-                xpProgress = xpProgress,
-                isGuest = isGuest
-            )
-        }
-    }
-}
-
-@Composable
-private fun MiniHeaderBadge(
-    title: String,
-    subtitle: String
-) {
-    Column(
-        horizontalAlignment = Alignment.CenterHorizontally,
-        modifier = Modifier
-            .clip(RoundedCornerShape(12.dp))
-            .background(Color(0x30FFFFFF))
-            .padding(horizontal = 8.dp, vertical = 6.dp)
-    ) {
-        Text(
-            text = subtitle,
-            color = Color.White,
-            fontWeight = FontWeight.ExtraBold,
-            fontSize = 14.sp
-        )
-        Text(
-            text = title,
-            color = Color.White,
-            fontWeight = FontWeight.Bold,
-            fontSize = 10.sp
-        )
-    }
-}
-
-@Composable
-private fun FooterButtons(
-    onStoreClick: () -> Unit,
-    onHowToClick: () -> Unit,
-    onSettingsClick: () -> Unit
-) {
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(horizontal = 10.dp, vertical = 8.dp),
-        horizontalArrangement = Arrangement.spacedBy(8.dp)
-    ) {
-        FooterButton(label = "SHOP", modifier = Modifier.weight(1f), onClick = onStoreClick)
-        FooterButton(label = "HOW TO", modifier = Modifier.weight(1f), onClick = onHowToClick)
-        FooterButton(label = "SETTINGS", modifier = Modifier.weight(1f), onClick = onSettingsClick)
-    }
-}
-
-@Composable
-private fun FooterButton(
-    label: String,
-    onClick: () -> Unit,
-    modifier: Modifier = Modifier
-) {
+fun GoldButton(label: String, onClick: () -> Unit, modifier: Modifier = Modifier) {
+    val src     = remember { MutableInteractionSource() }
+    val pressed by src.collectIsPressedAsState()
     Box(
-        modifier = modifier
-            .height(58.dp)
-            .clip(RoundedCornerShape(10.dp))
-            .background(Color(0x339E6F64))
-            .clickable { onClick() },
+        modifier = modifier.fillMaxWidth().height(52.dp)
+            .offset { IntOffset(0, if (pressed) 4.dp.roundToPx() else 0) }
+            .drawBehind {
+                if (!pressed) drawRoundRect(GOLD_DARK, Offset(0f, 5.dp.toPx()),
+                    Size(size.width, size.height), CornerRadius(26.dp.toPx()))
+            }
+            .clip(RoundedCornerShape(26.dp))
+            .background(Brush.verticalGradient(listOf(GOLD_LIGHT, GOLD_MID)))
+            .clickable(interactionSource = src, indication = null) { onClick() },
         contentAlignment = Alignment.Center
     ) {
-        Text(
-            text = label,
-            color = Color.White,
-            fontWeight = FontWeight.ExtraBold,
-            fontSize = 14.sp
-        )
+        Text(label, color = Color(0xFF7A4400), fontSize = 17.sp, fontWeight = FontWeight.ExtraBold)
     }
 }
 
+// ── FOOTER ICON BAR ───────────────────────────────────────────────────────────
+@Composable
+private fun FooterIconBar(onHowToClick: () -> Unit, onWipClick: () -> Unit) {
+    Row(
+        modifier = Modifier.fillMaxWidth()
+            .drawBehind {
+                drawRect(FOOTER_DARK,
+                    Offset(0f, size.height - 5.dp.toPx()), Size(size.width, 5.dp.toPx()))
+            }
+            .background(FOOTER_BG)
+            .padding(vertical = 8.dp),
+        horizontalArrangement = Arrangement.SpaceEvenly,
+        verticalAlignment     = Alignment.CenterVertically
+    ) {
+        FooterIcon("🛒",  "SHOP",     onWipClick)
+        FooterIcon("🛡️",  "LEAGUE",   onWipClick)
+        FooterIcon("❓",  "HOW TO",   onHowToClick)
+        FooterIcon("📖",  "GUIDE",    onWipClick)
+        FooterIcon("⚙️",  "SETTINGS", onWipClick)
+    }
+}
+
+@Composable
+private fun FooterIcon(emoji: String, label: String, onClick: () -> Unit) {
+    Column(
+        modifier = Modifier.size(56.dp).clip(RoundedCornerShape(10.dp)).clickable { onClick() },
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.Center
+    ) {
+        Text(emoji, fontSize = 24.sp)
+        Text(label, color = Color(0xDDFFFFFF), fontSize = 8.sp, fontWeight = FontWeight.Bold,
+            textAlign = TextAlign.Center)
+    }
+}
+
+// ── REMOVE ADS DIALOG ─────────────────────────────────────────────────────────
+@Composable
+fun RemoveAdsDialog(onDismiss: () -> Unit, onBuy: () -> Unit) {
+    ComposeDialog(onDismissRequest = onDismiss) {
+        Column(
+            modifier = Modifier.fillMaxWidth().padding(16.dp)
+                .clip(RoundedCornerShape(28.dp))
+                .background(Brush.verticalGradient(listOf(Color(0xFF8B2080), Color(0xFF4A0060))))
+                .padding(28.dp),
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            Text("🚫", fontSize = 52.sp)
+            Spacer(Modifier.height(10.dp))
+            Text("УКЛОНИ РЕКЛАМЕ", color = Color.White, fontSize = 22.sp,
+                fontWeight = FontWeight.ExtraBold, textAlign = TextAlign.Center)
+            Spacer(Modifier.height(8.dp))
+            Text("Уживај у игри без прекида.\nЈедном купи, заувек без реклама.",
+                color = Color(0xCCFFFFFF), fontSize = 14.sp, textAlign = TextAlign.Center)
+            Spacer(Modifier.height(22.dp))
+            listOf("Без банер реклама", "Без видео реклама", "Подршка развоју игре").forEach { text ->
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    modifier = Modifier.fillMaxWidth().padding(vertical = 5.dp)
+                ) {
+                    Box(
+                        Modifier.size(26.dp).clip(CircleShape).background(Color(0xFF44BB55)),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Text("✓", color = Color.White, fontSize = 14.sp, fontWeight = FontWeight.ExtraBold)
+                    }
+                    Spacer(Modifier.width(12.dp))
+                    Text(text, color = Color.White, fontSize = 14.sp)
+                }
+            }
+            Spacer(Modifier.height(24.dp))
+            GoldButton("КУПИ — 2,99 €", onBuy)
+            Spacer(Modifier.height(14.dp))
+            Text("НЕ САДА", color = Color(0xAAFFFFFF), fontWeight = FontWeight.Bold, fontSize = 14.sp,
+                modifier = Modifier.clickable { onDismiss() })
+        }
+    }
+}
+
+// ── WIP DIALOG ────────────────────────────────────────────────────────────────
+@Composable
+fun WipDialog(onDismiss: () -> Unit) {
+    ComposeDialog(onDismissRequest = onDismiss) {
+        Column(
+            modifier = Modifier.fillMaxWidth().padding(16.dp)
+                .clip(RoundedCornerShape(28.dp))
+                .background(Brush.verticalGradient(listOf(Color(0xFF2A3A60), Color(0xFF162B4A))))
+                .padding(32.dp),
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            Text("🚧", fontSize = 52.sp)
+            Spacer(Modifier.height(12.dp))
+            Text("У ИЗРАДИ", color = Color.White, fontSize = 22.sp, fontWeight = FontWeight.ExtraBold)
+            Spacer(Modifier.height(8.dp))
+            Text("Ова функција је тренутно у развоју.\nУскоро доступно!",
+                color = Color(0xAAFFFFFF), fontSize = 14.sp, textAlign = TextAlign.Center)
+            Spacer(Modifier.height(24.dp))
+            GoldButton("У РЕДУ", onDismiss)
+        }
+    }
+}
+
+// ── ADMOB BANNER ──────────────────────────────────────────────────────────────
 @Composable
 private fun BannerAdContainer() {
     val context = LocalContext.current
-
     Box(
-        modifier = Modifier
-            .fillMaxWidth()
-            .background(Color(0xFF8B4E3C))
-            .padding(vertical = 4.dp),
+        Modifier.fillMaxWidth().background(Color(0xFF7A3A1A)).padding(vertical = 4.dp),
         contentAlignment = Alignment.Center
     ) {
-        AndroidView(
-            factory = {
-                AdView(context).apply {
-                    setAdSize(AdSize.BANNER)
-                    adUnitId = "ca-app-pub-3940256099942544/6300978111"
-                    loadAd(AdRequest.Builder().build())
-                }
+        AndroidView(factory = {
+            AdView(context).apply {
+                setAdSize(AdSize.BANNER)
+                adUnitId = "ca-app-pub-3940256099942544/6300978111"
+                loadAd(AdRequest.Builder().build())
             }
-        )
+        })
     }
 }
 
-@Composable
-private fun HeaderIconButton(
-    text: String,
-    background: Color,
-    onClick: () -> Unit
-) {
-    Box(
-        modifier = Modifier
-            .size(52.dp)
-            .clip(CircleShape)
-            .background(background)
-            .clickable { onClick() },
-        contentAlignment = Alignment.Center
-    ) {
-        Text(
-            text = text,
-            color = Color.White,
-            fontWeight = FontWeight.ExtraBold,
-            fontSize = 20.sp
-        )
-    }
-}
-
-@Composable
-private fun CoinPill(coins: Int?) {
-    Box(
-        modifier = Modifier
-            .clip(RoundedCornerShape(22.dp))
-            .background(Color(0xFF9E6F64))
-            .padding(horizontal = 18.dp, vertical = 10.dp)
-    ) {
-        Row(
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(8.dp)
-        ) {
-            Text(
-                text = coins?.toString() ?: "--",
-                color = Color.White,
-                fontWeight = FontWeight.ExtraBold,
-                fontSize = 24.sp
-            )
-
-            Box(
-                modifier = Modifier
-                    .size(34.dp)
-                    .clip(CircleShape)
-                    .background(Color(0xFFF2B632)),
-                contentAlignment = Alignment.Center
-            ) {
-                Text(
-                    text = "W",
-                    color = Color.White,
-                    fontWeight = FontWeight.ExtraBold,
-                    fontSize = 18.sp
-                )
-            }
-        }
-    }
-}
-
-@Composable
-private fun ProfileXpAvatar(
-    level: Int,
-    xpProgress: Float,
-    isGuest: Boolean
-) {
-    Box(
-        contentAlignment = Alignment.Center
-    ) {
-        CircularProgressIndicator(
-            progress = { xpProgress.coerceIn(0f, 1f) },
-            modifier = Modifier.size(104.dp),
-            strokeWidth = 8.dp,
-            color = Color(0xFF57A8FF),
-            trackColor = Color(0x332D6CDF)
-        )
-
-        Box(
-            modifier = Modifier
-                .size(84.dp)
-                .clip(CircleShape)
-                .background(Color(0xFFB7E36A))
-                .border(4.dp, Color(0xFF8B4E3C), CircleShape),
-            contentAlignment = Alignment.Center
-        ) {
-            Text(
-                text = if (isGuest) "?" else "🙂",
-                fontSize = 34.sp
-            )
-        }
-
-        Box(
-            modifier = Modifier
-                .align(Alignment.TopCenter)
-                .offset(y = (-8).dp)
-                .clip(RoundedCornerShape(16.dp))
-                .background(Color(0xFF4E8EDB))
-                .padding(horizontal = 10.dp, vertical = 4.dp)
-        ) {
-            Text(
-                text = level.toString(),
-                color = Color.White,
-                fontWeight = FontWeight.ExtraBold,
-                fontSize = 18.sp
-            )
-        }
-    }
-}
-
-private fun lighten(color: Color, amount: Float): Color {
-    return Color(
-        red = color.red + (1f - color.red) * amount,
-        green = color.green + (1f - color.green) * amount,
-        blue = color.blue + (1f - color.blue) * amount,
-        alpha = color.alpha
-    )
-}
+// ── HELPERS ───────────────────────────────────────────────────────────────────
+private fun lightenColor(color: Color, amount: Float) = Color(
+    red   = color.red   + (1f - color.red)   * amount,
+    green = color.green + (1f - color.green) * amount,
+    blue  = color.blue  + (1f - color.blue)  * amount,
+    alpha = color.alpha
+)

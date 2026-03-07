@@ -7,12 +7,12 @@ import com.example.rma.game.LetterState
 import com.example.rma.game.WordRepository
 import com.example.rma.game.WordleEngine
 
-class WordleViewModel(repository: WordRepository) : ViewModel() {
+class WordleViewModel(private val repository: WordRepository) : ViewModel() {
 
     private val engine = WordleEngine(repository)
 
     val maxAttempts: Int get() = engine.maxAttempts
-    val wordLength: Int get() = engine.wordLength
+    val wordLength: Int  get() = engine.wordLength
     val guesses: List<GuessResult> get() = engine.getGuesses()
     val targetWord: String get() = engine.targetWord
     val hasWon: Boolean get() = engine.hasWon()
@@ -20,12 +20,16 @@ class WordleViewModel(repository: WordRepository) : ViewModel() {
     val gameMode: GameMode get() = engine.getMode()
 
     fun setMode(mode: GameMode) = engine.setMode(mode)
-
     fun submitGuess(guess: String): GuessResult? = engine.submitGuess(guess)
-
     fun checkGuess(word: String): Boolean = engine.checkGuess(word)
     fun reset() = engine.reset()
 
-
-
+    /**
+     * Restores a previously saved game state directly into the engine.
+     * Bypasses validation so saved guesses are injected as-is.
+     * Must be called AFTER [setMode] so the engine is in the right mode.
+     */
+    fun restoreState(targetWord: String, savedGuesses: List<GuessResult>) {
+        engine.restoreState(targetWord, savedGuesses)
+    }
 }
