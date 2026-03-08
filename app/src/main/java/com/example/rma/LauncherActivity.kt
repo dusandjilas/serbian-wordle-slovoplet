@@ -13,6 +13,16 @@ class LauncherActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
+        if (!AppFlowPrefs.isFirstGameFinished(this)) {
+            startActivity(
+                Intent(this, SlovopletIgra::class.java)
+                    .putExtra("game_mode", "CLASSIC")
+                    .putExtra("first_time_flow", true)
+            )
+            finish()
+            return
+        }
+
         firebaseAuth = FirebaseAuth.getInstance()
         val currentUser = firebaseAuth.currentUser
 
