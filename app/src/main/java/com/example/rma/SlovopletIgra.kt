@@ -401,7 +401,17 @@ private fun WordleGameScreen(
                 }
                 GameMode.DAILY -> {
                     profileManager.markDailyPlayedToday(viewModel.hasWon)
-                    profileManager.recordDailyResult(viewModel.hasWon)
+                    // Pass guessCount so XP scales with performance
+                    profileManager.recordDailyResult(
+                        won        = viewModel.hasWon,
+                        guessCount = if (viewModel.hasWon) guesses.size else 0
+                    )
+                    // Daily win awards 100 bonus coins
+                    if (viewModel.hasWon) {
+                        val newTotal = coinRepo.add(100)
+                        onCoinsChanged(newTotal)
+                        Toast.makeText(context, "+100 🪙 Дневна награда!", Toast.LENGTH_SHORT).show()
+                    }
                 }
             }
         }
