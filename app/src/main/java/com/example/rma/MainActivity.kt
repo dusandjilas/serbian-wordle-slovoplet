@@ -19,6 +19,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.*
+import androidx.compose.material3.Slider
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -53,6 +54,7 @@ import com.google.firebase.auth.FirebaseAuthInvalidCredentialsException
 import com.google.firebase.auth.FirebaseAuthUserCollisionException
 import com.google.firebase.auth.FirebaseAuthWeakPasswordException
 import androidx.compose.animation.core.*
+import kotlin.math.roundToInt
 
 // ── Palette ───────────────────────────────────────────────────────────────────
 private val BG_TOP       = Color(0xFFE8845A)
@@ -96,6 +98,9 @@ class MainActivity : AppCompatActivity() {
                     onStartDaily = {
                         startActivity(Intent(this, SlovopletIgra::class.java)
                             .putExtra("game_mode", "DAILY"))
+                    },
+                    onOpenProfile = {
+                        startActivity(Intent(this, ProfileActivity::class.java))
                     }
                 )
             }
@@ -128,7 +133,8 @@ private fun MainScreen(
     coinRepo: CoinRepository,
     onHowTo: () -> Unit,
     onStartClassic: () -> Unit,
-    onStartDaily: () -> Unit
+    onStartDaily: () -> Unit,
+    onOpenProfile: () -> Unit
 ) {
     val user = firebaseAuth.currentUser
     val isGuest = user == null
@@ -149,6 +155,7 @@ private fun MainScreen(
     var showRemoveAds by remember { mutableStateOf(false) }
     var showWip       by remember { mutableStateOf(false) }
     var showAuthDialog by remember { mutableStateOf(false) }
+    var showSettings by remember { mutableStateOf(false) }
 
     Box(
         modifier = Modifier
@@ -173,7 +180,9 @@ private fun MainScreen(
                     level      = level,
                     xpProgress = xpProgress,
                     onAdClick  = { showRemoveAds = true },
-                    onAvatarClick = { if (isGuest) showAuthDialog = true }
+                    onAvatarClick = {
+                        if (isGuest) showAuthDialog = true else onOpenProfile()
+                    }
                 )
                 Spacer(Modifier.height(14.dp))
                 Box(Modifier.fillMaxWidth(), contentAlignment = Alignment.Center) {
@@ -194,7 +203,8 @@ private fun MainScreen(
                 isGuest   = isGuest,
                 onHowTo   = onHowTo,
                 onWip     = { showWip = true },
-                onSignIn  = { showAuthDialog = true }
+                onSignIn  = { showAuthDialog = true },
+                onSettings = { showSettings = true }
             )
             BannerAdContainer()
         }
@@ -214,6 +224,9 @@ private fun MainScreen(
             )
         }
         if (showWip) WipDialog { showWip = false }
+        if (showSettings) {
+            SettingsDialog(onDismiss = { showSettings = false })
+        }
         if (showAuthDialog) {
             AuthDialog(
                 firebaseAuth = firebaseAuth,
@@ -549,7 +562,11 @@ private fun GameButtonsSection(
 // ─────────────────────────────────────────────────────────────────────────────
 @Composable
 private fun FooterNavBar(
-    isGuest: Boolean, onHowTo: () -> Unit, onWip: () -> Unit, onSignIn: () -> Unit
+    isGuest: Boolean,
+    onHowTo: () -> Unit,
+    onWip: () -> Unit,
+    onSignIn: () -> Unit,
+    onSettings: () -> Unit
 ) {
     data class NavItem(val emoji: String, val label: String, val onClick: () -> Unit,
                        val highlight: Boolean = false)
@@ -561,7 +578,7 @@ private fun FooterNavBar(
         NavItem(
             if (isGuest) "🔑" else "⚙️",
             if (isGuest) "ПРИЈАВА" else "ПОДЕШАВАЊЕ",
-            if (isGuest) onSignIn else onWip,
+            if (isGuest) onSignIn else onSettings,
             highlight = isGuest
         )
     )
@@ -591,6 +608,75 @@ private fun FooterNavBar(
                     )
                 }
             }
+        }
+    }
+}
+
+
+@Composable
+private fun SettingsDialog(onDismiss: () -> Unit) {
+    val context = LocalContext.current
+    val manager = remember { AudioSettingsManager(context) }
+    var settings by remember { mutableStateOf(manager.getSettings()) }
+
+    ComposeDialog(onDismissRequest = onDismiss) {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp)
+                .clip(RoundedCornerShape(28.dp))
+                .background(Brush.verticalGradient(listOf(Color(0xFF1E3560), Color(0xFF162B4A))))
+                .padding(24.dp),
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            Text("ПОДЕШАВАЊА", color = Color.White, fontSize = 22.sp, fontWeight = FontWeight.ExtraBold)
+            Spacer(Modifier.height(16.dp))
+
+            Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
+                Text("Музика", color = Color.White, fontWeight = FontWeight.Bold)
+                Switch(
+                    checked = settings.musicEnabled,
+                    onCheckedChange = {
+                        settings = settings.copy(musicEnabled = it)
+                        manager.saveSettings(settings)
+                    }
+                )
+            }
+
+            Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
+                Text("Звучни ефекти", color = Color.White, fontWeight = FontWeight.Bold)
+                Switch(
+                    checked = settings.effectsEnabled,
+                    onCheckedChange = {
+                        settings = settings.copy(effectsEnabled = it)
+                        manager.saveSettings(settings)
+                    }
+                )
+            }
+
+            Spacer(Modifier.height(10.dp))
+            Text("Јачина музике: ${(settings.musicVolume * 100).roundToInt()}%", color = Color(0xFFD6D9E0), fontSize = 12.sp)
+            Slider(
+                value = settings.musicVolume,
+                onValueChange = {
+                    settings = settings.copy(musicVolume = it)
+                    manager.saveSettings(settings)
+                },
+                valueRange = 0f..1f
+            )
+
+            Text("Јачина ефеката: ${(settings.effectsVolume * 100).roundToInt()}%", color = Color(0xFFD6D9E0), fontSize = 12.sp)
+            Slider(
+                value = settings.effectsVolume,
+                onValueChange = {
+                    settings = settings.copy(effectsVolume = it)
+                    manager.saveSettings(settings)
+                },
+                valueRange = 0f..1f
+            )
+
+            Spacer(Modifier.height(12.dp))
+            GoldButton("ЗАТВОРИ", onDismiss)
         }
     }
 }

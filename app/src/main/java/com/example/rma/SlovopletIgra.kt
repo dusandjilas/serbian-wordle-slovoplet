@@ -1,6 +1,7 @@
 package com.example.rma
 
 import android.app.Dialog
+import android.content.Intent
 import android.os.Bundle
 import android.view.ViewGroup
 import android.widget.Toast
@@ -73,6 +74,7 @@ import com.example.rma.viewmodel.WordleViewModelFactory
 import com.google.android.gms.ads.AdRequest
 import com.google.android.gms.ads.AdSize
 import com.google.android.gms.ads.AdView
+import com.google.firebase.auth.FirebaseAuth
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
@@ -116,6 +118,7 @@ class SlovopletIgra : AppCompatActivity() {
         viewModel.setMode(selectedMode)
 
         val profileManager = GameProfileManager(this)
+        val firstTimeFlow = intent.getBooleanExtra("first_time_flow", false)
 
         // ── Only show the "how to play" dialog on first ever launch ───────────
         val onboardingPrefs = getSharedPreferences(PREFS_ONBOARDING, MODE_PRIVATE)
@@ -132,7 +135,8 @@ class SlovopletIgra : AppCompatActivity() {
                 adManager      = adManager,
                 profileManager = profileManager,
                 // Info button in TopBar still works manually any time
-                onShowInfo     = { showInfoDialog() }
+                onShowInfo     = { showInfoDialog() },
+                firstTimeFlow  = firstTimeFlow
             )
         }
     }
@@ -168,7 +172,8 @@ private fun WordleRoot(
     viewModel: WordleViewModel,
     adManager: AdManager,
     profileManager: GameProfileManager,
-    onShowInfo: () -> Unit
+    onShowInfo: () -> Unit,
+    firstTimeFlow: Boolean
 ) {
     val context   = LocalContext.current
     val coinRepo  = remember { CoinRepository(context) }
@@ -203,7 +208,8 @@ private fun WordleRoot(
             onLastHintChange = { lastHint = it },
             revealedCells    = revealedCells,
             onOpenShop       = { screen = Screen.SHOP },
-            onShowInfo       = onShowInfo
+            onShowInfo       = onShowInfo,
+            firstTimeFlow    = firstTimeFlow
         )
         Screen.SHOP -> ShopScreen(
             coins      = coins,
@@ -238,7 +244,8 @@ private fun WordleGameScreen(
     onLastHintChange: (Char?) -> Unit,
     revealedCells: MutableList<Pair<Int, Int>>,
     onOpenShop: () -> Unit,
-    onShowInfo: () -> Unit
+    onShowInfo: () -> Unit,
+    firstTimeFlow: Boolean
 ) {
     val context   = LocalContext.current
     val hint1Cost = 150
@@ -251,6 +258,7 @@ private fun WordleGameScreen(
     var showNeedCoinsPopup by remember { mutableStateOf(false) }
     var pendingReward      by remember { mutableIntStateOf(0) }
     var pendingSubmit      by remember { mutableStateOf(false) }
+    var showFirstTimeAuthPrompt by remember { mutableStateOf(false) }
 
     // Animation: counter-based so LaunchedEffect fires on every new submit
     var animTrigger by remember { mutableIntStateOf(0) }
@@ -385,6 +393,9 @@ private fun WordleGameScreen(
         pendingSubmit = false
         if (viewModel.hasWon || viewModel.hasLost) {
             if (viewModel.gameMode == GameMode.CLASSIC) stateRepo.clearClassic()
+            if (firstTimeFlow) {
+                AppFlowPrefs.setFirstGameFinished(context, true)
+            }
             prikaziDijalog = true
         }
     }
@@ -527,8 +538,31 @@ private fun WordleGameScreen(
                             cellFlip[r][c] = Animatable(0f)
                     stateRepo.clearClassic()
                 },
-                onBackToMain = { (context as? AppCompatActivity)?.finish() },
+                onBackToMain = {
+                    if (firstTimeFlow) {
+                        showFirstTimeAuthPrompt = true
+                        prikaziDijalog = false
+                    } else {
+                        (context as? AppCompatActivity)?.finish()
+                    }
+                },
                 onDismiss    = { prikaziDijalog = false }
+            )
+        }
+
+
+        if (showFirstTimeAuthPrompt) {
+            FirstGameAuthPromptDialog(
+                onSignIn = {
+                    showFirstTimeAuthPrompt = false
+                    context.startActivity(Intent(context, SignInActivity::class.java))
+                    (context as? AppCompatActivity)?.finish()
+                },
+                onContinueAsGuest = {
+                    showFirstTimeAuthPrompt = false
+                    context.startActivity(Intent(context, MainActivity::class.java))
+                    (context as? AppCompatActivity)?.finish()
+                }
             )
         }
     }
@@ -836,6 +870,46 @@ private fun HintButton(emoji: String, cost: Int, onClick: () -> Unit) {
         Row(verticalAlignment = Alignment.CenterVertically) {
             Text("🪙", fontSize = 11.sp); Spacer(Modifier.width(2.dp))
             Text(cost.toString(), fontSize = 11.sp, fontWeight = FontWeight.Bold, color = Color(0xFF444433))
+        }
+    }
+}
+
+
+@Composable
+private fun FirstGameAuthPromptDialog(
+    onSignIn: () -> Unit,
+    onContinueAsGuest: () -> Unit
+) {
+    Dialog(onDismissRequest = onContinueAsGuest) {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .clip(RoundedCornerShape(24.dp))
+                .background(Color(0xFF1A3A5C))
+                .padding(20.dp),
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            Text("Сачувај напредак", color = Color.White, fontSize = 24.sp, fontWeight = FontWeight.Black)
+            Spacer(Modifier.height(10.dp))
+            Text(
+                "Пријави се да сачуваш XP и статистику, или настави као гост.",
+                color = Color(0xFFD8E9FF),
+                textAlign = TextAlign.Center
+            )
+            Spacer(Modifier.height(16.dp))
+            Box(
+                modifier = Modifier.fillMaxWidth().height(50.dp)
+                    .clip(RoundedCornerShape(22.dp)).background(Color(0xFF44BB55))
+                    .clickable { onSignIn() },
+                contentAlignment = Alignment.Center
+            ) { Text("ПРИЈАВИ СЕ", color = Color.White, fontWeight = FontWeight.Black) }
+            Spacer(Modifier.height(8.dp))
+            Box(
+                modifier = Modifier.fillMaxWidth().height(50.dp)
+                    .clip(RoundedCornerShape(22.dp)).background(Color(0x44FFFFFF))
+                    .clickable { onContinueAsGuest() },
+                contentAlignment = Alignment.Center
+            ) { Text("НАСТАВИ КАО ГОСТ", color = Color.White, fontWeight = FontWeight.Black) }
         }
     }
 }
