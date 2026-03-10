@@ -66,4 +66,5 @@ dependencies {
 
     implementation(libs.play.services.auth)
     implementation(libs.play.services.ads)
+    implementation(libs.facebook.login)
 }
