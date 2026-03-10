@@ -12,6 +12,8 @@ firebaseBom = "34.10.0"
 playServicesAuth = "21.5.1"
 play-services-ads = "25.0.0"
 material3 = "1.4.0"
+uiGraphics = "1.10.4"
+uiGeometry = "1.10.4"
 
 
 [libraries]
@@ -24,6 +26,7 @@ androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = 
 androidx-appcompat = { group = "androidx.appcompat", name = "appcompat", version.ref = "appcompat" }
 material = { group = "com.google.android.material", name = "material", version.ref = "material" }
 androidx-activity = { group = "androidx.activity", name = "activity", version.ref = "activity" }
+androidx-activity-compose = { group = "androidx.activity", name = "activity-compose", version.ref = "activity" }
 androidx-constraintlayout = { group = "androidx.constraintlayout", name = "constraintlayout", version.ref = "constraintlayout" }
 
 play-services-ads = { module = "com.google.android.gms:play-services-ads", version.ref = "play-services-ads" }
@@ -35,6 +38,8 @@ androidx-compose-ui-tooling = { group = "androidx.compose.ui", name = "ui-toolin
 
 play-services-auth = { group = "com.google.android.gms", name = "play-services-auth", version.ref = "playServicesAuth" }
 androidx-compose-material3 = { group = "androidx.compose.material3", name = "material3", version.ref = "material3" }
+androidx-compose-ui-graphics = { group = "androidx.compose.ui", name = "ui-graphics", version.ref = "uiGraphics" }
+androidx-compose-ui-geometry = { group = "androidx.compose.ui", name = "ui-geometry", version.ref = "uiGeometry" }
 
 
 [plugins]

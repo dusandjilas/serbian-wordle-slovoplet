@@ -31,7 +31,7 @@ import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.Text
-import androidx.compose.runtime.Composable
+import androidx.compose.material3.Surface
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -42,11 +42,10 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshots.SnapshotStateMap
-import androidx.compose.ui.Alignment
-import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.scale
 import androidx.compose.ui.draw.shadow
+import androidx.compose.ui.graphics.Canvas
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.platform.ComposeView
@@ -57,6 +56,7 @@ import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -77,6 +77,28 @@ import com.google.android.gms.ads.AdView
 import com.google.firebase.auth.FirebaseAuth
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import androidx.compose.foundation.Canvas
+import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
+import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.drawBehind
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.graphics.*
+import androidx.compose.ui.graphics.drawscope.Stroke
+import androidx.compose.ui.graphics.drawscope.rotate
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.unit.*
 
 val fonttri = FontFamily(Font(R.font.fonttri))
 
@@ -1027,71 +1049,652 @@ fun NeedCoinsDialog(reward: Int, adReady: Boolean, onClaimAd: () -> Unit, onNoTh
 // ─────────────────────────────────────────────────────────────────────────────
 // SHOP SCREEN
 // ─────────────────────────────────────────────────────────────────────────────
+
 @Composable
 fun ShopScreen(
-    coins: Int, onBack: () -> Unit,
-    onFreeAd25: () -> Unit, onBuyCoins: (Int) -> Unit, onBuyNoAds: () -> Unit
+    coins: Int,
+    onBack: () -> Unit,
+    onFreeAd25: () -> Unit,
+    onBuyCoins: (Int) -> Unit,
+    onBuyNoAds: () -> Unit
 ) {
-    Box(modifier = Modifier.fillMaxSize().background(Color.White)
-        .windowInsetsPadding(WindowInsets.statusBars).padding(14.dp)) {
-        Column {
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                Box(
-                    modifier = Modifier.size(44.dp).clip(RoundedCornerShape(22.dp))
-                        .background(Color(0xFF6D8F86)).clickable { onBack() },
-                    contentAlignment = Alignment.Center
-                ) { Text("‹", color = Color.White, fontSize = 28.sp, fontWeight = FontWeight.Black) }
-                Spacer(Modifier.width(10.dp))
-                ShopPill("🪙", coins.toString()); Spacer(Modifier.width(8.dp))
-                ShopPill("🎯", "0"); Spacer(Modifier.width(8.dp))
-                ShopPill("⏩", "2"); Spacer(Modifier.weight(1f))
+    val smallOffers = listOf(
+        ShopOfferUi(
+            coins = 25,
+            price = "FREE",
+            saleText = "WATCH\nAD",
+            ribbon = "FREE",
+            emoji = "🎁",
+            isAdReward = true
+        ),
+        ShopOfferUi(
+            coins = 1000,
+            price = "$4.99",
+            saleText = "50%\nSALE",
+            ribbon = "POPULAR",
+            emoji = "🪙"
+        ),
+        ShopOfferUi(
+            coins = 3000,
+            price = "$6.99",
+            saleText = "50%\nSALE",
+            emoji = "💰"
+        ),
+        ShopOfferUi(
+            coins = 4000,
+            price = "$8.99",
+            saleText = "50%\nSALE",
+            emoji = "🏺"
+        )
+    )
+
+    val bigOffers = listOf(
+        ShopOfferUi(
+            coins = 7000,
+            price = "$12.99",
+            saleText = "25%\nBONUS",
+            ribbon = "VALUE",
+            emoji = "💰"
+        ),
+        ShopOfferUi(
+            coins = 12000,
+            price = "$19.99",
+            saleText = "30%\nBONUS",
+            emoji = "🏆"
+        ),
+        ShopOfferUi(
+            coins = 20000,
+            price = "$29.99",
+            saleText = "35%\nBONUS",
+            ribbon = "BEST",
+            emoji = "👑"
+        )
+    )
+
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(Color(0xFF155844))
+    ) {
+        ShamrockPatternBackground()
+
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .windowInsetsPadding(WindowInsets.statusBars)
+                .padding(horizontal = 16.dp, vertical = 12.dp)
+        ) {
+            Box(modifier = Modifier.fillMaxWidth()) {
+                GameTitle(
+                    text = "SHOP",
+                    modifier = Modifier.align(Alignment.Center)
+                )
+
+                PurpleCloseButton(
+                    onClick = onBack,
+                    modifier = Modifier.align(Alignment.TopEnd)
+                )
             }
+
             Spacer(Modifier.height(14.dp))
-            Box(
-                modifier = Modifier.fillMaxWidth().height(190.dp)
-                    .clip(RoundedCornerShape(22.dp)).background(Color(0xFF77AFCF))
-                    .border(4.dp, Color(0xFFF0D277), RoundedCornerShape(22.dp)).padding(16.dp)
+
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.Center
             ) {
-                Column {
-                    Text("STARTER\nPACK", fontSize = 30.sp, fontWeight = FontWeight.Black, color = Color(0xFF5A3A00))
-                    Spacer(Modifier.height(12.dp))
-                    Text("🪙 600", fontSize = 26.sp, fontWeight = FontWeight.Black, color = Color.White)
-                    Text("🚫 NO ADS", fontSize = 22.sp, fontWeight = FontWeight.Black, color = Color.White)
-                    Spacer(Modifier.weight(1f))
-                    Row {
-                        Spacer(Modifier.weight(1f))
-                        Box(
-                            modifier = Modifier.height(56.dp).width(140.dp)
-                                .clip(RoundedCornerShape(20.dp)).background(Color(0xFF76C04E))
-                                .clickable { onBuyNoAds(); onBuyCoins(600) },
-                            contentAlignment = Alignment.Center
-                        ) { Text("6,99 €", color = Color.White, fontSize = 22.sp, fontWeight = FontWeight.Black) }
-                    }
+                CoinCounterPill(coins = coins)
+            }
+
+            Spacer(Modifier.height(14.dp))
+
+            StarterPackCard(
+                onClick = {
+                    onBuyNoAds()
+                    onBuyCoins(600)
+                }
+            )
+
+            Spacer(Modifier.height(18.dp))
+
+            SectionTitle("Coin Packs")
+
+            Spacer(Modifier.height(10.dp))
+
+            LazyRow(
+                horizontalArrangement = Arrangement.spacedBy(14.dp),
+                contentPadding = PaddingValues(horizontal = 4.dp)
+            ) {
+                items(smallOffers) { offer ->
+                    ShopOfferCard(
+                        offer = offer,
+                        onClick = {
+                            if (offer.isAdReward) {
+                                onFreeAd25()
+                            } else {
+                                onBuyCoins(offer.coins)
+                            }
+                        }
+                    )
                 }
             }
-            Spacer(Modifier.height(12.dp))
-            Box(
-                modifier = Modifier.fillMaxWidth().height(72.dp)
-                    .clip(RoundedCornerShape(26.dp)).background(Color(0xFFF2F0EA)).padding(horizontal = 16.dp),
-                contentAlignment = Alignment.Center
+
+            Spacer(Modifier.height(18.dp))
+
+            SectionTitle("Mega Packs")
+
+            Spacer(Modifier.height(10.dp))
+
+            LazyRow(
+                horizontalArrangement = Arrangement.spacedBy(14.dp),
+                contentPadding = PaddingValues(horizontal = 4.dp)
             ) {
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    Text("🚫 NO ADS", fontSize = 22.sp, fontWeight = FontWeight.Black, color = Color(0xFF4A4A4A))
-                    Spacer(Modifier.weight(1f))
-                    Box(
-                        modifier = Modifier.height(52.dp).width(130.dp)
-                            .clip(RoundedCornerShape(18.dp)).background(Color(0xFF76C04E)).clickable { onBuyNoAds() },
-                        contentAlignment = Alignment.Center
-                    ) { Text("9,99 €", color = Color.White, fontSize = 22.sp, fontWeight = FontWeight.Black) }
+                items(bigOffers) { offer ->
+                    ShopOfferCard(
+                        offer = offer,
+                        onClick = { onBuyCoins(offer.coins) }
+                    )
                 }
-            }
-            Spacer(Modifier.height(16.dp))
-            Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-                ShopCard("25",   "FREE",   Color(0xFFC44DA0), badge = "AD", onClick = onFreeAd25,          modifier = Modifier.weight(1f))
-                ShopCard("800",  "2,99 €", Color(0xFF76C04E),               onClick = { onBuyCoins(800) }, modifier = Modifier.weight(1f))
-                ShopCard("1400", "5,99 €", Color(0xFF76C04E),               onClick = { onBuyCoins(1400) },modifier = Modifier.weight(1f))
             }
         }
+    }
+}
+
+data class ShopOfferUi(
+    val coins: Int,
+    val price: String,
+    val saleText: String,
+    val ribbon: String? = null,
+    val emoji: String = "🪙",
+    val isAdReward: Boolean = false
+)
+
+@Composable
+private fun StarterPackCard(
+    onClick: () -> Unit
+) {
+    Box(
+        modifier = Modifier
+            .fillMaxWidth()
+            .height(190.dp)
+            .clip(RoundedCornerShape(26.dp))
+            .background(Color(0xFFF9B51E))
+            .border(5.dp, Color(0xFFE38217), RoundedCornerShape(26.dp))
+            .padding(10.dp)
+    ) {
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .clip(RoundedCornerShape(20.dp))
+                .background(Color(0xFFF2E0CF))
+        ) {
+            BeigeBurstBackground(Modifier.matchParentSize())
+
+            SaleBadge(
+                text = "BEST\nDEAL",
+                modifier = Modifier
+                    .align(Alignment.TopEnd)
+                    .padding(10.dp)
+            )
+
+            Column(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(16.dp)
+            ) {
+                Box(
+                    modifier = Modifier
+                        .clip(RoundedCornerShape(12.dp))
+                        .background(
+                            Brush.horizontalGradient(
+                                listOf(Color(0xFFB950FF), Color(0xFF7F2DFF))
+                            )
+                        )
+                        .padding(horizontal = 14.dp, vertical = 8.dp)
+                ) {
+                    Text(
+                        text = "STARTER PACK",
+                        color = Color.White,
+                        fontSize = 18.sp,
+                        fontWeight = FontWeight.Black
+                    )
+                }
+
+                Spacer(Modifier.height(12.dp))
+
+                Row(
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Text(
+                        text = "🪙",
+                        fontSize = 54.sp
+                    )
+                    Spacer(Modifier.width(10.dp))
+                    Column {
+                        OutlinedGameText(
+                            text = "600",
+                            fill = Color.White,
+                            stroke = Color(0xFFBF5A07),
+                            fontSize = 30.sp
+                        )
+                        Text(
+                            text = "Coins + No Ads",
+                            color = Color(0xFF7A3E05),
+                            fontSize = 18.sp,
+                            fontWeight = FontWeight.Bold
+                        )
+                    }
+                }
+
+                Spacer(Modifier.weight(1f))
+
+                GreenBuyButton(
+                    price = "$2.99",
+                    onClick = onClick,
+                    modifier = Modifier.fillMaxWidth()
+                )
+            }
+        }
+    }
+}
+
+@Composable
+private fun SectionTitle(text: String) {
+    Box(
+        modifier = Modifier
+            .clip(RoundedCornerShape(14.dp))
+            .background(Color(0x33000000))
+            .padding(horizontal = 14.dp, vertical = 8.dp)
+    ) {
+        Text(
+            text = text,
+            color = Color.White,
+            fontSize = 20.sp,
+            fontWeight = FontWeight.ExtraBold
+        )
+    }
+}
+
+@Composable
+private fun ShopOfferCard(
+    offer: ShopOfferUi,
+    onClick: () -> Unit
+) {
+    Box(
+        modifier = Modifier
+            .width(220.dp)
+            .height(340.dp)
+    ) {
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .clip(RoundedCornerShape(26.dp))
+                .background(Color(0xFFF9B51E))
+                .border(
+                    width = 5.dp,
+                    color = Color(0xFFE38217),
+                    shape = RoundedCornerShape(26.dp)
+                )
+                .padding(10.dp)
+        ) {
+            Column(modifier = Modifier.fillMaxSize()) {
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .weight(1f)
+                        .clip(RoundedCornerShape(20.dp))
+                        .background(Color(0xFFF2E0CF))
+                ) {
+                    BeigeBurstBackground(
+                        modifier = Modifier.matchParentSize()
+                    )
+
+                    Text(
+                        text = offer.emoji,
+                        fontSize = 88.sp,
+                        modifier = Modifier.align(Alignment.Center)
+                    )
+
+                    SaleBadge(
+                        text = offer.saleText,
+                        modifier = Modifier
+                            .align(Alignment.TopEnd)
+                            .padding(10.dp)
+                    )
+                }
+
+                Spacer(Modifier.height(10.dp))
+
+                CoinAmountPlate(
+                    amount = offer.coins,
+                    modifier = Modifier.fillMaxWidth()
+                )
+
+                Spacer(Modifier.height(12.dp))
+
+                GreenBuyButton(
+                    price = offer.price,
+                    onClick = onClick,
+                    modifier = Modifier.fillMaxWidth()
+                )
+
+                Spacer(Modifier.height(4.dp))
+            }
+        }
+
+        if (offer.ribbon != null) {
+            CornerRibbon(
+                text = offer.ribbon,
+                modifier = Modifier
+                    .align(Alignment.TopStart)
+                    .offset(x = (-8).dp, y = 16.dp)
+            )
+        }
+    }
+}
+
+@Composable
+private fun GameTitle(
+    text: String,
+    modifier: Modifier = Modifier
+) {
+    Box(modifier = modifier) {
+        Text(
+            text = text,
+            fontSize = 40.sp,
+            fontWeight = FontWeight.Black,
+            color = Color(0xFF5F2BA8),
+            modifier = Modifier.offset(0.dp, 4.dp)
+        )
+        Text(
+            text = text,
+            fontSize = 40.sp,
+            fontWeight = FontWeight.Black,
+            color = Color(0xFFEDE2FF)
+        )
+    }
+}
+
+@Composable
+private fun PurpleCloseButton(
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    Box(
+        modifier = modifier
+            .size(58.dp)
+            .clip(CircleShape)
+            .background(
+                brush = Brush.verticalGradient(
+                    listOf(Color(0xFFA86BFF), Color(0xFF7A39D9))
+                )
+            )
+            .border(3.dp, Color(0xFF5A22B2), CircleShape)
+            .clickable { onClick() },
+        contentAlignment = Alignment.Center
+    ) {
+        Text(
+            text = "×",
+            fontSize = 28.sp,
+            fontWeight = FontWeight.Black,
+            color = Color(0xFFF6EFFF)
+        )
+    }
+}
+
+@Composable
+private fun SaleBadge(
+    text: String,
+    modifier: Modifier = Modifier
+) {
+    Box(
+        modifier = modifier
+            .size(88.dp)
+            .drawBehind {
+                drawCircle(Color(0xFFFFF0F7))
+                drawCircle(
+                    color = Color(0xFFE33C93),
+                    radius = size.minDimension / 2.08f
+                )
+                drawCircle(
+                    color = Color(0xFFFF71B6),
+                    radius = size.minDimension / 2.4f
+                )
+            },
+        contentAlignment = Alignment.Center
+    ) {
+        Text(
+            text = text,
+            textAlign = TextAlign.Center,
+            lineHeight = 18.sp,
+            fontSize = 16.sp,
+            fontWeight = FontWeight.ExtraBold,
+            color = Color.White
+        )
+    }
+}
+
+@Composable
+private fun CornerRibbon(
+    text: String,
+    modifier: Modifier = Modifier
+) {
+    Box(
+        modifier = modifier
+            .graphicsLayer { rotationZ = -38f }
+            .clip(RoundedCornerShape(14.dp))
+            .background(
+                brush = Brush.linearGradient(
+                    listOf(Color(0xFFB950FF), Color(0xFF7F2DFF))
+                )
+            )
+            .padding(horizontal = 22.dp, vertical = 8.dp)
+    ) {
+        Text(
+            text = text,
+            fontSize = 18.sp,
+            fontWeight = FontWeight.Black,
+            color = Color.White
+        )
+    }
+}
+
+@Composable
+private fun CoinAmountPlate(
+    amount: Int,
+    modifier: Modifier = Modifier
+) {
+    Box(
+        modifier = modifier
+            .height(64.dp)
+            .clip(RoundedCornerShape(14.dp))
+            .background(Color(0xFFECE1D4))
+            .border(2.dp, Color(0xFFD9C8B6), RoundedCornerShape(14.dp))
+            .padding(horizontal = 14.dp),
+        contentAlignment = Alignment.CenterStart
+    ) {
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            CoinIcon(iconSize = 32.dp)
+            Spacer(Modifier.width(10.dp))
+            OutlinedGameText(
+                text = amount.toString(),
+                fill = Color.White,
+                stroke = Color(0xFFBF5A07),
+                fontSize = 24.sp
+            )
+        }
+    }
+}
+
+@Composable
+private fun GreenBuyButton(
+    price: String,
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    Box(
+        modifier = modifier
+            .height(70.dp)
+            .clip(RoundedCornerShape(40.dp))
+            .background(
+                brush = Brush.verticalGradient(
+                    listOf(Color(0xFF2DEA63), Color(0xFF16B651))
+                )
+            )
+            .border(4.dp, Color(0xFF0E8D41), RoundedCornerShape(40.dp))
+            .clickable { onClick() },
+        contentAlignment = Alignment.Center
+    ) {
+        Box(
+            modifier = Modifier
+                .matchParentSize()
+                .padding(horizontal = 10.dp, vertical = 7.dp)
+                .clip(RoundedCornerShape(40.dp))
+                .background(Color.White.copy(alpha = 0.14f))
+        )
+
+        OutlinedGameText(
+            text = price,
+            fill = Color.White,
+            stroke = Color(0xFF1E4A35),
+            fontSize = 24.sp
+        )
+    }
+}
+
+@Composable
+private fun CoinCounterPill(coins: Int) {
+    Row(
+        modifier = Modifier
+            .clip(RoundedCornerShape(24.dp))
+            .background(Color(0xFFF1E2CE))
+            .border(3.dp, Color(0xFFE38919), RoundedCornerShape(24.dp))
+            .padding(horizontal = 16.dp, vertical = 10.dp),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        CoinIcon(iconSize = 26.dp)
+        Spacer(Modifier.width(8.dp))
+        Text(
+            text = coins.toString(),
+            color = Color(0xFF7A3E05),
+            fontWeight = FontWeight.Black,
+            fontSize = 20.sp
+        )
+    }
+}
+
+@Composable
+private fun CoinIcon(iconSize: Dp) {
+    Box(
+        modifier = Modifier
+            .size(iconSize)
+            .drawBehind {
+                val r = size.minDimension / 2f
+                drawCircle(Color(0xFFFFC928), radius = r)
+                drawCircle(
+                    color = Color(0xFFE98D09),
+                    radius = r,
+                    style = Stroke(width = 3.dp.toPx())
+                )
+                drawCircle(
+                    color = Color(0xFFFFE17A),
+                    radius = r / 1.7f
+                )
+            }
+    )
+}
+
+@Composable
+private fun OutlinedGameText(
+    text: String,
+    fill: Color,
+    stroke: Color,
+    fontSize: TextUnit
+) {
+    Box {
+        Text(
+            text = text,
+            fontSize = fontSize,
+            fontWeight = FontWeight.Black,
+            color = stroke,
+            modifier = Modifier.offset(2.dp, 2.dp)
+        )
+        Text(
+            text = text,
+            fontSize = fontSize,
+            fontWeight = FontWeight.Black,
+            color = fill
+        )
+    }
+}
+
+@Composable
+private fun ShamrockPatternBackground() {
+    Canvas(modifier = Modifier.fillMaxSize()) {
+        val patternColor = Color(0xFF0E4536)
+        val cell = 84.dp.toPx()
+        val leafR = 12.dp.toPx()
+
+        var y = 0f
+        while (y < size.height + cell) {
+            var x = 0f
+            while (x < size.width + cell) {
+                val cx = x + cell / 2
+                val cy = y + cell / 2
+
+                drawCircle(patternColor, radius = leafR, center = Offset(cx, cy - leafR))
+                drawCircle(patternColor, radius = leafR, center = Offset(cx - leafR, cy))
+                drawCircle(patternColor, radius = leafR, center = Offset(cx + leafR, cy))
+                drawCircle(patternColor, radius = leafR, center = Offset(cx, cy + leafR * 0.2f))
+
+                drawLine(
+                    color = patternColor,
+                    start = Offset(cx, cy + leafR * 0.8f),
+                    end = Offset(cx + leafR * 0.8f, cy + leafR * 1.8f),
+                    strokeWidth = 4.dp.toPx()
+                )
+                x += cell
+            }
+            y += cell
+        }
+    }
+}
+
+@Composable
+private fun BeigeBurstBackground(modifier: Modifier = Modifier) {
+    Canvas(modifier = modifier) {
+        val center = Offset(size.width / 2f, size.height / 2f)
+        val rayColor = Color(0xFFF7EBDD)
+
+        for (i in 0 until 16) {
+            rotate(
+                degrees = i * 22.5f,
+                pivot = center
+            ) {
+                drawPath(
+                    path = Path().apply {
+                        moveTo(center.x, center.y)
+                        lineTo(center.x - 38.dp.toPx(), -40f)
+                        lineTo(center.x + 38.dp.toPx(), -40f)
+                        close()
+                    },
+                    color = rayColor
+                )
+            }
+        }
+    }
+}
+
+@Preview(showBackground = true, showSystemUi = true)
+@Composable
+fun ShopScreenPreview() {
+    MaterialTheme {
+        ShopScreen(
+            coins = 2500,
+            onBack = {},
+            onFreeAd25 = {},
+            onBuyCoins = {},
+            onBuyNoAds = {}
+        )
     }
 }
 

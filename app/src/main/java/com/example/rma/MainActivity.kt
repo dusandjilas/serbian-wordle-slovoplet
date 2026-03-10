@@ -54,6 +54,8 @@ import com.google.firebase.auth.FirebaseAuthInvalidCredentialsException
 import com.google.firebase.auth.FirebaseAuthUserCollisionException
 import com.google.firebase.auth.FirebaseAuthWeakPasswordException
 import androidx.compose.animation.core.*
+import androidx.compose.material.MaterialTheme
+import androidx.compose.ui.tooling.preview.Preview
 import kotlin.math.roundToInt
 
 // ── Palette ───────────────────────────────────────────────────────────────────
@@ -556,6 +558,19 @@ private fun GameButtonsSection(
         }
     }
 }
+@Preview(showBackground = true, showSystemUi = true)
+@Composable
+fun GameButtonsSectionPreview() {
+    MaterialTheme {
+        GameButtonsSection(
+            classicStreak = 5,
+            onStatsClick = {},
+            onClassicClick = {},
+            onDailyClick = {},
+            onWipClick = {}
+        )
+    }
+}
 
 // ─────────────────────────────────────────────────────────────────────────────
 // FOOTER NAV BAR  — redesigned: dark pill cards with emoji + label
@@ -747,6 +762,7 @@ private fun StatBox(value: String, label: String) {
     }
 }
 
+
 // ─────────────────────────────────────────────────────────────────────────────
 // GOLD COMPONENTS
 // ─────────────────────────────────────────────────────────────────────────────
@@ -863,6 +879,7 @@ fun GoldButton(label: String, onClick: () -> Unit, modifier: Modifier = Modifier
         Text(label, color = Color(0xFF7A4400), fontSize = 17.sp, fontWeight = FontWeight.ExtraBold)
     }
 }
+
 
 // ─────────────────────────────────────────────────────────────────────────────
 // REMOVE ADS DIALOG
