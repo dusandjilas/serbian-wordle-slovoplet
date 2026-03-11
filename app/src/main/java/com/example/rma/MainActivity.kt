@@ -5,6 +5,7 @@ import android.content.Intent
 import android.os.Bundle
 import android.view.ViewGroup
 import android.widget.Button
+import android.widget.Toast
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
 import androidx.compose.foundation.background
@@ -70,6 +71,13 @@ private val GOLD_STRIPE  = Color(0x22FFFFFF)
 private val FOOTER_BG    = Color(0xFF2A1A0E)
 private val FOOTER_ITEM  = Color(0xFF3D2810)
 
+private enum class LeaderboardMetric(val label: String) {
+    LEVEL("Ниво"),
+    STREAK("Streak"),
+    GAMES("Игре"),
+    WINRATE("Победе %")
+}
+
 class MainActivity : AppCompatActivity() {
 
     private lateinit var firebaseAuth: FirebaseAuth
@@ -101,9 +109,6 @@ class MainActivity : AppCompatActivity() {
                     onStartDaily = {
                         startActivity(Intent(this, SlovopletIgra::class.java)
                             .putExtra("game_mode", "DAILY"))
-                    },
-                    onOpenProfile = {
-                        startActivity(Intent(this, ProfileActivity::class.java))
                     }
                 )
             }
@@ -130,8 +135,7 @@ private fun MainScreen(
     coinRepo: CoinRepository,
     onHowTo: () -> Unit,
     onStartClassic: () -> Unit,
-    onStartDaily: () -> Unit,
-    onOpenProfile: () -> Unit
+    onStartDaily: () -> Unit
 ) {
     val configuration = LocalConfiguration.current
     val context = LocalContext.current
@@ -159,6 +163,7 @@ private fun MainScreen(
     var showAuthDialog by remember { mutableStateOf(false) }
     var showSettings by remember { mutableStateOf(false) }
     var showLeaderboard by remember { mutableStateOf(false) }
+    var showNameDialog by remember { mutableStateOf(false) }
 
     Box(
         modifier = Modifier
@@ -195,7 +200,7 @@ private fun MainScreen(
                     scale      = scale,
                     onAdClick  = { showRemoveAds = true },
                     onAvatarClick = {
-                        if (isGuest) showAuthDialog = true else onOpenProfile()
+                        if (isGuest) showAuthDialog = true else showNameDialog = true
                     }
                 )
                 Spacer(Modifier.height(12.dp))
@@ -268,6 +273,13 @@ private fun MainScreen(
                 firebaseAuth = firebaseAuth,
                 onSuccess    = { showAuthDialog = false },
                 onDismiss    = { showAuthDialog = false }
+            )
+        }
+        if (showNameDialog) {
+            ChangeDisplayNameDialog(
+                firebaseAuth = firebaseAuth,
+                statsRepository = statsRepository,
+                onDismiss = { showNameDialog = false }
             )
         }
     }
@@ -351,8 +363,23 @@ private fun AuthDialog(
                         if (isRegister) {
                             firebaseAuth.createUserWithEmailAndPassword(email.trim(), password)
                                 .addOnSuccessListener {
-                                    loading = false
-                                    onSuccess()
+                                    val createdUser = firebaseAuth.currentUser
+                                    if (createdUser == null) {
+                                        loading = false
+                                        onSuccess()
+                                    } else {
+                                        PlayerNameManager.assignRandomNameIfMissing(
+                                            user = createdUser,
+                                            onDone = {
+                                                loading = false
+                                                onSuccess()
+                                            },
+                                            onFailure = {
+                                                loading = false
+                                                onSuccess()
+                                            }
+                                        )
+                                    }
                                 }
                                 .addOnFailureListener { e ->
                                     loading = false
@@ -392,6 +419,102 @@ private fun AuthDialog(
                     modifier = Modifier.clickable { onDismiss() }
                 )
             }
+        }
+    }
+}
+
+@Composable
+private fun ChangeDisplayNameDialog(
+    firebaseAuth: FirebaseAuth,
+    statsRepository: FirebaseStatsRepository,
+    onDismiss: () -> Unit
+) {
+    var name by remember { mutableStateOf(firebaseAuth.currentUser?.displayName ?: "") }
+    var loading by remember { mutableStateOf(false) }
+    var error by remember { mutableStateOf("") }
+    val context = LocalContext.current
+
+    ComposeDialog(onDismissRequest = onDismiss) {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp)
+                .clip(RoundedCornerShape(28.dp))
+                .background(Brush.verticalGradient(listOf(Color(0xFF1E3560), Color(0xFF162B4A))))
+                .padding(24.dp),
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            Text("ПРОМЕНИ ИМЕ", color = Color.White, fontSize = 22.sp, fontWeight = FontWeight.ExtraBold)
+            Spacer(Modifier.height(12.dp))
+            OutlinedTextField(
+                value = name,
+                onValueChange = {
+                    name = it
+                    error = ""
+                },
+                singleLine = true,
+                label = { Text("Име играча") },
+                colors = OutlinedTextFieldDefaults.colors(
+                    focusedBorderColor = Color(0xFF60DDFF),
+                    unfocusedBorderColor = Color(0x66FFFFFF),
+                    focusedTextColor = Color.White,
+                    unfocusedTextColor = Color.White,
+                    cursorColor = Color(0xFF60DDFF)
+                ),
+                modifier = Modifier.fillMaxWidth()
+            )
+
+            if (error.isNotEmpty()) {
+                Spacer(Modifier.height(8.dp))
+                Text(error, color = Color(0xFFFF6B6B), textAlign = TextAlign.Center)
+            }
+
+            Spacer(Modifier.height(16.dp))
+            GoldButton(
+                label = if (loading) "ЧУВАЊЕ..." else "САЧУВАЈ",
+                onClick = {
+                    val newName = name.trim()
+                    val user = firebaseAuth.currentUser
+                    if (newName.length < 3) {
+                        error = "Име мора имати бар 3 карактера."
+                        return@GoldButton
+                    }
+                    if (user == null) {
+                        error = "Нисте пријављени."
+                        return@GoldButton
+                    }
+
+                    loading = true
+                    user.updateProfile(
+                        com.google.firebase.auth.UserProfileChangeRequest.Builder()
+                            .setDisplayName(newName)
+                            .build()
+                    ).addOnSuccessListener {
+                        statsRepository.updateDisplayName(
+                            displayName = newName,
+                            onSuccess = {
+                                loading = false
+                                Toast.makeText(context, "Име је сачувано", Toast.LENGTH_SHORT).show()
+                                onDismiss()
+                            },
+                            onFailure = {
+                                loading = false
+                                error = "Име је промењено локално, али не и на листи."
+                            }
+                        )
+                    }.addOnFailureListener {
+                        loading = false
+                        error = "Није успело чување имена."
+                    }
+                }
+            )
+            Spacer(Modifier.height(8.dp))
+            Text(
+                "ОТКАЖИ",
+                color = Color(0xAAFFFFFF),
+                fontWeight = FontWeight.Bold,
+                modifier = Modifier.clickable { onDismiss() }
+            )
         }
     }
 }
@@ -821,11 +944,16 @@ private fun LeaderboardDialogContent(
         )
     }
 
-    val qualified = entries.filter { it.gamesPlayed > 10 }
-    val topWinRate = entries.maxByOrNull { it.winRate }
-    val qualifiedWinRate = qualified.maxByOrNull { it.winRate }
-    val topLevel = entries.maxByOrNull { it.level }
-    val topStreak = entries.maxByOrNull { it.bestStreak }
+    var selectedTab by remember { mutableStateOf(LeaderboardMetric.LEVEL) }
+
+    val sortedEntries = remember(entries, selectedTab) {
+        when (selectedTab) {
+            LeaderboardMetric.LEVEL -> entries.sortedByDescending { it.level }
+            LeaderboardMetric.STREAK -> entries.sortedByDescending { it.bestStreak }
+            LeaderboardMetric.GAMES -> entries.sortedByDescending { it.gamesPlayed }
+            LeaderboardMetric.WINRATE -> entries.sortedByDescending { it.winRate }
+        }
+    }
 
     Column(
         modifier = Modifier.fillMaxWidth().padding(16.dp)
@@ -834,18 +962,49 @@ private fun LeaderboardDialogContent(
             .padding(24.dp),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        Text("ЛИСТА ИГРАЧА", color = Color.White, fontSize = 22.sp, fontWeight = FontWeight.ExtraBold)
+        Text("Leaderboard", color = Color.White, fontSize = 24.sp, fontWeight = FontWeight.ExtraBold)
         Spacer(Modifier.height(16.dp))
+
+        Row(horizontalArrangement = Arrangement.spacedBy(8.dp), modifier = Modifier.fillMaxWidth()) {
+            LeaderboardMetric.entries.forEach { tab ->
+                val selected = tab == selectedTab
+                Box(
+                    modifier = Modifier
+                        .weight(1f)
+                        .clip(RoundedCornerShape(12.dp))
+                        .background(if (selected) Color(0xFFF1B847) else Color(0xFF3F5D96))
+                        .clickable { selectedTab = tab }
+                        .padding(vertical = 8.dp),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text(
+                        tab.label,
+                        color = Color.White,
+                        fontWeight = FontWeight.ExtraBold,
+                        fontSize = 12.sp,
+                        textAlign = TextAlign.Center
+                    )
+                }
+            }
+        }
+
+        Spacer(Modifier.height(12.dp))
 
         when {
             loading -> CircularProgressIndicator(color = Color(0xFF60DDFF))
             error != null -> Text(error ?: "", color = Color(0xFFFF6B6B), textAlign = TextAlign.Center)
             entries.isEmpty() -> Text("Нема играча још увек.", color = Color.White)
             else -> {
-                LeaderboardMetricRow("Највећи проценат победа", topWinRate?.displayName ?: "-", if (topWinRate == null) "-" else "${topWinRate.winRate}%")
-                LeaderboardMetricRow("Највиши ниво", topLevel?.displayName ?: "-", topLevel?.level?.toString() ?: "-")
-                LeaderboardMetricRow("Најдужи низ", topStreak?.displayName ?: "-", topStreak?.bestStreak?.toString() ?: "-")
-                LeaderboardMetricRow("Победе % (10+ игара)", qualifiedWinRate?.displayName ?: "-", if (qualifiedWinRate == null) "-" else "${qualifiedWinRate.winRate}%")
+                Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                    sortedEntries.take(8).forEachIndexed { index, entry ->
+                        LeaderboardMetricRow(
+                            rank = index + 1,
+                            player = entry.displayName,
+                            selectedMetric = selectedTab,
+                            entry = entry
+                        )
+                    }
+                }
             }
         }
 
@@ -855,21 +1014,41 @@ private fun LeaderboardDialogContent(
 }
 
 @Composable
-private fun LeaderboardMetricRow(title: String, player: String, value: String) {
+private fun LeaderboardMetricRow(
+    rank: Int,
+    player: String,
+    selectedMetric: LeaderboardMetric,
+    entry: FirebaseStatsRepository.LeaderboardEntry
+) {
+    val value = when (selectedMetric) {
+        LeaderboardMetric.LEVEL -> "LV ${entry.level}"
+        LeaderboardMetric.STREAK -> "${entry.bestStreak}"
+        LeaderboardMetric.GAMES -> "${entry.gamesPlayed}"
+        LeaderboardMetric.WINRATE -> "${entry.winRate}%"
+    }
+
     Row(
         modifier = Modifier.fillMaxWidth().padding(vertical = 6.dp)
             .clip(RoundedCornerShape(12.dp))
-            .background(Color(0xFF31406B))
+            .background(if (rank <= 3) Color(0xFFCC9B3A) else Color(0xFFBCC5D3))
             .padding(horizontal = 12.dp, vertical = 10.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
-        Column(Modifier.weight(1f)) {
-            Text(title, color = Color(0xFFD6D9E0), fontSize = 12.sp, fontWeight = FontWeight.Bold)
+        Text(
+            rank.toString(),
+            color = Color(0xFF21324F),
+            fontWeight = FontWeight.ExtraBold,
+            fontSize = 20.sp,
+            modifier = Modifier.width(26.dp)
+        )
+        Column(Modifier.weight(1f).padding(start = 8.dp)) {
             Text(player, color = Color.White, fontSize = 14.sp, fontWeight = FontWeight.ExtraBold, maxLines = 1, overflow = TextOverflow.Ellipsis)
+            Text("PLAYER", color = Color(0xAAFFFFFF), fontSize = 10.sp, fontWeight = FontWeight.Bold)
         }
-        Text(value, color = Color(0xFF60DDFF), fontSize = 20.sp, fontWeight = FontWeight.ExtraBold)
+        Text(value, color = Color(0xFF1E3560), fontSize = 20.sp, fontWeight = FontWeight.ExtraBold)
     }
 }
+
 
 @Composable
 private fun StatBox(value: String, label: String) {
