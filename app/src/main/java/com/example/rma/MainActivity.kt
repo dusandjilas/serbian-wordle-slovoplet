@@ -803,6 +803,10 @@ private fun LeaderboardDialogContent(
     LaunchedEffect(Unit) {
         statsRepository.loadLeaderboard(
             onSuccess = {
+                android.util.Log.d("LEADERBOARD", "entries count = ${it.size}")
+                it.forEach { entry ->
+                    android.util.Log.d("LEADERBOARD", "player = ${entry.displayName}, games=${entry.gamesPlayed}, winRate=${entry.winRate}")
+                }
                 entries = it
                 loading = false
             },

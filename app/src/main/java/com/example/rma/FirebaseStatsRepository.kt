@@ -101,7 +101,7 @@ class FirebaseStatsRepository {
         onSuccess: (List<LeaderboardEntry>) -> Unit,
         onFailure: (Exception) -> Unit = {}
     ) {
-        db.collection("leaderboard")
+        db.collection("users")
             .get()
             .addOnSuccessListener { snapshot ->
                 val entries = snapshot.documents.map { doc ->
@@ -110,8 +110,7 @@ class FirebaseStatsRepository {
                     val winRate = if (gamesPlayed > 0) (wins * 100) / gamesPlayed else 0
 
                     LeaderboardEntry(
-                        displayName = doc.getString("displayName")
-                            ?: "Играч",
+                        displayName = doc.getString("displayName") ?: "Играч",
                         gamesPlayed = gamesPlayed,
                         winRate = winRate,
                         level = (doc.getLong("level") ?: 1L).toInt(),
