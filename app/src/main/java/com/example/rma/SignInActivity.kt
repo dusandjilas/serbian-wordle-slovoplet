@@ -6,15 +6,8 @@ import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
 import com.example.rma.databinding.ActivitySignInBinding
-import com.facebook.AccessToken
-import com.facebook.CallbackManager
-import com.facebook.FacebookCallback
-import com.facebook.FacebookException
-import com.facebook.login.LoginManager
-import com.facebook.login.LoginResult
 import com.google.android.gms.auth.api.signin.GoogleSignIn
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions
-import com.google.firebase.auth.FacebookAuthProvider
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.GoogleAuthProvider
 
@@ -22,7 +15,6 @@ class SignInActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivitySignInBinding
     private lateinit var firebaseAuth: FirebaseAuth
-    private lateinit var callbackManager: CallbackManager
 
     private val googleSignInLauncher = registerForActivityResult(
         ActivityResultContracts.StartActivityForResult()
@@ -56,7 +48,6 @@ class SignInActivity : AppCompatActivity() {
         setContentView(binding.root)
 
         firebaseAuth = FirebaseAuth.getInstance()
-        callbackManager = CallbackManager.Factory.create()
 
         binding.buttonContinueGuest.setOnClickListener {
             startActivity(Intent(this, MainActivity::class.java))
@@ -93,45 +84,6 @@ class SignInActivity : AppCompatActivity() {
             val googleSignInClient = GoogleSignIn.getClient(this, gso)
             googleSignInClient.signOut().addOnCompleteListener {
                 googleSignInLauncher.launch(googleSignInClient.signInIntent)
-            }
-        }
-
-        binding.buttonFacebook.setOnClickListener {
-            LoginManager.getInstance().logInWithReadPermissions(this, listOf("email", "public_profile"))
-        }
-
-        LoginManager.getInstance().registerCallback(
-            callbackManager,
-            object : FacebookCallback<LoginResult> {
-                override fun onSuccess(result: LoginResult) {
-                    handleFacebookAccessToken(result.accessToken)
-                }
-
-                override fun onCancel() {
-                    Toast.makeText(this@SignInActivity, "Facebook prijava je otkazana.", Toast.LENGTH_SHORT).show()
-                }
-
-                override fun onError(error: FacebookException) {
-                    AuthFlow.showAuthError(this@SignInActivity, error.message)
-                }
-            }
-        )
-
-        AccessToken.getCurrentAccessToken()?.let { handleFacebookAccessToken(it) }
-    }
-
-    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
-        super.onActivityResult(requestCode, resultCode, data)
-        callbackManager.onActivityResult(requestCode, resultCode, data)
-    }
-
-    private fun handleFacebookAccessToken(token: AccessToken) {
-        val credential = FacebookAuthProvider.getCredential(token.token)
-        firebaseAuth.signInWithCredential(credential).addOnCompleteListener { task ->
-            if (task.isSuccessful) {
-                AuthFlow.continueToMain(this)
-            } else {
-                AuthFlow.showAuthError(this, task.exception?.message)
             }
         }
     }

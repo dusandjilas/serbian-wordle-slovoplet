@@ -1,15 +1,17 @@
+import org.jetbrains.kotlin.gradle.dsl.JvmTarget
+
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
     alias(libs.plugins.google.gms.google.services)
     alias(libs.plugins.kotlin.compose)
-    kotlin("kapt") // Apply kapt here for Glide compiler
+    kotlin("kapt")
 }
 
 android {
     namespace = "com.example.rma"
     compileSdk = 36
-    buildToolsVersion = "36.0.0 rc3"
+    buildToolsVersion = "36.0.0-rc3"
 
     defaultConfig {
         applicationId = "com.example.rma"
@@ -40,26 +42,27 @@ android {
         sourceCompatibility = JavaVersion.VERSION_1_8
         targetCompatibility = JavaVersion.VERSION_1_8
     }
+}
 
-    kotlinOptions {
-        jvmTarget = "1.8"
+kotlin {
+    compilerOptions {
+        jvmTarget.set(JvmTarget.JVM_1_8)
     }
 }
 
 dependencies {
-
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.appcompat)
     implementation(libs.material)
     implementation(libs.androidx.activity)
     implementation(libs.androidx.constraintlayout)
+
     implementation(libs.androidx.activity.compose)
     implementation(libs.androidx.compose.ui)
     implementation(libs.androidx.compose.material)
     implementation(libs.androidx.compose.ui.tooling.preview)
     implementation(libs.androidx.compose.material3)
     implementation(libs.androidx.compose.ui.graphics)
-    implementation(libs.androidx.compose.ui.geometry)
     debugImplementation(libs.androidx.compose.ui.tooling)
 
     implementation(platform(libs.firebase.bom))
@@ -68,5 +71,4 @@ dependencies {
 
     implementation(libs.play.services.auth)
     implementation(libs.play.services.ads)
-    implementation(libs.facebook.login)
 }

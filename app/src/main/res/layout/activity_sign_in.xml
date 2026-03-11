@@ -126,20 +126,7 @@
                     app:strokeColor="#D9DEE8"
                     app:strokeWidth="1dp" />
 
-                <com.google.android.material.button.MaterialButton
-                    android:id="@+id/buttonFacebook"
-                    android:layout_width="match_parent"
-                    android:layout_height="48dp"
-                    android:layout_marginTop="10dp"
-                    android:drawablePadding="10dp"
-                    android:text="Facebook"
-                    android:textAllCaps="false"
-                    android:textColor="@android:color/white"
-                    app:backgroundTint="#1877F2"
-                    app:cornerRadius="14dp"
-                    app:icon="@drawable/facebook"
-                    app:iconGravity="textStart"
-                    app:iconTint="@null" />
+
             </LinearLayout>
         </com.google.android.material.card.MaterialCardView>
 
