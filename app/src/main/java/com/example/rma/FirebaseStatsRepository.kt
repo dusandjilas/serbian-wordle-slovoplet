@@ -54,6 +54,21 @@ class FirebaseStatsRepository {
             .addOnFailureListener { e ->
                 Log.e("FirestoreStats", "Failed to sync stats", e)
             }
+
+        val publicLeaderboardData = hashMapOf(
+            "displayName" to (user.displayName ?: user.email ?: "Играч"),
+            "classicGamesPlayed" to profileManager.getClassicGamesPlayed(),
+            "classicWins" to profileManager.getClassicWins(),
+            "level" to profileManager.getLevel(),
+            "bestClassicStreak" to profileManager.getBestClassicStreak(),
+        )
+
+        db.collection("leaderboard")
+            .document(user.uid)
+            .set(publicLeaderboardData)
+            .addOnFailureListener { e ->
+                Log.e("FirestoreStats", "Failed to sync public leaderboard", e)
+            }
     }
 
     fun loadStats(
@@ -86,7 +101,7 @@ class FirebaseStatsRepository {
         onSuccess: (List<LeaderboardEntry>) -> Unit,
         onFailure: (Exception) -> Unit = {}
     ) {
-        db.collection("users")
+        db.collection("leaderboard")
             .get()
             .addOnSuccessListener { snapshot ->
                 val entries = snapshot.documents.map { doc ->
@@ -96,8 +111,7 @@ class FirebaseStatsRepository {
 
                     LeaderboardEntry(
                         displayName = doc.getString("displayName")
-                            ?: doc.getString("email")
-                            ?: "Player",
+                            ?: "Играч",
                         gamesPlayed = gamesPlayed,
                         winRate = winRate,
                         level = (doc.getLong("level") ?: 1L).toInt(),

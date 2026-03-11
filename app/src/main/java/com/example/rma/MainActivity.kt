@@ -53,6 +53,7 @@ import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.FirebaseAuthInvalidCredentialsException
 import com.google.firebase.auth.FirebaseAuthUserCollisionException
 import com.google.firebase.auth.FirebaseAuthWeakPasswordException
+import com.google.firebase.firestore.FirebaseFirestoreException
 import androidx.compose.animation.core.*
 import androidx.compose.material.MaterialTheme
 import androidx.compose.ui.tooling.preview.Preview
@@ -199,11 +200,12 @@ private fun MainScreen(
                 )
                 Spacer(Modifier.height(12.dp))
                 Box(Modifier.fillMaxWidth(), contentAlignment = Alignment.Center) {
-                    WordleBubblesRow()
+                    WordleBubblesRow(scale = scale)
                 }
                 Spacer(Modifier.height(12.dp))
                 GameButtonsSection(
                     classicStreak  = classicStreak,
+                    scale          = scale,
                     onStatsClick   = { showStats = true },
                     onClassicClick = onStartClassic,
                     onDailyClick   = onStartDaily,
@@ -214,6 +216,7 @@ private fun MainScreen(
 
             FooterNavBar(
                 isGuest       = isGuest,
+                scale         = scale,
                 onHowTo       = onHowTo,
                 onWip         = { showWip = true },
                 onSignIn      = { showAuthDialog = true },
@@ -402,15 +405,14 @@ private fun TopHeaderBar(
     scale: Float,
     onAdClick: () -> Unit, onAvatarClick: () -> Unit
 ) {
-    val adSize = (52 * scale).dp
+    val adSize = (36 * scale).dp
     Box(modifier = Modifier.fillMaxWidth().padding(horizontal = 12.dp, vertical = 10.dp)) {
         Box(
             modifier = Modifier.align(Alignment.CenterStart).size(adSize).clip(CircleShape)
-                .background(Color.Black).border(3.dp, Color(0xFFCC2222), CircleShape)
-                .clickable { onAdClick() },
+                .background(Color(0xFFE24A3B)).clickable { onAdClick() },
             contentAlignment = Alignment.Center
         ) {
-            Text("AD", color = Color.White, fontWeight = FontWeight.ExtraBold, fontSize = 16.sp)
+            Text("AD", color = Color.White, fontWeight = FontWeight.Black, fontSize = (11 * scale).sp)
         }
 
         Box(Modifier.align(Alignment.Center).clickable { onAvatarClick() }) {
@@ -418,7 +420,7 @@ private fun TopHeaderBar(
         }
 
         Box(Modifier.align(Alignment.CenterEnd)) {
-            CoinPill(coins = coins, isGuest = isGuest)
+            CoinPill(coins = coins, isGuest = isGuest, scale = scale)
         }
     }
 }
@@ -476,33 +478,33 @@ private fun CenterAvatar(level: Int, xpProgress: Float, isGuest: Boolean) {
 }
 
 @Composable
-private fun CoinPill(coins: Int, isGuest: Boolean) {
+private fun CoinPill(coins: Int, isGuest: Boolean, scale: Float) {
     Row(verticalAlignment = Alignment.CenterVertically) {
         Box(
-            modifier = Modifier.height(38.dp).widthIn(min = 90.dp)
-                .clip(RoundedCornerShape(19.dp)).background(Color(0xFF5A3A1A))
-                .border(2.dp, Color(0xFF8B5A2B), RoundedCornerShape(19.dp))
-                .padding(horizontal = 12.dp),
+            modifier = Modifier.height((38 * scale).dp).widthIn(min = (90 * scale).dp)
+                .clip(RoundedCornerShape((19 * scale).dp)).background(Color(0xFF5A3A1A))
+                .border(2.dp, Color(0xFF8B5A2B), RoundedCornerShape((19 * scale).dp))
+                .padding(horizontal = (12 * scale).dp),
             contentAlignment = Alignment.Center
         ) {
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Text(
                     if (isGuest) "--" else coins.toString(),
-                    color = Color.White, fontWeight = FontWeight.ExtraBold, fontSize = 20.sp
+                    color = Color.White, fontWeight = FontWeight.ExtraBold, fontSize = (20 * scale).sp
                 )
                 Spacer(Modifier.width(6.dp))
                 Box(
-                    Modifier.size(26.dp).clip(CircleShape).background(Color(0xFFE8A800))
+                    Modifier.size((26 * scale).dp).clip(CircleShape).background(Color(0xFFE8A800))
                         .border(2.dp, Color(0xFFA06000), CircleShape),
                     contentAlignment = Alignment.Center
                 ) {
-                    Text("W", color = Color.White, fontWeight = FontWeight.ExtraBold, fontSize = 12.sp)
+                    Text("Д", color = Color.White, fontWeight = FontWeight.ExtraBold, fontSize = (12 * scale).sp)
                 }
             }
         }
-        Spacer(Modifier.width(4.dp))
+        Spacer(Modifier.width((4 * scale).dp))
         Box(
-            Modifier.size(30.dp).clip(CircleShape).background(Color(0xFF44BB55))
+            Modifier.size((30 * scale).dp).clip(CircleShape).background(Color(0xFF44BB55))
                 .border(2.dp, Color(0xFF226622), CircleShape),
             contentAlignment = Alignment.Center
         ) {
@@ -515,7 +517,7 @@ private fun CoinPill(coins: Int, isGuest: Boolean) {
 // WORD BUBBLES
 // ─────────────────────────────────────────────────────────────────────────────
 @Composable
-private fun WordleBubblesRow() {
+private fun WordleBubblesRow(scale: Float) {
     data class Bub(val ch: String, val bg: Color, val shadow: Color)
     val bubbles = listOf(
         Bub("С", Color(0xFFE8A0C8), Color(0xFFB06090)),
@@ -528,10 +530,10 @@ private fun WordleBubblesRow() {
         Bub("Е", Color(0xFFE8B890), Color(0xFFB07050)),
         Bub("Т", Color(0xFFE87070), Color(0xFFB03030)),
     )
-    Row(horizontalArrangement = Arrangement.spacedBy(5.dp), modifier = Modifier.padding(horizontal = 10.dp)) {
+    Row(horizontalArrangement = Arrangement.spacedBy((5 * scale).dp), modifier = Modifier.padding(horizontal = (10 * scale).dp)) {
         bubbles.forEach { b ->
             Box(
-                modifier = Modifier.size(38.dp)
+                modifier = Modifier.size((38 * scale).dp)
                     .drawBehind {
                         drawCircle(b.shadow, size.minDimension / 2f,
                             Offset(size.width / 2f, size.height / 2f + 3.dp.toPx()))
@@ -542,7 +544,7 @@ private fun WordleBubblesRow() {
                 contentAlignment = Alignment.Center
             ) {
                 Text(b.ch, fontSize = 18.sp, fontWeight = FontWeight.ExtraBold,
-                    color = b.shadow.copy(alpha = 0.55f), modifier = Modifier.offset(y = 1.5.dp))
+                    color = b.shadow.copy(alpha = 0.55f), modifier = Modifier.offset(y = (1.5f * scale).dp))
                 Text(b.ch, fontSize = 18.sp, fontWeight = FontWeight.ExtraBold, color = Color.White)
             }
         }
@@ -554,7 +556,7 @@ private fun WordleBubblesRow() {
 // ─────────────────────────────────────────────────────────────────────────────
 @Composable
 private fun GameButtonsSection(
-    classicStreak: Int, onStatsClick: () -> Unit,
+    classicStreak: Int, scale: Float, onStatsClick: () -> Unit,
     onClassicClick: () -> Unit, onDailyClick: () -> Unit, onWipClick: () -> Unit
 ) {
     Column(
@@ -563,30 +565,30 @@ private fun GameButtonsSection(
             .border(2.dp, Color(0x44FFFFFF), RoundedCornerShape(26.dp)).padding(12.dp),
         verticalArrangement = Arrangement.spacedBy(10.dp)
     ) {
-        Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(10.dp)) {
-            GoldSquareButton(modifier = Modifier.size(82.dp), onClick = onStatsClick) {
+        Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy((10 * scale).dp)) {
+            GoldSquareButton(modifier = Modifier.size((82 * scale).dp), onClick = onStatsClick) {
                 Column(horizontalAlignment = Alignment.CenterHorizontally) {
                     Text("📊", fontSize = 26.sp)
-                    Text("Stats", color = Color.White, fontWeight = FontWeight.ExtraBold, fontSize = 11.sp)
+                    Text("СТАТ", color = Color.White, fontWeight = FontWeight.ExtraBold, fontSize = (11 * scale).sp)
                 }
             }
             GoldWideButton(
-                title = "КЛАСИЧАН", rightTop = classicStreak.toString(), rightBottom = "STREAK",
-                modifier = Modifier.weight(1f).height(82.dp), onClick = onClassicClick
+                title = "КЛАСИЧАН", rightTop = classicStreak.toString(), rightBottom = "НИЗ",
+                modifier = Modifier.weight(1f).height((82 * scale).dp), onClick = onClassicClick
             )
         }
         GoldWideButton(
             title = "РЕЧ ДАНА", rightTop = "🌟", rightBottom = "+100",
-            modifier = Modifier.fillMaxWidth().height(82.dp), onClick = onDailyClick
+            modifier = Modifier.fillMaxWidth().height((82 * scale).dp), onClick = onDailyClick
         )
-        Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+        Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy((10 * scale).dp)) {
             GoldWideButton(
-                title = "РЕЧЕНИЦА", rightTop = "WIP", rightBottom = "скоро",
-                modifier = Modifier.weight(1f).height(72.dp), onClick = onWipClick, titleSize = 14.sp
+                title = "РЕЧЕНИЦА", rightTop = "УСКОРО", rightBottom = "скоро",
+                modifier = Modifier.weight(1f).height((72 * scale).dp), onClick = onWipClick, titleSize = (14 * scale).sp
             )
             GoldWideButton(
-                title = "ТАЈНА РЕЧ", rightTop = "WIP", rightBottom = "скоро",
-                modifier = Modifier.weight(1f).height(72.dp), onClick = onWipClick, titleSize = 14.sp
+                title = "ТАЈНА РЕЧ", rightTop = "УСКОРО", rightBottom = "скоро",
+                modifier = Modifier.weight(1f).height((72 * scale).dp), onClick = onWipClick, titleSize = (14 * scale).sp
             )
         }
     }
@@ -597,6 +599,7 @@ fun GameButtonsSectionPreview() {
     MaterialTheme {
         GameButtonsSection(
             classicStreak = 5,
+            scale = 1f,
             onStatsClick = {},
             onClassicClick = {},
             onDailyClick = {},
@@ -611,6 +614,7 @@ fun GameButtonsSectionPreview() {
 @Composable
 private fun FooterNavBar(
     isGuest: Boolean,
+    scale: Float,
     onHowTo: () -> Unit,
     onWip: () -> Unit,
     onSignIn: () -> Unit,
@@ -620,8 +624,8 @@ private fun FooterNavBar(
     data class NavItem(val emoji: String, val label: String, val onClick: () -> Unit,
                        val highlight: Boolean = false)
     val items = listOf(
-        NavItem("🛒", "SHOP",     onWip),
-        NavItem("🏆", "LEADERBOARD",  onLeaderboard),
+        NavItem("🛒", "ПРОДАВНИЦА",     onWip),
+        NavItem("🏆", "ЛИСТА",  onLeaderboard),
         NavItem("❓", "УПУТСТВО",  onHowTo),
         NavItem("📖", "ВОДИЧ",    onWip),
         NavItem(
@@ -648,11 +652,11 @@ private fun FooterNavBar(
                 contentAlignment = Alignment.Center
             ) {
                 Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                    Text(item.emoji, fontSize = 20.sp)
+                    Text(item.emoji, fontSize = (20 * scale).sp)
                     Text(
                         item.label,
                         color = if (item.highlight) Color(0xFF60DDFF) else Color(0xCCFFFFFF),
-                        fontSize = 7.sp, fontWeight = FontWeight.ExtraBold,
+                        fontSize = (7 * scale).sp, fontWeight = FontWeight.ExtraBold,
                         textAlign = TextAlign.Center, maxLines = 1
                     )
                 }
@@ -750,12 +754,12 @@ private fun StatsDialogContent(profileManager: GameProfileManager, onClose: () -
         Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceEvenly) {
             StatBox(profileManager.getClassicGamesPlayed().toString(), "ИГРЕ")
             StatBox(profileManager.getClassicWins().toString(), "ПОБЕДЕ")
-            StatBox("${profileManager.getClassicWinRate()}%", "WIN %")
+            StatBox("${profileManager.getClassicWinRate()}%", "ПОБЕДЕ %")
         }
         Spacer(Modifier.height(10.dp))
         Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceEvenly) {
-            StatBox(profileManager.getClassicStreak().toString(), "STREAK")
-            StatBox(profileManager.getBestClassicStreak().toString(), "BEST")
+            StatBox(profileManager.getClassicStreak().toString(), "НИЗ")
+            StatBox(profileManager.getBestClassicStreak().toString(), "НАЈБОЉИ")
             StatBox(profileManager.getClassicLosses().toString(), "ПОРАЗИ")
         }
         Spacer(Modifier.height(18.dp))
@@ -803,7 +807,11 @@ private fun LeaderboardDialogContent(
                 loading = false
             },
             onFailure = {
-                error = it.localizedMessage ?: "Грешка при учитавању листе"
+                error = if (it is FirebaseFirestoreException && it.code == FirebaseFirestoreException.Code.PERMISSION_DENIED) {
+                    "Недостаје дозвола за листу играча. Проверите Firestore правила."
+                } else {
+                    it.localizedMessage ?: "Грешка при учитавању листе"
+                }
                 loading = false
             }
         )
@@ -822,7 +830,7 @@ private fun LeaderboardDialogContent(
             .padding(24.dp),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        Text("LEADERBOARD", color = Color.White, fontSize = 22.sp, fontWeight = FontWeight.ExtraBold)
+        Text("ЛИСТА ИГРАЧА", color = Color.White, fontSize = 22.sp, fontWeight = FontWeight.ExtraBold)
         Spacer(Modifier.height(16.dp))
 
         when {
@@ -830,10 +838,10 @@ private fun LeaderboardDialogContent(
             error != null -> Text(error ?: "", color = Color(0xFFFF6B6B), textAlign = TextAlign.Center)
             entries.isEmpty() -> Text("Нема играча још увек.", color = Color.White)
             else -> {
-                LeaderboardMetricRow("Highest win rate", topWinRate?.displayName ?: "-", if (topWinRate == null) "-" else "${topWinRate.winRate}%")
-                LeaderboardMetricRow("Highest level", topLevel?.displayName ?: "-", topLevel?.level?.toString() ?: "-")
-                LeaderboardMetricRow("Highest streak", topStreak?.displayName ?: "-", topStreak?.bestStreak?.toString() ?: "-")
-                LeaderboardMetricRow("Win % (10+ games)", qualifiedWinRate?.displayName ?: "-", if (qualifiedWinRate == null) "-" else "${qualifiedWinRate.winRate}%")
+                LeaderboardMetricRow("Највећи проценат победа", topWinRate?.displayName ?: "-", if (topWinRate == null) "-" else "${topWinRate.winRate}%")
+                LeaderboardMetricRow("Највиши ниво", topLevel?.displayName ?: "-", topLevel?.level?.toString() ?: "-")
+                LeaderboardMetricRow("Најдужи низ", topStreak?.displayName ?: "-", topStreak?.bestStreak?.toString() ?: "-")
+                LeaderboardMetricRow("Победе % (10+ игара)", qualifiedWinRate?.displayName ?: "-", if (qualifiedWinRate == null) "-" else "${qualifiedWinRate.winRate}%")
             }
         }
 
