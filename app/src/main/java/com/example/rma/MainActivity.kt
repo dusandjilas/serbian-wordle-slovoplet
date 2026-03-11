@@ -35,6 +35,7 @@ import androidx.compose.ui.platform.ComposeView
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.style.TextAlign
@@ -144,9 +145,11 @@ private fun MainScreen(
     }
 
     // ── XP / level — only read for logged-in users ────────────────────────────
-    val level     = if (isGuest) 1    else profileManager.getLevel()
+    val level      = if (isGuest) 1    else profileManager.getLevel()
     val xpProgress = if (isGuest) 0f else profileManager.getXpProgress()
     val classicStreak = profileManager.getClassicStreak()
+    val statsRepository = remember { FirebaseStatsRepository() }
+
 
     // ── Dialog state ──────────────────────────────────────────────────────────
     var showStats     by remember { mutableStateOf(false) }
@@ -154,6 +157,7 @@ private fun MainScreen(
     var showWip       by remember { mutableStateOf(false) }
     var showAuthDialog by remember { mutableStateOf(false) }
     var showSettings by remember { mutableStateOf(false) }
+    var showLeaderboard by remember { mutableStateOf(false) }
 
     Box(
         modifier = Modifier
@@ -170,8 +174,18 @@ private fun MainScreen(
                 }
             }
     ) {
-        Column(Modifier.fillMaxSize()) {
-            Column(Modifier.weight(1f).verticalScroll(rememberScrollState())) {
+        Column(
+            Modifier
+                .fillMaxSize()
+                .windowInsetsPadding(WindowInsets.safeDrawing.only(WindowInsetsSides.Top + WindowInsetsSides.Horizontal))
+        ) {
+            Column(
+                Modifier
+                    .weight(1f)
+                    .fillMaxWidth()
+                    .verticalScroll(rememberScrollState())
+                    .padding(horizontal = 8.dp)
+            ) {
                 TopHeaderBar(
                     isGuest    = isGuest,
                     coins      = coins,
@@ -183,11 +197,11 @@ private fun MainScreen(
                         if (isGuest) showAuthDialog = true else onOpenProfile()
                     }
                 )
-                Spacer(Modifier.height(14.dp))
+                Spacer(Modifier.height(12.dp))
                 Box(Modifier.fillMaxWidth(), contentAlignment = Alignment.Center) {
                     WordleBubblesRow()
                 }
-                Spacer(Modifier.height(14.dp))
+                Spacer(Modifier.height(12.dp))
                 GameButtonsSection(
                     classicStreak  = classicStreak,
                     onStatsClick   = { showStats = true },
@@ -195,15 +209,16 @@ private fun MainScreen(
                     onDailyClick   = onStartDaily,
                     onWipClick     = { showWip = true }
                 )
-                Spacer(Modifier.height(14.dp))
+                Spacer(Modifier.height(12.dp))
             }
 
             FooterNavBar(
-                isGuest   = isGuest,
-                onHowTo   = onHowTo,
-                onWip     = { showWip = true },
-                onSignIn  = { showAuthDialog = true },
-                onSettings = { showSettings = true }
+                isGuest       = isGuest,
+                onHowTo       = onHowTo,
+                onWip         = { showWip = true },
+                onSignIn      = { showAuthDialog = true },
+                onSettings    = { showSettings = true },
+                onLeaderboard = { showLeaderboard = true }
             )
             BannerAdContainer()
         }
@@ -213,6 +228,16 @@ private fun MainScreen(
             ComposeDialog(onDismissRequest = { showStats = false }) {
                 MaterialTheme {
                     StatsDialogContent(profileManager) { showStats = false }
+                }
+            }
+        }
+        if (showLeaderboard) {
+            ComposeDialog(onDismissRequest = { showLeaderboard = false }) {
+                MaterialTheme {
+                    LeaderboardDialogContent(
+                        statsRepository = statsRepository,
+                        onClose = { showLeaderboard = false }
+                    )
                 }
             }
         }
@@ -589,13 +614,14 @@ private fun FooterNavBar(
     onHowTo: () -> Unit,
     onWip: () -> Unit,
     onSignIn: () -> Unit,
-    onSettings: () -> Unit
+    onSettings: () -> Unit,
+    onLeaderboard: () -> Unit
 ) {
     data class NavItem(val emoji: String, val label: String, val onClick: () -> Unit,
                        val highlight: Boolean = false)
     val items = listOf(
         NavItem("🛒", "SHOP",     onWip),
-        NavItem("🛡️", "LEAGUE",  onWip),
+        NavItem("🏆", "LEADERBOARD",  onLeaderboard),
         NavItem("❓", "УПУТСТВО",  onHowTo),
         NavItem("📖", "ВОДИЧ",    onWip),
         NavItem(
@@ -607,7 +633,7 @@ private fun FooterNavBar(
     )
 
     Row(
-        modifier = Modifier.fillMaxWidth().background(FOOTER_BG).padding(horizontal = 8.dp, vertical = 8.dp),
+        modifier = Modifier.fillMaxWidth().background(FOOTER_BG).navigationBarsPadding().padding(horizontal = 8.dp, vertical = 8.dp),
         horizontalArrangement = Arrangement.spacedBy(6.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
@@ -626,7 +652,7 @@ private fun FooterNavBar(
                     Text(
                         item.label,
                         color = if (item.highlight) Color(0xFF60DDFF) else Color(0xCCFFFFFF),
-                        fontSize = 7.5.sp, fontWeight = FontWeight.ExtraBold,
+                        fontSize = 7.sp, fontWeight = FontWeight.ExtraBold,
                         textAlign = TextAlign.Center, maxLines = 1
                     )
                 }
@@ -756,6 +782,80 @@ private fun StatsDialogContent(profileManager: GameProfileManager, onClose: () -
         }
         Spacer(Modifier.height(20.dp))
         GoldButton("ЗАТВОРИ", onClose)
+    }
+}
+
+
+
+@Composable
+private fun LeaderboardDialogContent(
+    statsRepository: FirebaseStatsRepository,
+    onClose: () -> Unit
+) {
+    var loading by remember { mutableStateOf(true) }
+    var error by remember { mutableStateOf<String?>(null) }
+    var entries by remember { mutableStateOf<List<FirebaseStatsRepository.LeaderboardEntry>>(emptyList()) }
+
+    LaunchedEffect(Unit) {
+        statsRepository.loadLeaderboard(
+            onSuccess = {
+                entries = it
+                loading = false
+            },
+            onFailure = {
+                error = it.localizedMessage ?: "Грешка при учитавању листе"
+                loading = false
+            }
+        )
+    }
+
+    val qualified = entries.filter { it.gamesPlayed > 10 }
+    val topWinRate = entries.maxByOrNull { it.winRate }
+    val qualifiedWinRate = qualified.maxByOrNull { it.winRate }
+    val topLevel = entries.maxByOrNull { it.level }
+    val topStreak = entries.maxByOrNull { it.bestStreak }
+
+    Column(
+        modifier = Modifier.fillMaxWidth().padding(16.dp)
+            .clip(RoundedCornerShape(28.dp))
+            .background(Brush.verticalGradient(listOf(Color(0xFF1E3560), Color(0xFF162B4A))))
+            .padding(24.dp),
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        Text("LEADERBOARD", color = Color.White, fontSize = 22.sp, fontWeight = FontWeight.ExtraBold)
+        Spacer(Modifier.height(16.dp))
+
+        when {
+            loading -> CircularProgressIndicator(color = Color(0xFF60DDFF))
+            error != null -> Text(error ?: "", color = Color(0xFFFF6B6B), textAlign = TextAlign.Center)
+            entries.isEmpty() -> Text("Нема играча још увек.", color = Color.White)
+            else -> {
+                LeaderboardMetricRow("Highest win rate", topWinRate?.displayName ?: "-", if (topWinRate == null) "-" else "${topWinRate.winRate}%")
+                LeaderboardMetricRow("Highest level", topLevel?.displayName ?: "-", topLevel?.level?.toString() ?: "-")
+                LeaderboardMetricRow("Highest streak", topStreak?.displayName ?: "-", topStreak?.bestStreak?.toString() ?: "-")
+                LeaderboardMetricRow("Win % (10+ games)", qualifiedWinRate?.displayName ?: "-", if (qualifiedWinRate == null) "-" else "${qualifiedWinRate.winRate}%")
+            }
+        }
+
+        Spacer(Modifier.height(18.dp))
+        GoldButton("ЗАТВОРИ", onClose)
+    }
+}
+
+@Composable
+private fun LeaderboardMetricRow(title: String, player: String, value: String) {
+    Row(
+        modifier = Modifier.fillMaxWidth().padding(vertical = 6.dp)
+            .clip(RoundedCornerShape(12.dp))
+            .background(Color(0xFF31406B))
+            .padding(horizontal = 12.dp, vertical = 10.dp),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Column(Modifier.weight(1f)) {
+            Text(title, color = Color(0xFFD6D9E0), fontSize = 12.sp, fontWeight = FontWeight.Bold)
+            Text(player, color = Color.White, fontSize = 14.sp, fontWeight = FontWeight.ExtraBold, maxLines = 1, overflow = TextOverflow.Ellipsis)
+        }
+        Text(value, color = Color(0xFF60DDFF), fontSize = 20.sp, fontWeight = FontWeight.ExtraBold)
     }
 }
 
@@ -964,7 +1064,7 @@ fun WipDialog(onDismiss: () -> Unit) {
 private fun BannerAdContainer() {
     val context = LocalContext.current
     Box(
-        Modifier.fillMaxWidth().background(Color(0xFF1A0E06)).padding(vertical = 4.dp),
+        Modifier.fillMaxWidth().background(Color(0xFF1A0E06)).navigationBarsPadding().padding(vertical = 4.dp),
         contentAlignment = Alignment.Center
     ) {
         AndroidView(factory = {
