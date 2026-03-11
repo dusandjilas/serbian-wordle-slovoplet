@@ -15,18 +15,18 @@ class SignUpActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-
         binding = ActivitySignUpBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
         firebaseAuth = FirebaseAuth.getInstance()
 
-        binding.textViewImasProfil.setOnClickListener {
-            val intent = Intent(this, SignInActivity::class.java)
-            startActivity(intent)
+        binding.textHaveAccount.setOnClickListener {
+            startActivity(Intent(this, SignInActivity::class.java))
+            finish()
         }
-        binding.buttonRegistuj.setOnClickListener {
-            val email = binding.textfieldEmail.text.toString()
+
+        binding.buttonCreateAccount.setOnClickListener {
+            val email = binding.textfieldEmail.text.toString().trim()
             val pass = binding.textfieldSifra1.text.toString()
             val confirmPass = binding.textfieldSifra2.text.toString()
 
@@ -34,11 +34,9 @@ class SignUpActivity : AppCompatActivity() {
                 if (pass == confirmPass) {
                     firebaseAuth.createUserWithEmailAndPassword(email, pass).addOnCompleteListener {
                         if (it.isSuccessful) {
-                            val intent = Intent(this, MainActivity::class.java)
-                            startActivity(intent)
-                            finish()
+                            AuthFlow.continueToMain(this)
                         } else {
-                            Toast.makeText(this, it.exception?.message, Toast.LENGTH_SHORT).show()
+                            AuthFlow.showAuthError(this, it.exception?.message)
                         }
                     }
                 } else {

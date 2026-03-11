@@ -38,8 +38,7 @@ class LauncherActivity : AppCompatActivity() {
             val guestButton = findViewById<Button>(R.id.buttonGuest)
 
             signInButton.setOnClickListener {
-                val signInDialog = SignInBottomSheet()
-                signInDialog.show(supportFragmentManager, "SignInBottomSheet")
+                startActivity(Intent(this, SignInActivity::class.java))
             }
 
             guestButton.setOnClickListener {
