@@ -1,6 +1,7 @@
 package com.example.rma
 
 import android.app.Dialog
+import android.app.AlertDialog as AndroidAlertDialog
 import android.content.Intent
 import android.os.Bundle
 import android.view.ViewGroup
@@ -137,9 +138,23 @@ class SlovopletIgra : AppCompatActivity() {
 
         val modeString   = intent.getStringExtra("game_mode") ?: "CLASSIC"
         val selectedMode = if (modeString == "DAILY") GameMode.DAILY else GameMode.CLASSIC
+        val profileManager = GameProfileManager(this)
+
+        if (selectedMode == GameMode.DAILY && profileManager.hasPlayedDailyToday()) {
+            AndroidAlertDialog.Builder(this)
+                .setTitle("Реч дана је већ одиграна")
+                .setMessage("Данашњу Реч дана си већ завршио/ла. Врати се сутра за нову реч.")
+                .setCancelable(false)
+                .setPositiveButton("Назад") { _, _ ->
+                    startActivity(Intent(this, MainActivity::class.java))
+                    finish()
+                }
+                .show()
+            return
+        }
+
         viewModel.setMode(selectedMode)
 
-        val profileManager = GameProfileManager(this)
         val firstTimeFlow = intent.getBooleanExtra("first_time_flow", false)
 
         // ── Only show the "how to play" dialog on first ever launch ───────────
@@ -260,6 +275,7 @@ private fun WordleGameScreen(
     var resultHandled      by remember { mutableStateOf(false) }
     val guesses            = viewModel.guesses
     var showNeedCoinsPopup by remember { mutableStateOf(false) }
+    var showDailyBonusPopup by remember { mutableStateOf(false) }
     var pendingReward      by remember { mutableIntStateOf(0) }
     var pendingSubmit      by remember { mutableStateOf(false) }
     var showFirstTimeAuthPrompt by remember { mutableStateOf(false) }
@@ -425,7 +441,7 @@ private fun WordleGameScreen(
                     if (viewModel.hasWon) {
                         val newTotal = coinRepo.add(100)
                         onCoinsChanged(newTotal)
-                        Toast.makeText(context, "+100 🪙 Дневна награда!", Toast.LENGTH_SHORT).show()
+                        showDailyBonusPopup = true
                     }
                 }
             }
@@ -517,6 +533,19 @@ private fun WordleGameScreen(
                     }
                 },
                 onNoThanks = { showNeedCoinsPopup = false }
+            )
+        }
+
+        if (showDailyBonusPopup) {
+            androidx.compose.material3.AlertDialog(
+                onDismissRequest = { showDailyBonusPopup = false },
+                confirmButton = {
+                    androidx.compose.material3.TextButton(onClick = { showDailyBonusPopup = false }) {
+                        Text("Супер")
+                    }
+                },
+                title = { Text("Дневни бонус") },
+                text = { Text("Освојио/ла си +100 🪙 за победу у Речи дана!") }
             )
         }
 

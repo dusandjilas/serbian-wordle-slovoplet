@@ -46,6 +46,9 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.compose.ui.window.Dialog as ComposeDialog
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.LifecycleEventObserver
+import androidx.compose.ui.platform.LocalLifecycleOwner
 import com.google.android.gms.ads.AdRequest
 import com.google.android.gms.ads.AdSize
 import com.google.android.gms.ads.AdView
@@ -145,16 +148,33 @@ private fun MainScreen(
     val user = firebaseAuth.currentUser
     val isGuest = user == null
 
-    // ── Coin state: start from local, reconcile with Firebase once ────────────
+    // ── Coin / XP state: refresh immediately and on every ON_RESUME ───────────
     var coins by remember { mutableIntStateOf(coinRepo.getLocal()) }
-    LaunchedEffect(Unit) {
-        coinRepo.load { reconciled -> coins = reconciled }
+    var level by remember { mutableIntStateOf(if (isGuest) 1 else profileManager.getLevel()) }
+    var xpProgress by remember { mutableFloatStateOf(if (isGuest) 0f else profileManager.getXpProgress()) }
+    var classicStreak by remember { mutableIntStateOf(profileManager.getClassicStreak()) }
+
+    fun refreshHeaderStats() {
+        if (!isGuest) {
+            coinRepo.load { reconciled -> coins = reconciled }
+            level = profileManager.getLevel()
+            xpProgress = profileManager.getXpProgress()
+        }
+        classicStreak = profileManager.getClassicStreak()
     }
 
-    // ── XP / level — only read for logged-in users ────────────────────────────
-    val level      = if (isGuest) 1    else profileManager.getLevel()
-    val xpProgress = if (isGuest) 0f else profileManager.getXpProgress()
-    val classicStreak = profileManager.getClassicStreak()
+    LaunchedEffect(isGuest) { refreshHeaderStats() }
+
+    val lifecycleOwner = LocalLifecycleOwner.current
+    DisposableEffect(lifecycleOwner, isGuest) {
+        val observer = LifecycleEventObserver { _, event ->
+            if (event == Lifecycle.Event.ON_RESUME) {
+                refreshHeaderStats()
+            }
+        }
+        lifecycleOwner.lifecycle.addObserver(observer)
+        onDispose { lifecycleOwner.lifecycle.removeObserver(observer) }
+    }
     val statsRepository = remember { FirebaseStatsRepository() }
 
 
@@ -165,6 +185,7 @@ private fun MainScreen(
     var showAuthDialog by remember { mutableStateOf(false) }
     var showSettings by remember { mutableStateOf(false) }
     var showLeaderboard by remember { mutableStateOf(false) }
+    var showDailyAlreadyPlayedPopup by remember { mutableStateOf(false) }
 
     Box(
         modifier = Modifier
@@ -215,7 +236,13 @@ private fun MainScreen(
                     scale          = scale,
                     onStatsClick   = { showStats = true },
                     onClassicClick = onStartClassic,
-                    onDailyClick   = onStartDaily,
+                    onDailyClick   = {
+                        if (profileManager.hasPlayedDailyToday()) {
+                            showDailyAlreadyPlayedPopup = true
+                        } else {
+                            onStartDaily()
+                        }
+                    },
                     onWipClick     = { showWip = true }
                 )
                 Spacer(Modifier.height(12.dp))
@@ -276,6 +303,18 @@ private fun MainScreen(
                 firebaseAuth = firebaseAuth,
                 onSuccess    = { showAuthDialog = false },
                 onDismiss    = { showAuthDialog = false }
+            )
+        }
+        if (showDailyAlreadyPlayedPopup) {
+            AlertDialog(
+                onDismissRequest = { showDailyAlreadyPlayedPopup = false },
+                confirmButton = {
+                    TextButton(onClick = { showDailyAlreadyPlayedPopup = false }) {
+                        Text("У реду")
+                    }
+                },
+                title = { Text("Реч дана је већ одиграна") },
+                text = { Text("Већ си одиграо/ла данашњу Реч дана. Врати се сутра за нову реч!") }
             )
         }
     }
