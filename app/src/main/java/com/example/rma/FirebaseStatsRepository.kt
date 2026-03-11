@@ -9,6 +9,14 @@ class FirebaseStatsRepository {
     private val auth = FirebaseAuth.getInstance()
     private val db = FirebaseFirestore.getInstance()
 
+    data class LeaderboardEntry(
+        val displayName: String,
+        val gamesPlayed: Int,
+        val winRate: Int,
+        val level: Int,
+        val bestStreak: Int
+    )
+
     fun syncStats(profileManager: GameProfileManager) {
         val user = auth.currentUser ?: return
 
@@ -70,6 +78,36 @@ class FirebaseStatsRepository {
             }
             .addOnFailureListener { e ->
                 Log.e("FirestoreStats", "Failed to load stats", e)
+                onFailure(e)
+            }
+    }
+
+    fun loadLeaderboard(
+        onSuccess: (List<LeaderboardEntry>) -> Unit,
+        onFailure: (Exception) -> Unit = {}
+    ) {
+        db.collection("users")
+            .get()
+            .addOnSuccessListener { snapshot ->
+                val entries = snapshot.documents.map { doc ->
+                    val gamesPlayed = (doc.getLong("classicGamesPlayed") ?: 0L).toInt()
+                    val wins = (doc.getLong("classicWins") ?: 0L).toInt()
+                    val winRate = if (gamesPlayed > 0) (wins * 100) / gamesPlayed else 0
+
+                    LeaderboardEntry(
+                        displayName = doc.getString("displayName")
+                            ?: doc.getString("email")
+                            ?: "Player",
+                        gamesPlayed = gamesPlayed,
+                        winRate = winRate,
+                        level = (doc.getLong("level") ?: 1L).toInt(),
+                        bestStreak = (doc.getLong("bestClassicStreak") ?: 0L).toInt(),
+                    )
+                }
+                onSuccess(entries)
+            }
+            .addOnFailureListener { e ->
+                Log.e("FirestoreStats", "Failed to load leaderboard", e)
                 onFailure(e)
             }
     }
