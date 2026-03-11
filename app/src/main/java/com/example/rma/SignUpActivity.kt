@@ -34,7 +34,16 @@ class SignUpActivity : AppCompatActivity() {
                 if (pass == confirmPass) {
                     firebaseAuth.createUserWithEmailAndPassword(email, pass).addOnCompleteListener {
                         if (it.isSuccessful) {
-                            AuthFlow.continueToMain(this)
+                            val user = firebaseAuth.currentUser
+                            if (user == null) {
+                                AuthFlow.continueToMain(this)
+                            } else {
+                                PlayerNameManager.assignRandomNameIfMissing(
+                                    user = user,
+                                    onDone = { AuthFlow.continueToMain(this) },
+                                    onFailure = { AuthFlow.continueToMain(this) }
+                                )
+                            }
                         } else {
                             AuthFlow.showAuthError(this, it.exception?.message)
                         }

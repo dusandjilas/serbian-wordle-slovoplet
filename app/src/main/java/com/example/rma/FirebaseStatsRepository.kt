@@ -124,4 +124,25 @@ class FirebaseStatsRepository {
                 onFailure(e)
             }
     }
+
+    fun updateDisplayName(
+        displayName: String,
+        onSuccess: () -> Unit = {},
+        onFailure: (Exception) -> Unit = {}
+    ) {
+        val user = auth.currentUser ?: return
+        val payload = mapOf("displayName" to displayName)
+
+        db.collection("users")
+            .document(user.uid)
+            .set(payload, com.google.firebase.firestore.SetOptions.merge())
+            .addOnSuccessListener {
+                db.collection("leaderboard")
+                    .document(user.uid)
+                    .set(payload, com.google.firebase.firestore.SetOptions.merge())
+                    .addOnSuccessListener { onSuccess() }
+                    .addOnFailureListener { onFailure(it) }
+            }
+            .addOnFailureListener { onFailure(it) }
+    }
 }
