@@ -490,8 +490,8 @@ private fun WordleGameScreen(
             VirtualKeyboard(keyboardState = keyboardState, lastHint = lastHint) { key ->
                 if (viewModel.hasWon || viewModel.hasLost || pendingSubmit) return@VirtualKeyboard
                 when (key) {
-                    "ENTER" -> submitGuessNow()
-                    "DEL"   -> if (trenutniPokusaj.isNotEmpty()) trenutniPokusaj = trenutniPokusaj.dropLast(1)
+                    "УНЕСИ" -> submitGuessNow()
+                    "БРИШИ"   -> if (trenutniPokusaj.isNotEmpty()) trenutniPokusaj = trenutniPokusaj.dropLast(1)
                     else    -> if (trenutniPokusaj.length < viewModel.wordLength) trenutniPokusaj += key
                 }
             }
@@ -633,7 +633,7 @@ private fun TopBar(score: Int, coins: Int, onInfo: () -> Unit, onPlusCoins: () -
         Spacer(Modifier.weight(1f))
 
         Row(verticalAlignment = Alignment.CenterVertically) {
-            Text("SCORE", fontSize = 13.sp, color = Color(0xFF555544), fontWeight = FontWeight.Bold)
+            Text("РЕЗ", fontSize = 13.sp, color = Color(0xFF555544), fontWeight = FontWeight.Bold)
             Spacer(Modifier.width(6.dp))
             Text(score.toString(), fontSize = 30.sp, fontWeight = FontWeight.Black, color = Color(0xFF222211))
             Spacer(Modifier.width(6.dp))
@@ -641,7 +641,7 @@ private fun TopBar(score: Int, coins: Int, onInfo: () -> Unit, onPlusCoins: () -
                 modifier = Modifier.size(26.dp).clip(RoundedCornerShape(13.dp))
                     .background(Color(0xFF4AABFF)).clickable { onInfo() },
                 contentAlignment = Alignment.Center
-            ) { Text("i", color = Color.White, fontWeight = FontWeight.Black, fontSize = 14.sp) }
+            ) { Text("і", color = Color.White, fontWeight = FontWeight.Black, fontSize = 14.sp) }
         }
 
         Spacer(Modifier.weight(1f))
@@ -669,7 +669,7 @@ private fun CoinPill(coins: Int, onPlus: () -> Unit) {
             modifier = Modifier.size(32.dp).clip(RoundedCornerShape(16.dp))
                 .background(Color(0xFFE8A010)).clickable { onPlus() },
             contentAlignment = Alignment.Center
-        ) { Text("W", color = Color.White, fontWeight = FontWeight.Black, fontSize = 14.sp) }
+        ) { Text("Д", color = Color.White, fontWeight = FontWeight.Black, fontSize = 14.sp) }
         Spacer(Modifier.width(2.dp))
         Box(
             modifier = Modifier.size(20.dp).clip(RoundedCornerShape(10.dp))
@@ -830,7 +830,7 @@ private fun BackspaceKey(keyW: Dp, keyH: Dp, onKeyClick: (String) -> Unit) {
             .width((keyW.value * 1.6f).dp).height(keyH)
             .shadow(3.dp, RoundedCornerShape(8.dp), ambientColor = Color(0x55000000))
             .clip(RoundedCornerShape(8.dp)).background(Color(0xFF555555))
-            .clickable { onKeyClick("DEL") }
+            .clickable { onKeyClick("БРИШИ") }
     ) {
         Text("⌫", color = Color.White, fontSize = (keyW.value * 0.50f).sp, fontWeight = FontWeight.Bold)
     }
@@ -845,8 +845,8 @@ private fun BottomActionRow(
     onHint1: () -> Unit, onHint3: () -> Unit, onSubmit: () -> Unit, onComplete: () -> Unit
 ) {
     val submitBg       = when (submitState) { true -> SUBMIT_BLUE; false -> SUBMIT_RED; null -> SUBMIT_GRAY }
-    val submitLabel    = if (submitState == false) "NOT VALID" else "SUBMIT"
-    val submitFontSize = if (submitState == false) 13.sp else 18.sp
+    val submitLabel    = if (submitState == false) "НИЈЕ ВАЖЕЋЕ" else "ПОТВРДИ"
+    val submitFontSize = if (submitState == false) 11.sp else 16.sp
 
     Row(modifier = Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.SpaceBetween) {
@@ -1019,7 +1019,7 @@ fun NeedCoinsDialog(reward: Int, adReady: Boolean, onClaimAd: () -> Unit, onNoTh
         shape            = RoundedCornerShape(26.dp),
         text = {
             Column(horizontalAlignment = Alignment.CenterHorizontally, modifier = Modifier.fillMaxWidth()) {
-                Text("GET FREE COINS", fontSize = 22.sp, fontWeight = FontWeight.Black, color = Color.White)
+                Text("УЗМИ БЕСПЛАТНЕ НОВЧИЋЕ", fontSize = 22.sp, fontWeight = FontWeight.Black, color = Color.White)
                 Spacer(Modifier.height(14.dp))
                 Box(
                     modifier = Modifier.fillMaxWidth().height(180.dp)
@@ -1034,11 +1034,11 @@ fun NeedCoinsDialog(reward: Int, adReady: Boolean, onClaimAd: () -> Unit, onNoTh
                         .clickable(enabled = adReady) { onClaimAd() },
                     contentAlignment = Alignment.Center
                 ) {
-                    Text(if (!adReady) "AD LOADING..." else "CLAIM",
+                    Text(if (!adReady) "РЕКЛАМА СЕ УЧИТАВА..." else "ПРЕУЗМИ",
                         color = Color.White, fontSize = 20.sp, fontWeight = FontWeight.Black)
                 }
                 Spacer(Modifier.height(10.dp))
-                Text("NO THANKS", color = Color.White, fontWeight = FontWeight.Bold,
+                Text("НЕ, ХВАЛА", color = Color.White, fontWeight = FontWeight.Bold,
                     modifier = Modifier.clickable { onNoThanks() })
             }
         },
@@ -1061,9 +1061,9 @@ fun ShopScreen(
     val smallOffers = listOf(
         ShopOfferUi(
             coins = 25,
-            price = "FREE",
-            saleText = "WATCH\nAD",
-            ribbon = "FREE",
+            price = "БЕСПЛАТНО",
+            saleText = "ПОГЛЕДАЈ\nРЕКЛАМУ",
+            ribbon = "БЕСПЛАТНО",
             emoji = "🎁",
             isAdReward = true
         ),
@@ -1071,7 +1071,7 @@ fun ShopScreen(
             coins = 1000,
             price = "$4.99",
             saleText = "50%\nSALE",
-            ribbon = "POPULAR",
+            ribbon = "ПОПУЛАРНО",
             emoji = "🪙"
         ),
         ShopOfferUi(
@@ -1093,7 +1093,7 @@ fun ShopScreen(
             coins = 7000,
             price = "$12.99",
             saleText = "25%\nBONUS",
-            ribbon = "VALUE",
+            ribbon = "ИСПЛАТИВО",
             emoji = "💰"
         ),
         ShopOfferUi(
@@ -1106,7 +1106,7 @@ fun ShopScreen(
             coins = 20000,
             price = "$29.99",
             saleText = "35%\nBONUS",
-            ribbon = "BEST",
+            ribbon = "НАЈБОЉЕ",
             emoji = "👑"
         )
     )
@@ -1126,7 +1126,7 @@ fun ShopScreen(
         ) {
             Box(modifier = Modifier.fillMaxWidth()) {
                 GameTitle(
-                    text = "SHOP",
+                    text = "ПРОДАВНИЦА",
                     modifier = Modifier.align(Alignment.Center)
                 )
 
@@ -1156,7 +1156,7 @@ fun ShopScreen(
 
             Spacer(Modifier.height(18.dp))
 
-            SectionTitle("Coin Packs")
+            SectionTitle("Пакети новчића")
 
             Spacer(Modifier.height(10.dp))
 
@@ -1180,7 +1180,7 @@ fun ShopScreen(
 
             Spacer(Modifier.height(18.dp))
 
-            SectionTitle("Mega Packs")
+            SectionTitle("Мега пакети")
 
             Spacer(Modifier.height(10.dp))
 
@@ -1230,7 +1230,7 @@ private fun StarterPackCard(
             BeigeBurstBackground(Modifier.matchParentSize())
 
             SaleBadge(
-                text = "BEST\nDEAL",
+                text = "НАЈБОЉА\nПОНУДА",
                 modifier = Modifier
                     .align(Alignment.TopEnd)
                     .padding(10.dp)
@@ -1252,7 +1252,7 @@ private fun StarterPackCard(
                         .padding(horizontal = 14.dp, vertical = 8.dp)
                 ) {
                     Text(
-                        text = "STARTER PACK",
+                        text = "ПОЧЕТНИ ПАКЕТ",
                         color = Color.White,
                         fontSize = 18.sp,
                         fontWeight = FontWeight.Black
@@ -1277,7 +1277,7 @@ private fun StarterPackCard(
                             fontSize = 30.sp
                         )
                         Text(
-                            text = "Coins + No Ads",
+                            text = "Новчићи + Без реклама",
                             color = Color(0xFF7A3E05),
                             fontSize = 18.sp,
                             fontWeight = FontWeight.Bold
