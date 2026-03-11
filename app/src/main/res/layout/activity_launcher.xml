@@ -9,13 +9,13 @@
 
     <Button
         android:id="@+id/buttonSignIn"
-        android:layout_width="wrap_content"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:text="Sign In / Sign Up" />
 
     <Button
         android:id="@+id/buttonGuest"
-        android:layout_width="wrap_content"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:text="Play as Guest"
         android:layout_marginTop="16dp"/>

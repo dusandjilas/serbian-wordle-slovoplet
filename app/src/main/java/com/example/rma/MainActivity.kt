@@ -33,6 +33,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.drawscope.withTransform
 import androidx.compose.ui.platform.ComposeView
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
@@ -43,8 +44,6 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.compose.ui.window.Dialog as ComposeDialog
-import androidx.core.view.ViewCompat
-import androidx.core.view.WindowInsetsCompat
 import com.google.android.gms.ads.AdRequest
 import com.google.android.gms.ads.AdSize
 import com.google.android.gms.ads.AdView
@@ -107,12 +106,6 @@ class MainActivity : AppCompatActivity() {
                 )
             }
         }
-
-        ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main)) { v, insets ->
-            val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
-            v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom)
-            insets
-        }
     }
 
     private fun dijalogObjasnjenjeMain() {
@@ -138,6 +131,9 @@ private fun MainScreen(
     onStartDaily: () -> Unit,
     onOpenProfile: () -> Unit
 ) {
+    val configuration = LocalConfiguration.current
+    val context = LocalContext.current
+    val scale = (configuration.screenWidthDp / 390f).coerceIn(0.85f, 1.2f)
     val user = firebaseAuth.currentUser
     val isGuest = user == null
 
@@ -181,6 +177,7 @@ private fun MainScreen(
                     coins      = coins,
                     level      = level,
                     xpProgress = xpProgress,
+                    scale      = scale,
                     onAdClick  = { showRemoveAds = true },
                     onAvatarClick = {
                         if (isGuest) showAuthDialog = true else onOpenProfile()
@@ -227,7 +224,16 @@ private fun MainScreen(
         }
         if (showWip) WipDialog { showWip = false }
         if (showSettings) {
-            SettingsDialog(onDismiss = { showSettings = false })
+            SettingsDialog(
+                onDismiss = { showSettings = false },
+                onLogout = {
+                    firebaseAuth.signOut()
+                    showSettings = false
+                    val intent = Intent(context, SignInActivity::class.java)
+                    intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+                    context.startActivity(intent)
+                }
+            )
         }
         if (showAuthDialog) {
             AuthDialog(
@@ -368,11 +374,13 @@ private fun AuthDialog(
 @Composable
 private fun TopHeaderBar(
     isGuest: Boolean, coins: Int, level: Int, xpProgress: Float,
+    scale: Float,
     onAdClick: () -> Unit, onAvatarClick: () -> Unit
 ) {
+    val adSize = (52 * scale).dp
     Box(modifier = Modifier.fillMaxWidth().padding(horizontal = 12.dp, vertical = 10.dp)) {
         Box(
-            modifier = Modifier.align(Alignment.CenterStart).size(52.dp).clip(CircleShape)
+            modifier = Modifier.align(Alignment.CenterStart).size(adSize).clip(CircleShape)
                 .background(Color.Black).border(3.dp, Color(0xFFCC2222), CircleShape)
                 .clickable { onAdClick() },
             contentAlignment = Alignment.Center
@@ -629,7 +637,7 @@ private fun FooterNavBar(
 
 
 @Composable
-private fun SettingsDialog(onDismiss: () -> Unit) {
+private fun SettingsDialog(onDismiss: () -> Unit, onLogout: () -> Unit) {
     val context = LocalContext.current
     val manager = remember { AudioSettingsManager(context) }
     var settings by remember { mutableStateOf(manager.getSettings()) }
@@ -691,6 +699,8 @@ private fun SettingsDialog(onDismiss: () -> Unit) {
             )
 
             Spacer(Modifier.height(12.dp))
+            GoldButton("ОДЈАВИ СЕ", onLogout)
+            Spacer(Modifier.height(10.dp))
             GoldButton("ЗАТВОРИ", onDismiss)
         }
     }
