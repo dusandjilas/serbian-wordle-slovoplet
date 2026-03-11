@@ -102,6 +102,7 @@ class MainActivity : AppCompatActivity() {
                     profileManager = profileManager,
                     coinRepo       = coinRepo,
                     onHowTo        = { dijalogObjasnjenjeMain() },
+                    onOpenShop     = { startActivity(Intent(this, ShopActivity::class.java)) },
                     onStartClassic = {
                         startActivity(Intent(this, SlovopletIgra::class.java)
                             .putExtra("game_mode", "CLASSIC"))
@@ -134,6 +135,7 @@ private fun MainScreen(
     profileManager: GameProfileManager,
     coinRepo: CoinRepository,
     onHowTo: () -> Unit,
+    onOpenShop: () -> Unit,
     onStartClassic: () -> Unit,
     onStartDaily: () -> Unit
 ) {
@@ -163,7 +165,6 @@ private fun MainScreen(
     var showAuthDialog by remember { mutableStateOf(false) }
     var showSettings by remember { mutableStateOf(false) }
     var showLeaderboard by remember { mutableStateOf(false) }
-    var showNameDialog by remember { mutableStateOf(false) }
 
     Box(
         modifier = Modifier
@@ -200,8 +201,9 @@ private fun MainScreen(
                     scale      = scale,
                     onAdClick  = { showRemoveAds = true },
                     onAvatarClick = {
-                        if (isGuest) showAuthDialog = true else showNameDialog = true
-                    }
+                        if (isGuest) showAuthDialog = true else context.startActivity(Intent(context, ProfileActivity::class.java))
+                    },
+                    onPlusClick = onOpenShop
                 )
                 Spacer(Modifier.height(12.dp))
                 Box(Modifier.fillMaxWidth(), contentAlignment = Alignment.Center) {
@@ -223,6 +225,7 @@ private fun MainScreen(
                 isGuest       = isGuest,
                 scale         = scale,
                 onHowTo       = onHowTo,
+                onShop        = onOpenShop,
                 onWip         = { showWip = true },
                 onSignIn      = { showAuthDialog = true },
                 onSettings    = { showSettings = true },
@@ -273,13 +276,6 @@ private fun MainScreen(
                 firebaseAuth = firebaseAuth,
                 onSuccess    = { showAuthDialog = false },
                 onDismiss    = { showAuthDialog = false }
-            )
-        }
-        if (showNameDialog) {
-            ChangeDisplayNameDialog(
-                firebaseAuth = firebaseAuth,
-                statsRepository = statsRepository,
-                onDismiss = { showNameDialog = false }
             )
         }
     }
@@ -526,7 +522,7 @@ private fun ChangeDisplayNameDialog(
 private fun TopHeaderBar(
     isGuest: Boolean, coins: Int, level: Int, xpProgress: Float,
     scale: Float,
-    onAdClick: () -> Unit, onAvatarClick: () -> Unit
+    onAdClick: () -> Unit, onAvatarClick: () -> Unit, onPlusClick: () -> Unit
 ) {
     val adSize = (36 * scale).dp
     Box(modifier = Modifier.fillMaxWidth().padding(horizontal = 12.dp, vertical = 10.dp)) {
@@ -543,7 +539,7 @@ private fun TopHeaderBar(
         }
 
         Box(Modifier.align(Alignment.CenterEnd)) {
-            CoinPill(coins = coins, isGuest = isGuest, scale = scale)
+            CoinPill(coins = coins, isGuest = isGuest, scale = scale, onPlusClick = onPlusClick)
         }
     }
 }
@@ -601,7 +597,7 @@ private fun CenterAvatar(level: Int, xpProgress: Float, isGuest: Boolean) {
 }
 
 @Composable
-private fun CoinPill(coins: Int, isGuest: Boolean, scale: Float) {
+private fun CoinPill(coins: Int, isGuest: Boolean, scale: Float, onPlusClick: () -> Unit) {
     Row(verticalAlignment = Alignment.CenterVertically) {
         Box(
             modifier = Modifier.height((38 * scale).dp).widthIn(min = (90 * scale).dp)
@@ -628,7 +624,8 @@ private fun CoinPill(coins: Int, isGuest: Boolean, scale: Float) {
         Spacer(Modifier.width((4 * scale).dp))
         Box(
             Modifier.size((30 * scale).dp).clip(CircleShape).background(Color(0xFF44BB55))
-                .border(2.dp, Color(0xFF226622), CircleShape),
+                .border(2.dp, Color(0xFF226622), CircleShape)
+                .clickable { onPlusClick() },
             contentAlignment = Alignment.Center
         ) {
             Text("+", color = Color.White, fontWeight = FontWeight.ExtraBold, fontSize = 20.sp)
@@ -706,11 +703,11 @@ private fun GameButtonsSection(
         )
         Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy((10 * scale).dp)) {
             GoldWideButton(
-                title = "РЕЧЕНИЦА", rightTop = "УСКОРО", rightBottom = "скоро",
+                title = "РЕЧЕНИЦА", rightTop = "SOON", rightBottom = "soon",
                 modifier = Modifier.weight(1f).height((72 * scale).dp), onClick = onWipClick, titleSize = (14 * scale).sp
             )
             GoldWideButton(
-                title = "ТАЈНА РЕЧ", rightTop = "УСКОРО", rightBottom = "скоро",
+                title = "ТАЈНА РЕЧ", rightTop = "SOON", rightBottom = "soon",
                 modifier = Modifier.weight(1f).height((72 * scale).dp), onClick = onWipClick, titleSize = (14 * scale).sp
             )
         }
@@ -739,6 +736,7 @@ private fun FooterNavBar(
     isGuest: Boolean,
     scale: Float,
     onHowTo: () -> Unit,
+    onShop: () -> Unit,
     onWip: () -> Unit,
     onSignIn: () -> Unit,
     onSettings: () -> Unit,
@@ -747,7 +745,7 @@ private fun FooterNavBar(
     data class NavItem(val emoji: String, val label: String, val onClick: () -> Unit,
                        val highlight: Boolean = false)
     val items = listOf(
-        NavItem("🛒", "ПРОДАВНИЦА",     onWip),
+        NavItem("🛒", "ПРОДАВНИЦА",     onShop),
         NavItem("🏆", "ЛИСТА",  onLeaderboard),
         NavItem("❓", "УПУТСТВО",  onHowTo),
         NavItem("📖", "ВОДИЧ",    onWip),
@@ -926,26 +924,17 @@ private fun LeaderboardDialogContent(
     LaunchedEffect(Unit) {
         statsRepository.loadLeaderboard(
             onSuccess = {
-                android.util.Log.d("LEADERBOARD", "entries count = ${it.size}")
-                it.forEach { entry ->
-                    android.util.Log.d("LEADERBOARD", "player = ${entry.displayName}, games=${entry.gamesPlayed}, winRate=${entry.winRate}")
-                }
                 entries = it
                 loading = false
             },
             onFailure = {
-                error = if (it is FirebaseFirestoreException && it.code == FirebaseFirestoreException.Code.PERMISSION_DENIED) {
-                    "Недостаје дозвола за листу играча. Проверите Firestore правила."
-                } else {
-                    it.localizedMessage ?: "Грешка при учитавању листе"
-                }
+                error = it.localizedMessage ?: "Greška pri učitavanju liste"
                 loading = false
             }
         )
     }
 
     var selectedTab by remember { mutableStateOf(LeaderboardMetric.LEVEL) }
-
     val sortedEntries = remember(entries, selectedTab) {
         when (selectedTab) {
             LeaderboardMetric.LEVEL -> entries.sortedByDescending { it.level }
@@ -956,60 +945,77 @@ private fun LeaderboardDialogContent(
     }
 
     Column(
-        modifier = Modifier.fillMaxWidth().padding(16.dp)
-            .clip(RoundedCornerShape(28.dp))
-            .background(Brush.verticalGradient(listOf(Color(0xFF1E3560), Color(0xFF162B4A))))
-            .padding(24.dp),
+        modifier = Modifier.fillMaxWidth().padding(8.dp)
+            .clip(RoundedCornerShape(24.dp))
+            .background(Brush.verticalGradient(listOf(Color(0xFF4E7FC6), Color(0xFF2E4B80))))
+            .border(3.dp, Color(0xFF9CC2F8), RoundedCornerShape(24.dp))
+            .padding(12.dp),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        Text("Leaderboard", color = Color.White, fontSize = 24.sp, fontWeight = FontWeight.ExtraBold)
-        Spacer(Modifier.height(16.dp))
+        Text("Leaderboard", color = Color.White, fontSize = 28.sp, fontWeight = FontWeight.ExtraBold)
+        Spacer(Modifier.height(10.dp))
 
-        Row(horizontalArrangement = Arrangement.spacedBy(8.dp), modifier = Modifier.fillMaxWidth()) {
+        Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+            listOf("Friends", "Players", "Teams").forEach { label ->
+                Box(
+                    modifier = Modifier.weight(1f)
+                        .clip(RoundedCornerShape(10.dp))
+                        .background(if (label == "Players") Color(0xFF8FC1FF) else Color(0x66587CB2))
+                        .padding(vertical = 8.dp),
+                    contentAlignment = Alignment.Center
+                ) { Text(label, color = Color.White, fontWeight = FontWeight.Bold, fontSize = 12.sp) }
+            }
+        }
+
+        Spacer(Modifier.height(8.dp))
+
+        Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+            Box(
+                modifier = Modifier.weight(1f)
+                    .clip(RoundedCornerShape(12.dp))
+                    .background(Color(0xFFF1B847))
+                    .padding(vertical = 8.dp),
+                contentAlignment = Alignment.Center
+            ) { Text("World", color = Color.White, fontWeight = FontWeight.ExtraBold) }
+            Box(
+                modifier = Modifier.weight(1f)
+                    .clip(RoundedCornerShape(12.dp))
+                    .background(Color(0xFF6E84B7))
+                    .padding(vertical = 8.dp),
+                contentAlignment = Alignment.Center
+            ) { Text("Serbia", color = Color.White, fontWeight = FontWeight.ExtraBold) }
+        }
+
+        Spacer(Modifier.height(10.dp))
+
+        Row(horizontalArrangement = Arrangement.spacedBy(6.dp), modifier = Modifier.fillMaxWidth()) {
             LeaderboardMetric.entries.forEach { tab ->
                 val selected = tab == selectedTab
                 Box(
-                    modifier = Modifier
-                        .weight(1f)
-                        .clip(RoundedCornerShape(12.dp))
-                        .background(if (selected) Color(0xFFF1B847) else Color(0xFF3F5D96))
+                    modifier = Modifier.weight(1f)
+                        .clip(RoundedCornerShape(10.dp))
+                        .background(if (selected) Color(0xFFF1B847) else Color(0xFF4C6699))
                         .clickable { selectedTab = tab }
-                        .padding(vertical = 8.dp),
+                        .padding(vertical = 7.dp),
                     contentAlignment = Alignment.Center
-                ) {
-                    Text(
-                        tab.label,
-                        color = Color.White,
-                        fontWeight = FontWeight.ExtraBold,
-                        fontSize = 12.sp,
-                        textAlign = TextAlign.Center
-                    )
+                ) { Text(tab.label, color = Color.White, fontWeight = FontWeight.Bold, fontSize = 11.sp) }
+            }
+        }
+
+        Spacer(Modifier.height(10.dp))
+        when {
+            loading -> CircularProgressIndicator(color = Color.White)
+            error != null -> Text(error ?: "", color = Color(0xFFFFD6D6))
+            sortedEntries.isEmpty() -> Text("No players yet.", color = Color.White)
+            else -> Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                sortedEntries.take(8).forEachIndexed { index, entry ->
+                    LeaderboardMetricRow(rank = index + 1, player = entry.displayName, selectedMetric = selectedTab, entry = entry)
                 }
             }
         }
 
         Spacer(Modifier.height(12.dp))
-
-        when {
-            loading -> CircularProgressIndicator(color = Color(0xFF60DDFF))
-            error != null -> Text(error ?: "", color = Color(0xFFFF6B6B), textAlign = TextAlign.Center)
-            entries.isEmpty() -> Text("Нема играча још увек.", color = Color.White)
-            else -> {
-                Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                    sortedEntries.take(8).forEachIndexed { index, entry ->
-                        LeaderboardMetricRow(
-                            rank = index + 1,
-                            player = entry.displayName,
-                            selectedMetric = selectedTab,
-                            entry = entry
-                        )
-                    }
-                }
-            }
-        }
-
-        Spacer(Modifier.height(18.dp))
-        GoldButton("ЗАТВОРИ", onClose)
+        GoldButton("CLOSE", onClose)
     }
 }
 
@@ -1021,48 +1027,37 @@ private fun LeaderboardMetricRow(
     entry: FirebaseStatsRepository.LeaderboardEntry
 ) {
     val value = when (selectedMetric) {
-        LeaderboardMetric.LEVEL -> "LV ${entry.level}"
+        LeaderboardMetric.LEVEL -> "${entry.level}"
         LeaderboardMetric.STREAK -> "${entry.bestStreak}"
         LeaderboardMetric.GAMES -> "${entry.gamesPlayed}"
         LeaderboardMetric.WINRATE -> "${entry.winRate}%"
     }
+    val rowColor = when (rank) {
+        1 -> Color(0xFFE3AE33)
+        2 -> Color(0xFFC9CED9)
+        3 -> Color(0xFFC98A5A)
+        else -> Color(0xFFDFE6F2)
+    }
 
     Row(
-        modifier = Modifier.fillMaxWidth().padding(vertical = 6.dp)
-            .clip(RoundedCornerShape(12.dp))
-            .background(if (rank <= 3) Color(0xFFCC9B3A) else Color(0xFFBCC5D3))
-            .padding(horizontal = 12.dp, vertical = 10.dp),
+        modifier = Modifier.fillMaxWidth()
+            .clip(RoundedCornerShape(14.dp))
+            .background(rowColor)
+            .border(2.dp, Color(0x885E6D8A), RoundedCornerShape(14.dp))
+            .padding(horizontal = 10.dp, vertical = 8.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
-        Text(
-            rank.toString(),
-            color = Color(0xFF21324F),
-            fontWeight = FontWeight.ExtraBold,
-            fontSize = 20.sp,
-            modifier = Modifier.width(26.dp)
-        )
+        Text(rank.toString(), color = Color(0xFF1F2E4A), fontWeight = FontWeight.ExtraBold, fontSize = 20.sp, modifier = Modifier.width(26.dp))
         Column(Modifier.weight(1f).padding(start = 8.dp)) {
-            Text(player, color = Color.White, fontSize = 14.sp, fontWeight = FontWeight.ExtraBold, maxLines = 1, overflow = TextOverflow.Ellipsis)
-            Text("PLAYER", color = Color(0xAAFFFFFF), fontSize = 10.sp, fontWeight = FontWeight.Bold)
+            Text(player.uppercase(), color = Color(0xFF1F2E4A), fontWeight = FontWeight.ExtraBold, fontSize = 14.sp, maxLines = 1, overflow = TextOverflow.Ellipsis)
+            Text("LEVEL ${entry.level}", color = Color(0xFF3F526F), fontSize = 11.sp, fontWeight = FontWeight.Bold)
         }
-        Text(value, color = Color(0xFF1E3560), fontSize = 20.sp, fontWeight = FontWeight.ExtraBold)
+        Column(horizontalAlignment = Alignment.End) {
+            Text("👑", fontSize = 18.sp)
+            Text(value, color = Color(0xFF1F2E4A), fontSize = 18.sp, fontWeight = FontWeight.ExtraBold)
+        }
     }
 }
-
-
-@Composable
-private fun StatBox(value: String, label: String) {
-    Column(
-        horizontalAlignment = Alignment.CenterHorizontally,
-        modifier = Modifier.width(86.dp).clip(RoundedCornerShape(14.dp))
-            .background(Color(0xFF31406B)).padding(vertical = 10.dp, horizontal = 6.dp)
-    ) {
-        Text(value, color = Color.White, fontSize = 20.sp, fontWeight = FontWeight.ExtraBold)
-        Text(label, color = Color(0xFFD6D9E0), fontSize = 10.sp, fontWeight = FontWeight.Bold,
-            textAlign = TextAlign.Center)
-    }
-}
-
 
 // ─────────────────────────────────────────────────────────────────────────────
 // GOLD COMPONENTS
