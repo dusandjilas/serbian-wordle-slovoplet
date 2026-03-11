@@ -626,7 +626,7 @@ private fun TopBar(score: Int, coins: Int, onInfo: () -> Unit, onPlusCoins: () -
     Row(modifier = Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
         Box(
             modifier = Modifier.size(36.dp).clip(RoundedCornerShape(18.dp))
-                .background(Color(0xFFE24A3B)).clickable { },
+                .background(Color(0xFFE24A3B)).clickable { onPlusCoins() },
             contentAlignment = Alignment.Center
         ) { Text("AD", color = Color.White, fontWeight = FontWeight.Black, fontSize = 11.sp) }
 
