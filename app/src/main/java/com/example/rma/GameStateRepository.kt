@@ -8,19 +8,13 @@ import org.json.JSONArray
 import org.json.JSONObject
 import java.time.LocalDate
 
-/**
- * Persists and restores Wordle game state to SharedPreferences.
- *
- * Classic: cleared after win or loss, resumed otherwise.
- * Daily:   cleared when the saved date != today, resumed otherwise.
- */
+
 class GameStateRepository(context: Context) {
 
     private val prefs = context.getSharedPreferences("game_state", Context.MODE_PRIVATE)
 
     private fun key(mode: GameMode, suffix: String) = "${mode.name.lowercase()}_$suffix"
 
-    // ── Save ──────────────────────────────────────────────────────────────────
 
     fun save(mode: GameMode, targetWord: String, guesses: List<GuessResult>, currentInput: String = "") {
         val guessesJson = JSONArray().apply {
@@ -40,7 +34,7 @@ class GameStateRepository(context: Context) {
             .apply()
     }
 
-    /** Call after Classic game ends (win or loss) to wipe the save. */
+
     fun clearClassic() {
         GameMode.values().filter { it == GameMode.CLASSIC }.forEach { clear(it) }
     }
@@ -54,9 +48,8 @@ class GameStateRepository(context: Context) {
             .apply()
     }
 
-    // ── Load ──────────────────────────────────────────────────────────────────
 
-    /** Returns a [SavedGameState] if a valid save exists, null otherwise. */
+
     fun load(mode: GameMode): SavedGameState? {
         val target = prefs.getString(key(mode, "target"), null) ?: return null
 
@@ -81,7 +74,7 @@ class GameStateRepository(context: Context) {
             }
             SavedGameState(target = target, guesses = guesses, currentInput = input)
         } catch (e: Exception) {
-            null  // corrupted save — start fresh
+            null
         }
     }
 }

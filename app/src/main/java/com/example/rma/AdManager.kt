@@ -40,7 +40,7 @@ class AdManager(private val context: Context) {
                 onReward()
             }
             rewardedAd = null
-            loadAd() // Preload next ad
+            loadAd()
         } else {
             Log.d("AdManager", "Ad not ready")
         }

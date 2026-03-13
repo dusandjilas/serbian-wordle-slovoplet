@@ -24,11 +24,6 @@ class WordleViewModel(private val repository: WordRepository) : ViewModel() {
     fun checkGuess(word: String): Boolean = engine.checkGuess(word)
     fun reset() = engine.reset()
 
-    /**
-     * Restores a previously saved game state directly into the engine.
-     * Bypasses validation so saved guesses are injected as-is.
-     * Must be called AFTER [setMode] so the engine is in the right mode.
-     */
     fun restoreState(targetWord: String, savedGuesses: List<GuessResult>) {
         engine.restoreState(targetWord, savedGuesses)
     }

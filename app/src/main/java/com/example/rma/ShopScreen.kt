@@ -126,7 +126,7 @@ fun ShopScreen(
 }
 
 @Composable
-private fun StarterPackCard(onClick: () -> Unit) { /* unchanged UI */
+private fun StarterPackCard(onClick: () -> Unit) {
     Box(Modifier.fillMaxWidth().height(190.dp).clip(RoundedCornerShape(26.dp)).background(Color(0xFFF9B51E)).border(5.dp, Color(0xFFE38217), RoundedCornerShape(26.dp)).padding(10.dp)) {
         Box(Modifier.fillMaxSize().clip(RoundedCornerShape(20.dp)).background(Color(0xFFF2E0CF))) {
             BeigeBurstBackground(Modifier.matchParentSize())

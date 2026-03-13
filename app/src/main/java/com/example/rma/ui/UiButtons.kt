@@ -37,11 +37,6 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.graphics.graphicsLayer
 
-/**
- * Game-like 3D button:
- * - Has a darker "side" block behind it
- * - When pressed, the top face moves down and slightly scales
- */
 @Composable
 fun Game3DButton(
     text: String,
@@ -50,8 +45,8 @@ fun Game3DButton(
     enabled: Boolean = true,
     corner: Dp = 18.dp,
     height: Dp = 56.dp,
-    faceColor: Color = Color(0xFF4CAF50),   // top face
-    sideColor: Color = Color(0xFF2E7D32),   // darker side
+    faceColor: Color = Color(0xFF4CAF50),
+    sideColor: Color = Color(0xFF2E7D32),
     textColor: Color = Color.White,
     depth: Dp = 8.dp
 ) {
@@ -74,7 +69,6 @@ fun Game3DButton(
             .height(height + depth),
         contentAlignment = Alignment.TopCenter
     ) {
-        // Side layer (stays at bottom)
         Box(
             modifier = Modifier
                 .fillMaxWidth()
@@ -84,7 +78,6 @@ fun Game3DButton(
                 .background(if (enabled) sideColor else sideColor.copy(alpha = 0.5f))
         )
 
-        // Face layer (moves down when pressed)
         Surface(
             shape = RoundedCornerShape(corner),
             tonalElevation = 0.dp,
@@ -101,7 +94,7 @@ fun Game3DButton(
                     indication = null
                 ) { onClick() }
                 .then(
-                    Modifier // scale at the end so it affects both layers nicely
+                    Modifier
                         .padding(0.dp)
                 )
         ) {
@@ -128,8 +121,6 @@ fun Game3DButton(
             }
         }
 
-        // Apply scale to the whole thing
-        // (We do it as a separate overlay box to avoid messing with click bounds)
         Box(
             modifier = Modifier
                 .matchParentSize()
@@ -148,9 +139,6 @@ fun Game3DButton(
     }
 }
 
-/**
- * Simple clean Material 3 button with nice elevation changes on press.
- */
 @Composable
 fun M3ElevatedButton(
     text: String,
@@ -175,9 +163,6 @@ fun M3ElevatedButton(
     }
 }
 
-/**
- * 3D button with an optional leading icon (good for SHOP / STATS / SETTINGS).
- */
 @Composable
 fun Game3DIconButton(
     text: String,

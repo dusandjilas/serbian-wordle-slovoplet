@@ -6,20 +6,8 @@ import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.SetOptions
 
-/**
- * Single source of truth for coins.
- *
- * Design rules:
- * 1. Every mutation writes SharedPrefs SYNCHRONOUSLY (commit, not apply)
- *    so the value survives process death even if Firestore hasn't responded.
- * 2. load() takes the MAX of local and remote so a slow Firebase response
- *    never silently zeroes out coins earned in the same session.
- * 3. pushToFirestore() is best-effort — failures are logged but never block the UI.
- */
 class CoinRepository(context: Context) {
 
-    // Use the same prefs file + key that the old CoinManager used so
-    // existing installs don't lose their locally-stored balance.
     private val prefs = context.getSharedPreferences("game_prefs", Context.MODE_PRIVATE)
     private val db    = FirebaseFirestore.getInstance()
     private val auth  = FirebaseAuth.getInstance()
@@ -30,24 +18,13 @@ class CoinRepository(context: Context) {
         private const val FB_KEY = "storedCoins"
     }
 
-    // ── Local (synchronous) ──────────────────────────────────────────────────
-
     fun getLocal(): Int = prefs.getInt(KEY, 0)
 
-    /** commit() not apply() — survives immediate process kill */
     private fun setLocal(amount: Int) {
         prefs.edit().putInt(KEY, amount).commit()
     }
 
-    // ── Public API ────────────────────────────────────────────────────────────
-
-    /**
-     * Load from Firestore and reconcile with local.
-     * Always calls [onResult] with the best available value immediately,
-     * then again if Firestore returns a higher value.
-     */
     fun load(onResult: (Int) -> Unit) {
-        // Emit local value immediately so the UI never shows 0 while waiting
         val localVal = getLocal()
         onResult(localVal)
 
@@ -64,28 +41,23 @@ class CoinRepository(context: Context) {
                 val remote = snap.getLong(FB_KEY)?.toInt()
                 Log.d(TAG, "load: remote=$remote local=$localVal")
                 if (remote != null && remote > localVal) {
-                    // Remote is higher (e.g. purchased on another device) — adopt it
                     setLocal(remote)
                     onResult(remote)
                 } else if (remote != null && remote < localVal) {
-                    // Local is higher (offline spend/earn) — push local up to Firebase
                     Log.d(TAG, "load: local > remote, pushing local to Firestore")
                     pushToFirestore(localVal)
                 }
-                // If equal, nothing to do
             }
             .addOnFailureListener { e ->
                 Log.w(TAG, "load: Firestore failed, keeping local=$localVal", e)
             }
     }
 
-    /** Set coins to an absolute value and persist everywhere. */
     fun set(amount: Int) {
         setLocal(amount)
         pushToFirestore(amount)
     }
 
-    /** Add [amount] coins, persist, return new total. */
     fun add(amount: Int): Int {
         val newTotal = getLocal() + amount
         setLocal(newTotal)
@@ -93,10 +65,6 @@ class CoinRepository(context: Context) {
         return newTotal
     }
 
-    /**
-     * Spend [amount] if sufficient balance exists.
-     * Returns true on success, false if insufficient funds.
-     */
     fun spend(amount: Int): Boolean {
         val current = getLocal()
         if (current < amount) return false
@@ -105,8 +73,6 @@ class CoinRepository(context: Context) {
         pushToFirestore(newTotal)
         return true
     }
-
-    // ── Firestore push (best-effort) ──────────────────────────────────────────
 
     private fun pushToFirestore(coins: Int) {
         val user = auth.currentUser
@@ -121,7 +87,6 @@ class CoinRepository(context: Context) {
             }
             .addOnFailureListener { e ->
                 Log.e(TAG, "pushToFirestore: failed for uid=${user.uid}", e)
-                // Local value is already written — will reconcile on next load()
             }
     }
 }

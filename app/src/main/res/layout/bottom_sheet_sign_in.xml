@@ -5,13 +5,11 @@
     android:padding="24dp"
     android:layout_width="match_parent"
     android:layout_height="wrap_content">
-
     <EditText
         android:id="@+id/textfieldEmail"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:hint="Email"/>
-
     <EditText
         android:id="@+id/textfieldPassword"
         android:layout_width="match_parent"
@@ -19,14 +17,12 @@
         android:hint="Password"
         android:inputType="textPassword"
         android:layout_marginTop="8dp"/>
-
     <Button
         android:id="@+id/buttonSignIn"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:text="Sign In"
         android:layout_marginTop="16dp"/>
-
     <TextView
         android:id="@+id/textViewSignUp"
         android:layout_width="wrap_content"
