@@ -3,14 +3,12 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:fillViewport="true">
-
 <androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:padding="16dp">
-
     <TextView
         android:id="@+id/naslov"
         android:layout_width="0dp"
@@ -22,7 +20,6 @@
         android:textStyle="bold"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
-
     <Button
         android:id="@+id/buttonIskljuci"
         android:layout_width="52dp"
@@ -35,7 +32,6 @@
         app:layout_constraintHorizontal_bias="0.0"
         app:layout_constraintStart_toEndOf="@+id/naslov"
         app:layout_constraintTop_toTopOf="parent" />
-
     <TextView
         android:id="@+id/objasnjenje1"
         android:layout_width="0dp"
@@ -48,7 +44,6 @@
         app:layout_constraintEnd_toStartOf="@+id/buttonIskljuci"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/naslov" />
-
     <TextView
         android:id="@+id/objasnjenje2"
         android:layout_width="0dp"
@@ -62,7 +57,6 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/objasnjenje1"
         app:layout_constraintVertical_bias="0.095" />
-
     <TextView
         android:id="@+id/objasnjenje3"
         android:layout_width="0dp"
@@ -77,8 +71,5 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/objasnjenje2"
         app:layout_constraintVertical_bias="0.0" />
-
-
 </androidx.constraintlayout.widget.ConstraintLayout>
-
 </androidx.core.widget.NestedScrollView>

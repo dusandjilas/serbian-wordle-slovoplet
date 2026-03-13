@@ -6,10 +6,6 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     tools:context=".SlovopletIgra">
-
-
-
-
     <androidx.compose.ui.platform.ComposeView
         android:id="@+id/composeView"
         android:layout_width="0dp"
@@ -18,5 +14,4 @@
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent" />
-
 </androidx.constraintlayout.widget.ConstraintLayout>

@@ -5,25 +5,6 @@ import android.content.SharedPreferences
 import com.google.firebase.auth.FirebaseAuth
 import java.time.LocalDate
 
-/**
- * Handles all local profile data: streaks, win/loss counters, XP, and level.
- *
- * XP Award Formula (Classic):
- *   Guessed in 1 attempt → 500 XP
- *   Guessed in 2 attempts → 400 XP
- *   Guessed in 3 attempts → 300 XP
- *   Guessed in 4 attempts → 200 XP
- *   Guessed in 5 attempts → 150 XP
- *   Guessed in 6 attempts → 100 XP
- *   Loss → 30 XP (consolation)
- *
- * Daily Word is worth 1.5× the Classic amount (rounded), plus 100 coin reward is
- * handled by the caller (SlovopletIgra / WordleRoot) via CoinRepository.
- *
- * Level Thresholds (cumulative XP):
- *   Level N requires: N * N * 200 XP total
- *   e.g. Level 2 = 800, Level 3 = 1800, Level 10 = 20000 …
- */
 class GameProfileManager(context: Context) {
 
     private val prefs: SharedPreferences =
@@ -50,14 +31,11 @@ class GameProfileManager(context: Context) {
         private const val KEY_GUESS_DIST_PREFIX   = "guess_dist_"
         private const val MAX_GUESSES             = 6
 
-        /** XP awarded for a Classic win at each attempt count (index 0 = 1 guess). */
         private val CLASSIC_WIN_XP = intArrayOf(500, 400, 300, 200, 150, 100)
         private const val CLASSIC_LOSS_XP = 30
-        /** Daily multiplier (1.5×) */
+
         private const val DAILY_MULTIPLIER = 1.5f
     }
-
-    // ── XP & Level ────────────────────────────────────────────────────────────
 
     fun getTotalXp(): Int = prefs.getInt(key(KEY_TOTAL_XP), 0)
 
@@ -67,7 +45,6 @@ class GameProfileManager(context: Context) {
         prefs.edit().putInt(key(KEY_TOTAL_XP), getTotalXp() + amount).apply()
     }
 
-    /** Level is 1-based. Level N requires N*N*200 cumulative XP. */
     fun getLevel(): Int {
         val xp = getTotalXp()
         var level = 1
@@ -75,7 +52,6 @@ class GameProfileManager(context: Context) {
         return level
     }
 
-    /** Progress within the current level, as a 0..1 float. */
     fun getXpProgress(): Float {
         val xp = getTotalXp()
         val level = getLevel()
@@ -84,11 +60,6 @@ class GameProfileManager(context: Context) {
         return if (next == prev) 0f else ((xp - prev).toFloat() / (next - prev)).coerceIn(0f, 1f)
     }
 
-    /**
-     * Calculate and award XP for a Classic game result.
-     * @param guessCount number of guesses used (1-6). 0 means loss.
-     * @return XP awarded this game.
-     */
     fun awardClassicXp(guessCount: Int): Int {
         val xp = if (guessCount in 1..MAX_GUESSES)
             CLASSIC_WIN_XP[guessCount - 1]
@@ -98,11 +69,6 @@ class GameProfileManager(context: Context) {
         return xp
     }
 
-    /**
-     * Calculate and award XP for a Daily game result.
-     * @param guessCount number of guesses used (1-6). 0 means loss.
-     * @return XP awarded this game.
-     */
     fun awardDailyXp(guessCount: Int): Int {
         val base = if (guessCount in 1..MAX_GUESSES)
             CLASSIC_WIN_XP[guessCount - 1]
@@ -112,8 +78,6 @@ class GameProfileManager(context: Context) {
         addXp(xp)
         return xp
     }
-
-    // ── Classic Stats ─────────────────────────────────────────────────────────
 
     fun getClassicStreak(): Int = prefs.getInt(key(KEY_CLASSIC_STREAK), 0)
     fun getBestClassicStreak(): Int = prefs.getInt(key(KEY_CLASSIC_BEST_STREAK), 0)
@@ -148,8 +112,6 @@ class GameProfileManager(context: Context) {
         firebaseStatsRepository.syncStats(this)
     }
 
-    // ── Daily Stats ───────────────────────────────────────────────────────────
-
     fun getLastDailyPlayedDate(): String? =
         prefs.getString(key(KEY_DAILY_PLAYED_DATE), null)
 
@@ -178,8 +140,6 @@ class GameProfileManager(context: Context) {
         firebaseStatsRepository.syncStats(this)
     }
 
-    // ── Guess Distribution ────────────────────────────────────────────────────
-
     fun getGuessDistribution(attempt: Int): Int {
         require(attempt in 1..6) { "Attempt must be between 1 and 6" }
         return prefs.getInt(key(KEY_GUESS_DIST_PREFIX + attempt), 0)
@@ -194,16 +154,12 @@ class GameProfileManager(context: Context) {
     fun getAllGuessDistribution(): List<Int> =
         (1..MAX_GUESSES).map { prefs.getInt(key(KEY_GUESS_DIST_PREFIX + it), 0) }
 
-    // ── Coins ─────────────────────────────────────────────────────────────────
-
     fun getStoredCoins(): Int = prefs.getInt(key("stored_coins"), 0)
 
     fun setStoredCoins(value: Int) {
         prefs.edit().putInt(key("stored_coins"), value).apply()
         firebaseStatsRepository.syncStats(this)
     }
-
-    // ── Remote import ─────────────────────────────────────────────────────────
 
     fun importFromRemote(data: Map<String, Any>) {
         val classicWins = (data["classicWins"] as? Long)?.toInt() ?: 0
@@ -251,8 +207,6 @@ class GameProfileManager(context: Context) {
 
         editor.apply()
     }
-
-    // ── Reset helpers ─────────────────────────────────────────────────────────
 
     fun resetClassicStats() {
         val editor = prefs.edit()

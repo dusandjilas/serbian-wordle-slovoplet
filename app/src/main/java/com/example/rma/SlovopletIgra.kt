@@ -103,7 +103,6 @@ import androidx.compose.ui.unit.*
 
 val fonttri = FontFamily(Font(R.font.fonttri))
 
-// ── Palette ───────────────────────────────────────────────────────────────────
 private val BG            = Color(0xFFDDE8A0)
 private val CELL_EMPTY_BG = Color(0xFFEAEFC0)
 private val CELL_BORDER   = Color(0xFFC8D080)
@@ -117,11 +116,9 @@ private val SUBMIT_BLUE   = Color(0xFF2979FF)
 private val SUBMIT_RED    = Color(0xFFD32F2F)
 private val SKIP_COLOR    = Color(0xFFB5B870)
 
-// ── SharedPrefs key for first-launch tracking ─────────────────────────────────
 private const val PREFS_ONBOARDING = "onboarding_prefs"
 private const val KEY_HAS_SEEN_INFO = "has_seen_info"
 
-// ─────────────────────────────────────────────────────────────────────────────
 class SlovopletIgra : AppCompatActivity() {
 
     private lateinit var adManager: AdManager
@@ -157,7 +154,6 @@ class SlovopletIgra : AppCompatActivity() {
 
         val firstTimeFlow = intent.getBooleanExtra("first_time_flow", false)
 
-        // ── Only show the "how to play" dialog on first ever launch ───────────
         val onboardingPrefs = getSharedPreferences(PREFS_ONBOARDING, MODE_PRIVATE)
         val hasSeenInfo = onboardingPrefs.getBoolean(KEY_HAS_SEEN_INFO, false)
         if (!hasSeenInfo) {
@@ -171,7 +167,6 @@ class SlovopletIgra : AppCompatActivity() {
                 viewModel      = viewModel,
                 adManager      = adManager,
                 profileManager = profileManager,
-                // Info button in TopBar still works manually any time
                 onShowInfo     = { showInfoDialog() },
                 firstTimeFlow  = firstTimeFlow
             )
@@ -192,16 +187,12 @@ class SlovopletIgra : AppCompatActivity() {
     }
 }
 
-// ── Helpers ───────────────────────────────────────────────────────────────────
 private fun LetterState.priority(): Int = when (this) {
     LetterState.CORRECT -> 3; LetterState.PRESENT -> 2; LetterState.ABSENT -> 1
 }
 private fun mergeState(old: LetterState?, new: LetterState) =
     if (old == null || new.priority() > old.priority()) new else old
 
-// ─────────────────────────────────────────────────────────────────────────────
-// ROOT
-// ─────────────────────────────────────────────────────────────────────────────
 @Composable
 private fun WordleRoot(
     viewModel: WordleViewModel,
@@ -214,16 +205,12 @@ private fun WordleRoot(
     val coinRepo  = remember { CoinRepository(context) }
     val stateRepo = remember { GameStateRepository(context) }
 
-    // Start with local value immediately — no flicker to 0
     var coins  by remember { mutableIntStateOf(coinRepo.getLocal()) }
 
-    // Keyboard + hint + revealedCells hoisted so they survive GAME↔SHOP navigation
     val keyboardState = remember { mutableStateMapOf<Char, LetterState>() }
     var lastHint      by remember { mutableStateOf<Char?>(null) }
     val revealedCells = remember { mutableStateListOf<Pair<Int, Int>>() }
 
-    // Reconcile with Firestore once — load() emits local immediately, then
-    // calls onResult again only if remote is higher (won't reset coins down)
     LaunchedEffect(Unit) {
         coinRepo.load { reconciled -> coins = reconciled }
     }
@@ -246,9 +233,6 @@ private fun WordleRoot(
     )
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
-// GAME SCREEN
-// ─────────────────────────────────────────────────────────────────────────────
 @Composable
 private fun WordleGameScreen(
     viewModel: WordleViewModel,
@@ -280,7 +264,6 @@ private fun WordleGameScreen(
     var pendingSubmit      by remember { mutableStateOf(false) }
     var showFirstTimeAuthPrompt by remember { mutableStateOf(false) }
 
-    // Animation: counter-based so LaunchedEffect fires on every new submit
     var animTrigger by remember { mutableIntStateOf(0) }
     var animRow     by remember { mutableIntStateOf(-1) }
 
@@ -288,7 +271,6 @@ private fun WordleGameScreen(
         Array(viewModel.maxAttempts) { Array(viewModel.wordLength) { Animatable(0f) } }
     }
 
-    // ── Restore saved state on first composition ──────────────────────────
     var stateRestored by remember { mutableStateOf(false) }
     LaunchedEffect(Unit) {
         if (!stateRestored) {
@@ -297,13 +279,11 @@ private fun WordleGameScreen(
             if (saved != null) {
                 viewModel.restoreState(saved.target, saved.guesses)
                 trenutniPokusaj = saved.currentInput
-                // Rebuild keyboard colours instantly (no animation for restored rows)
                 saved.guesses.forEach { gr ->
                     gr.guess.forEachIndexed { i, c ->
                         keyboardState[c] = mergeState(keyboardState[c], gr.letterStates[i])
                     }
                 }
-                // Mark all saved cells as revealed (instant, no flip)
                 saved.guesses.forEachIndexed { row, gr ->
                     gr.letterStates.forEachIndexed { col, _ ->
                         if (!revealedCells.contains(Pair(row, col)))
@@ -315,7 +295,6 @@ private fun WordleGameScreen(
         }
     }
 
-    // ── Auto-save on lifecycle pause ──────────────────────────────────────
     val lifecycleOwner = LocalLifecycleOwner.current
     DisposableEffect(lifecycleOwner) {
         val observer = LifecycleEventObserver { _, event ->
@@ -332,14 +311,12 @@ private fun WordleGameScreen(
         onDispose { lifecycleOwner.lifecycle.removeObserver(observer) }
     }
 
-    // ── Submit validity ───────────────────────────────────────────────────
     val submitState: Boolean? = when {
         trenutniPokusaj.length < viewModel.wordLength -> null
         viewModel.checkGuess(trenutniPokusaj.uppercase()) -> true
         else -> false
     }
 
-    // ── Hints ──────────────────────────────────────────────────────────────
     fun revealOneLetterHint() {
         val unrevealed = viewModel.targetWord.filter { keyboardState[it] == null }
         if (unrevealed.isEmpty()) {
@@ -371,7 +348,6 @@ private fun WordleGameScreen(
         }
     }
 
-    // ── Submit ──────────────────────────────────────────────────────────────
     fun submitGuessNow() {
         if (trenutniPokusaj.length < viewModel.wordLength) return
         val result = viewModel.submitGuess(trenutniPokusaj.uppercase())
@@ -390,7 +366,6 @@ private fun WordleGameScreen(
         }
     }
 
-    // ── Flip animation ────────────────────────────────────────────────────
     LaunchedEffect(animTrigger) {
         if (animTrigger == 0) return@LaunchedEffect
         val row = animRow
@@ -420,7 +395,6 @@ private fun WordleGameScreen(
         }
     }
 
-    // ── Stats tracking ────────────────────────────────────────────────────
     LaunchedEffect(viewModel.gameMode) { resultHandled = false }
     LaunchedEffect(viewModel.hasWon, viewModel.hasLost) {
         if (!resultHandled && (viewModel.hasWon || viewModel.hasLost)) {
@@ -432,12 +406,10 @@ private fun WordleGameScreen(
                 }
                 GameMode.DAILY -> {
                     profileManager.markDailyPlayedToday(viewModel.hasWon)
-                    // Pass guessCount so XP scales with performance
                     profileManager.recordDailyResult(
                         won        = viewModel.hasWon,
                         guessCount = if (viewModel.hasWon) guesses.size else 0
                     )
-                    // Daily win awards 100 bonus coins
                     if (viewModel.hasWon) {
                         val newTotal = coinRepo.add(100)
                         onCoinsChanged(newTotal)
@@ -448,13 +420,11 @@ private fun WordleGameScreen(
         }
     }
 
-    // ── Sizing ──────────────────────────────────────────────────────────────
     val configuration = LocalConfiguration.current
     val screenWidthDp = configuration.screenWidthDp.dp
     val gridGap       = 8.dp * (viewModel.wordLength - 1)
     val cellSize: Dp  = ((screenWidthDp - 24.dp - gridGap) / viewModel.wordLength).coerceAtMost(62.dp)
 
-    // ── Layout ─────────────────────────────────────────────────────────────
     Box(
         modifier = Modifier
             .fillMaxSize()
@@ -511,12 +481,10 @@ private fun WordleGameScreen(
                 }
             )
 
-            // ── Ad banner — lifted slightly, real AdMob view ──────────────
             Spacer(Modifier.height(10.dp))
-            AdBanner(adUnitId = "ca-app-pub-3940256099942544/6300978111") // test banner ID
+            AdBanner(adUnitId = "ca-app-pub-3940256099942544/6300978111")
         }
 
-        // ── Overlays ──────────────────────────────────────────────────────
         if (showNeedCoinsPopup) {
             NeedCoinsDialog(
                 reward    = pendingReward,
@@ -583,7 +551,6 @@ private fun WordleGameScreen(
             )
         }
 
-
         if (showFirstTimeAuthPrompt) {
             FirstGameAuthPromptDialog(
                 onSignIn = {
@@ -601,17 +568,12 @@ private fun WordleGameScreen(
     }
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
-// AD BANNER  — real AdMob AdView wrapped in AndroidView
-// Replace adUnitId with your production unit ID before release.
-// Test ID used here: ca-app-pub-3940256099942544/6300978111
-// ─────────────────────────────────────────────────────────────────────────────
 @Composable
 private fun AdBanner(adUnitId: String) {
     AndroidView(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(bottom = 4.dp),   // small lift from the very bottom edge
+            .padding(bottom = 4.dp),
         factory = { ctx ->
             AdView(ctx).apply {
                 setAdSize(AdSize.BANNER)
@@ -620,7 +582,6 @@ private fun AdBanner(adUnitId: String) {
             }
         },
         update = { adView ->
-            // Re-load if the unit ID ever changes (shouldn't in practice)
             if (adView.adUnitId != adUnitId) {
                 adView.adUnitId = adUnitId
                 adView.loadAd(AdRequest.Builder().build())
@@ -629,9 +590,6 @@ private fun AdBanner(adUnitId: String) {
     )
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
-// TOP BAR
-// ─────────────────────────────────────────────────────────────────────────────
 @Composable
 private fun TopBar(score: Int, coins: Int, onInfo: () -> Unit, onPlusCoins: () -> Unit) {
     Row(modifier = Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
@@ -690,9 +648,6 @@ private fun CoinPill(coins: Int, onPlus: () -> Unit) {
     }
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
-// GRID
-// ─────────────────────────────────────────────────────────────────────────────
 @Composable
 private fun GuessGrid(
     viewModel: WordleViewModel,
@@ -760,9 +715,6 @@ private fun GridCell(char: Char, size: Dp, fill: Color, flipAngle: Float = 0f) {
     }
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
-// KEYBOARD
-// ─────────────────────────────────────────────────────────────────────────────
 @Composable
 fun VirtualKeyboard(
     keyboardState: SnapshotStateMap<Char, LetterState>,
@@ -847,9 +799,6 @@ private fun BackspaceKey(keyW: Dp, keyH: Dp, onKeyClick: (String) -> Unit) {
     }
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
-// BOTTOM ACTION ROW
-// ─────────────────────────────────────────────────────────────────────────────
 @Composable
 private fun BottomActionRow(
     hint1Cost: Int, hint3Cost: Int, submitState: Boolean?,
@@ -907,7 +856,6 @@ private fun HintButton(emoji: String, cost: Int, onClick: () -> Unit) {
     }
 }
 
-
 @Composable
 private fun FirstGameAuthPromptDialog(
     onSignIn: () -> Unit,
@@ -947,9 +895,6 @@ private fun FirstGameAuthPromptDialog(
     }
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
-// END GAME DIALOG
-// ─────────────────────────────────────────────────────────────────────────────
 @Composable
 fun EndGameDialog(
     hasWon: Boolean, targetWord: String, score: Int, gameMode: GameMode,
@@ -1019,9 +964,6 @@ fun EndGameDialog(
     }
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
-// NEED COINS POPUP
-// ─────────────────────────────────────────────────────────────────────────────
 @Composable
 fun NeedCoinsDialog(reward: Int, adReady: Boolean, onClaimAd: () -> Unit, onNoThanks: () -> Unit) {
     androidx.compose.material.AlertDialog(

@@ -63,7 +63,6 @@ import androidx.compose.material.MaterialTheme
 import androidx.compose.ui.tooling.preview.Preview
 import kotlin.math.roundToInt
 
-// ── Palette ───────────────────────────────────────────────────────────────────
 private val BG_TOP       = Color(0xFFE8845A)
 private val BG_BOT       = Color(0xFFD4694A)
 private val STRIPE_COLOR = Color(0x18FFFFFF)
@@ -94,7 +93,6 @@ class MainActivity : AppCompatActivity() {
         MobileAds.initialize(this)
 
         val profileManager = GameProfileManager(this)
-        // CoinRepository is the ONLY coin source of truth
         val coinRepo = CoinRepository(this)
 
         val composeContainer = findViewById<ComposeView>(R.id.composeMenu)
@@ -129,9 +127,6 @@ class MainActivity : AppCompatActivity() {
     }
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
-// MAIN SCREEN COMPOSABLE
-// ─────────────────────────────────────────────────────────────────────────────
 @Composable
 private fun MainScreen(
     firebaseAuth: FirebaseAuth,
@@ -148,7 +143,6 @@ private fun MainScreen(
     val user = firebaseAuth.currentUser
     val isGuest = user == null
 
-    // ── Coin / XP state: refresh immediately and on every ON_RESUME ───────────
     var coins by remember { mutableIntStateOf(coinRepo.getLocal()) }
     var level by remember { mutableIntStateOf(if (isGuest) 1 else profileManager.getLevel()) }
     var xpProgress by remember { mutableFloatStateOf(if (isGuest) 0f else profileManager.getXpProgress()) }
@@ -177,8 +171,6 @@ private fun MainScreen(
     }
     val statsRepository = remember { FirebaseStatsRepository() }
 
-
-    // ── Dialog state ──────────────────────────────────────────────────────────
     var showStats     by remember { mutableStateOf(false) }
     var showRemoveAds by remember { mutableStateOf(false) }
     var showWip       by remember { mutableStateOf(false) }
@@ -261,7 +253,6 @@ private fun MainScreen(
             BannerAdContainer()
         }
 
-        // ── Dialogs ────────────────────────────────────────────────────────────
         if (showStats) {
             ComposeDialog(onDismissRequest = { showStats = false }) {
                 MaterialTheme {
@@ -320,9 +311,6 @@ private fun MainScreen(
     }
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
-// AUTH DIALOG  (Sign in / Register)
-// ─────────────────────────────────────────────────────────────────────────────
 @Composable
 private fun AuthDialog(
     firebaseAuth: FirebaseAuth,
@@ -554,9 +542,6 @@ private fun ChangeDisplayNameDialog(
     }
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
-// TOP HEADER BAR
-// ─────────────────────────────────────────────────────────────────────────────
 @Composable
 private fun TopHeaderBar(
     isGuest: Boolean, coins: Int, level: Int, xpProgress: Float,
@@ -622,7 +607,6 @@ private fun CenterAvatar(level: Int, xpProgress: Float, isGuest: Boolean) {
         ) {
             Text("W", color = Color.White, fontWeight = FontWeight.ExtraBold, fontSize = 12.sp)
         }
-        // "TAP TO SIGN IN" hint for guests
         if (isGuest) {
             Box(
                 modifier = Modifier.align(Alignment.BottomCenter).offset(y = 18.dp)
@@ -672,9 +656,6 @@ private fun CoinPill(coins: Int, isGuest: Boolean, scale: Float, onPlusClick: ()
     }
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
-// WORD BUBBLES
-// ─────────────────────────────────────────────────────────────────────────────
 @Composable
 private fun WordleBubblesRow(scale: Float) {
     data class Bub(val ch: String, val bg: Color, val shadow: Color)
@@ -710,9 +691,6 @@ private fun WordleBubblesRow(scale: Float) {
     }
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
-// GAME BUTTONS
-// ─────────────────────────────────────────────────────────────────────────────
 @Composable
 private fun GameButtonsSection(
     classicStreak: Int, scale: Float, onStatsClick: () -> Unit,
@@ -767,9 +745,6 @@ fun GameButtonsSectionPreview() {
     }
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
-// FOOTER NAV BAR  — redesigned: dark pill cards with emoji + label
-// ─────────────────────────────────────────────────────────────────────────────
 @Composable
 private fun FooterNavBar(
     isGuest: Boolean,
@@ -824,7 +799,6 @@ private fun FooterNavBar(
         }
     }
 }
-
 
 @Composable
 private fun SettingsDialog(onDismiss: () -> Unit, onLogout: () -> Unit) {
@@ -896,9 +870,6 @@ private fun SettingsDialog(onDismiss: () -> Unit, onLogout: () -> Unit) {
     }
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
-// STATS DIALOG
-// ─────────────────────────────────────────────────────────────────────────────
 @Composable
 private fun StatsDialogContent(profileManager: GameProfileManager, onClose: () -> Unit) {
     val maxValue = (profileManager.getAllGuessDistribution().maxOrNull() ?: 1).coerceAtLeast(1)
@@ -948,8 +919,6 @@ private fun StatsDialogContent(profileManager: GameProfileManager, onClose: () -
         GoldButton("ЗАТВОРИ", onClose)
     }
 }
-
-
 
 @Composable
 private fun LeaderboardDialogContent(
@@ -1098,9 +1067,6 @@ private fun LeaderboardMetricRow(
     }
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
-// GOLD COMPONENTS
-// ─────────────────────────────────────────────────────────────────────────────
 @Composable
 fun GoldSquareButton(
     modifier: Modifier = Modifier, onClick: () -> Unit,
@@ -1215,10 +1181,6 @@ fun GoldButton(label: String, onClick: () -> Unit, modifier: Modifier = Modifier
     }
 }
 
-
-// ─────────────────────────────────────────────────────────────────────────────
-// REMOVE ADS DIALOG
-// ─────────────────────────────────────────────────────────────────────────────
 @Composable
 fun RemoveAdsDialog(onDismiss: () -> Unit, onBuy: () -> Unit) {
     ComposeDialog(onDismissRequest = onDismiss) {
@@ -1257,9 +1219,6 @@ fun RemoveAdsDialog(onDismiss: () -> Unit, onBuy: () -> Unit) {
     }
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
-// WIP DIALOG
-// ─────────────────────────────────────────────────────────────────────────────
 @Composable
 fun WipDialog(onDismiss: () -> Unit) {
     ComposeDialog(onDismissRequest = onDismiss) {
@@ -1282,9 +1241,6 @@ fun WipDialog(onDismiss: () -> Unit) {
     }
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
-// ADMOB BANNER
-// ─────────────────────────────────────────────────────────────────────────────
 @Composable
 private fun BannerAdContainer() {
     val context = LocalContext.current
@@ -1302,9 +1258,6 @@ private fun BannerAdContainer() {
     }
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
-// HELPERS
-// ─────────────────────────────────────────────────────────────────────────────
 private fun lightenColor(color: Color, amount: Float) = Color(
     red   = color.red   + (1f - color.red)   * amount,
     green = color.green + (1f - color.green) * amount,

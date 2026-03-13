@@ -1,25 +1,18 @@
 <selector xmlns:android="http://schemas.android.com/apk/res/android">
-
-    <!-- pressed -->
     <item android:state_pressed="true">
         <shape android:shape="rectangle">
             <solid android:color="#3A7F3A"/>
             <corners android:radius="12dp"/>
         </shape>
     </item>
-
-    <!-- normal -->
     <item>
         <layer-list>
-            <!-- shadow -->
             <item android:top="4dp">
                 <shape android:shape="rectangle">
                     <solid android:color="#1F4D1F"/>
                     <corners android:radius="12dp"/>
                 </shape>
             </item>
-
-            <!-- button face -->
             <item android:bottom="4dp">
                 <shape android:shape="rectangle">
                     <solid android:color="#4CAF50"/>
@@ -28,5 +21,4 @@
             </item>
         </layer-list>
     </item>
-
 </selector>

@@ -58,10 +58,6 @@ class WordleEngine(
             .also { guesses.add(it) }
     }
 
-    /**
-     * Restores engine state from a saved game.
-     * Sets [targetWord] directly and injects [savedGuesses] bypassing validation.
-     */
     fun restoreState(savedTarget: String, savedGuesses: List<GuessResult>) {
         targetWord = savedTarget
         guesses.clear()

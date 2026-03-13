@@ -27,11 +27,9 @@ class LauncherActivity : AppCompatActivity() {
         val currentUser = firebaseAuth.currentUser
 
         if (currentUser != null) {
-            // User already signed in → go to MainActivity
             startActivity(Intent(this, MainActivity::class.java))
             finish()
         } else {
-            // User not signed in → show a simple launcher screen
             setContentView(R.layout.activity_launcher)
 
             val signInButton = findViewById<Button>(R.id.buttonSignIn)
