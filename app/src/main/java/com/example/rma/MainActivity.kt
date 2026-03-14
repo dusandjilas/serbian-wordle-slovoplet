@@ -57,9 +57,7 @@ import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.FirebaseAuthInvalidCredentialsException
 import com.google.firebase.auth.FirebaseAuthUserCollisionException
 import com.google.firebase.auth.FirebaseAuthWeakPasswordException
-import com.google.firebase.firestore.FirebaseFirestoreException
 import androidx.compose.animation.core.*
-import androidx.compose.material.MaterialTheme
 import androidx.compose.ui.tooling.preview.Preview
 import kotlin.math.roundToInt
 
@@ -715,7 +713,7 @@ private fun GameButtonsSection(
             )
         }
         GoldWideButton(
-            title = "РЕЧ ДАНА", rightTop = "🌟", rightBottom = "+100",
+            title = "РЕЧ ДАНА", rightTop = "", rightBottom = "+100",
             modifier = Modifier.fillMaxWidth().height((82 * scale).dp), onClick = onDailyClick
         )
         Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy((10 * scale).dp)) {
@@ -1128,7 +1126,7 @@ fun GoldWideButton(
             .background(Brush.verticalGradient(listOf(GOLD_LIGHT, GOLD_MID)))
             .drawBehind {
                 val sw = 18.dp.toPx(); val total = sw * 2f
-                var x = -size.height.toFloat() + (stripeOffset * total)
+                var x = -size.height + (stripeOffset * total)
                 while (x < size.width + size.height) {
                     withTransform({ rotate(-35f, Offset(size.width / 2f, size.height / 2f)) }) {
                         drawRect(GOLD_STRIPE, Offset(x, -size.height), Size(sw, size.height * 3))
@@ -1191,7 +1189,7 @@ fun RemoveAdsDialog(onDismiss: () -> Unit, onBuy: () -> Unit) {
                 .padding(28.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            Text("🚫", fontSize = 52.sp)
+            Text("", fontSize = 52.sp)
             Spacer(Modifier.height(10.dp))
             Text("УКЛОНИ РЕКЛАМЕ", color = Color.White, fontSize = 22.sp,
                 fontWeight = FontWeight.ExtraBold, textAlign = TextAlign.Center)
