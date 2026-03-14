@@ -2,6 +2,6 @@
 <selector xmlns:android="http://schemas.android.com/apk/res/android">
     <shape xmlns:android="http://schemas.android.com/apk/res/android"
         android:shape="oval">
-        <solid android:color="#FFCCCCCC"/>
+        <solid android:color="#A8B1BE"/>
     </shape>
 </selector>

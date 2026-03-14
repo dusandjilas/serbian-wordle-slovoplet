@@ -4,7 +4,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="#F4F6FB"
+    android:background="#E8ECF2"
     android:fillViewport="true"
     tools:context=".SignInActivity">
     <LinearLayout
@@ -27,7 +27,7 @@
             android:layout_height="wrap_content"
             android:layout_marginTop="8dp"
             android:text="Пријава на налог"
-            android:textColor="#404B5A"
+            android:textColor="#5E6B7A"
             android:textSize="16sp" />
         <com.google.android.material.card.MaterialCardView
             android:layout_width="match_parent"
@@ -89,14 +89,14 @@
                     android:layout_width="match_parent"
                     android:layout_height="1dp"
                     android:layout_marginTop="18dp"
-                    android:background="#D9DEE8" />
+                    android:background="#B7BFCC" />
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_gravity="center_horizontal"
                     android:layout_marginTop="12dp"
                     android:text="или настави преко"
-                    android:textColor="#404B5A" />
+                    android:textColor="#5E6B7A" />
                 <com.google.android.material.button.MaterialButton
                     android:id="@+id/buttonGoogle"
                     android:layout_width="match_parent"
@@ -105,12 +105,12 @@
                     android:drawablePadding="10dp"
                     android:text="Google"
                     android:textAllCaps="false"
-                    app:backgroundTint="#FFFFFF"
+                    app:backgroundTint="#E8ECF2"
                     app:cornerRadius="14dp"
                     app:icon="@drawable/google"
                     app:iconGravity="textStart"
                     app:iconTint="@null"
-                    app:strokeColor="#D9DEE8"
+                    app:strokeColor="#B7BFCC"
                     app:strokeWidth="1dp" />
             </LinearLayout>
         </com.google.android.material.card.MaterialCardView>
@@ -121,7 +121,7 @@
             android:layout_marginTop="16dp"
             android:text="Наставите као гост"
             android:textAllCaps="false"
-            app:backgroundTint="#E7ECF6"
+            app:backgroundTint="#D7DEE8"
             app:cornerRadius="14dp" />
         <TextView
             android:id="@+id/textCreateAccount"

@@ -61,15 +61,15 @@ import androidx.compose.animation.core.*
 import androidx.compose.ui.tooling.preview.Preview
 import kotlin.math.roundToInt
 
-private val BG_TOP       = Color(0xFF1F3A2E)
-private val BG_BOT       = Color(0xFF14281F)
-private val STRIPE_COLOR = Color(0x18FFFFFF)
-private val GOLD_LIGHT   = Color(0xFFF3D264)
-private val GOLD_MID     = Color(0xFFE4BE41)
-private val GOLD_DARK    = Color(0xFFB8962E)
-private val GOLD_STRIPE  = Color(0x22FFFFFF)
-private val FOOTER_BG    = Color(0xFF1D1F22)
-private val FOOTER_ITEM  = Color(0xFF2F3338)
+private val BG_TOP       = Color(0xFF243B5C)
+private val BG_BOT       = Color(0xFF162B4A)
+private val STRIPE_COLOR = Color(0x228995A3)
+private val GOLD_LIGHT   = Color(0xFFA8B1BE)
+private val GOLD_MID     = Color(0xFF8995A3)
+private val GOLD_DARK    = Color(0xFF5E6B7A)
+private val GOLD_STRIPE  = Color(0x22C11521)
+private val FOOTER_BG    = Color(0xFF0F1E33)
+private val FOOTER_ITEM  = Color(0xFF243B5C)
 
 private enum class LeaderboardMetric(val label: String) {
     LEVEL("Ниво"),
