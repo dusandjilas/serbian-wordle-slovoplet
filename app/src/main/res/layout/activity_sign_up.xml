@@ -4,7 +4,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="#F4F6FB"
+    android:background="#E8ECF2"
     android:fillViewport="true"
     tools:context=".SignUpActivity">
     <LinearLayout
@@ -27,7 +27,7 @@
             android:layout_height="wrap_content"
             android:layout_marginTop="8dp"
             android:text="Креирајте налог"
-            android:textColor="#404B5A"
+            android:textColor="#5E6B7A"
             android:textSize="16sp" />
         <com.google.android.material.card.MaterialCardView
             android:layout_width="match_parent"

@@ -14,7 +14,7 @@
         android:layout_height="52dp"
         android:text="X"
         android:textColor="@color/white"
-        android:backgroundTint="#0E2441"
+        android:backgroundTint="#162B4A"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toTopOf="parent"
         app:rippleColor="#162b4a" />
@@ -24,7 +24,7 @@
         android:layout_height="wrap_content"
         android:fontFamily="@font/helvetica"
         android:text="Како се игра Словоплет"
-        android:textColor="#0E2441"
+        android:textColor="#162B4A"
         android:textSize="24sp"
         android:textStyle="bold"
         app:layout_constraintEnd_toStartOf="@id/buttonIskljuci"
@@ -37,7 +37,7 @@
         android:layout_marginTop="8dp"
         android:fontFamily="@font/helvetica"
         android:text="Пробајте из 6 покушаја да погодите реч."
-        android:textColor="#223652"
+        android:textColor="#2A3F61"
         android:textSize="16sp"
         app:layout_constraintEnd_toStartOf="@+id/buttonIskljuci"
         app:layout_constraintStart_toStartOf="parent"
@@ -48,7 +48,7 @@
         android:layout_height="wrap_content"
         android:layout_marginTop="32dp"
         android:text="Примери"
-        android:textColor="#0E2444"
+        android:textColor="#1A3154"
         android:textSize="16sp"
         android:textStyle="bold"
         app:layout_constraintStart_toStartOf="parent"
@@ -68,7 +68,7 @@
             android:background="@drawable/kvadrat_slovo_biranje"
             android:gravity="center"
             android:text="Ч"
-            android:textColor="#FFFFFF"
+            android:textColor="#E8ECF2"
             android:textSize="20sp"
             android:textStyle="bold" />
         <TextView
@@ -78,7 +78,7 @@
             android:background="@drawable/kvadrat_slovo_prazno"
             android:gravity="center"
             android:text="У"
-            android:textColor="#0E2441"
+            android:textColor="#162B4A"
             android:textSize="20sp"
             android:textStyle="bold" />
         <TextView
@@ -88,7 +88,7 @@
             android:background="@drawable/kvadrat_slovo_prazno"
             android:gravity="center"
             android:text="Н"
-            android:textColor="#0E2441"
+            android:textColor="#162B4A"
             android:textSize="20sp"
             android:textStyle="bold" />
         <TextView
@@ -98,7 +98,7 @@
             android:background="@drawable/kvadrat_slovo_prazno"
             android:gravity="center"
             android:text="А"
-            android:textColor="#0E2441"
+            android:textColor="#162B4A"
             android:textSize="20sp"
             android:textStyle="bold" />
         <TextView
@@ -107,7 +107,7 @@
             android:background="@drawable/kvadrat_slovo_prazno"
             android:gravity="center"
             android:text="К"
-            android:textColor="#0E2441"
+            android:textColor="#162B4A"
             android:textSize="20sp"
             android:textStyle="bold" />
     </LinearLayout>
@@ -118,7 +118,7 @@
         android:layout_marginTop="8dp"
         android:layout_marginBottom="16dp"
         android:text="Ч је з речи и налаз се на правом месту."
-        android:textColor="#3A4C65"
+        android:textColor="#5E6B7A"
         android:textSize="16sp"
         app:layout_constraintBottom_toTopOf="@+id/Layout2"
         app:layout_constraintStart_toStartOf="parent"
@@ -138,7 +138,7 @@
             android:background="@drawable/kvadrat_slovo_prazno"
             android:gravity="center"
             android:text="Т"
-            android:textColor="#0E2441"
+            android:textColor="#162B4A"
             android:textSize="20sp"
             android:textStyle="bold" />
         <TextView
@@ -148,7 +148,7 @@
             android:background="@drawable/kvadrat_slovo_prazno"
             android:gravity="center"
             android:text="О"
-            android:textColor="#0E2441"
+            android:textColor="#162B4A"
             android:textSize="20sp"
             android:textStyle="bold" />
         <TextView
@@ -158,7 +158,7 @@
             android:background="@drawable/kvadrat_slovo_prazno"
             android:gravity="center"
             android:text="Р"
-            android:textColor="#0E2441"
+            android:textColor="#162B4A"
             android:textSize="20sp"
             android:textStyle="bold" />
         <TextView
@@ -168,7 +168,7 @@
             android:background="@drawable/kvadrat_slovo_prazno"
             android:gravity="center"
             android:text="Б"
-            android:textColor="#0E2441"
+            android:textColor="#162B4A"
             android:textSize="20sp"
             android:textStyle="bold" />
         <TextView
@@ -177,7 +177,7 @@
             android:background="@drawable/kvadrat_slovo_polutacno"
             android:gravity="center"
             android:text="А"
-            android:textColor="#FFFFFF"
+            android:textColor="#E8ECF2"
             android:textSize="20sp"
             android:textStyle="bold" />
     </LinearLayout>
@@ -188,7 +188,7 @@
         android:layout_marginTop="4dp"
         android:layout_marginBottom="16dp"
         android:text="А је у речи али се налази на погрешном месту."
-        android:textColor="#3A4C65"
+        android:textColor="#5E6B7A"
         android:textSize="16sp"
         app:layout_constraintBottom_toTopOf="@+id/Layout3"
         app:layout_constraintStart_toStartOf="parent"
@@ -208,7 +208,7 @@
             android:background="@drawable/kvadrat_slovo_prazno"
             android:gravity="center"
             android:text="М"
-            android:textColor="#0E2441"
+            android:textColor="#162B4A"
             android:textSize="20sp"
             android:textStyle="bold" />
         <TextView
@@ -218,7 +218,7 @@
             android:background="@drawable/kvadrat_slovo_prazno"
             android:gravity="center"
             android:text="U"
-            android:textColor="#0E2441"
+            android:textColor="#162B4A"
             android:textSize="20sp"
             android:textStyle="bold" />
         <TextView
@@ -228,7 +228,7 @@
             android:background="@drawable/kvadrat_slovo_netacno"
             android:gravity="center"
             android:text="С"
-            android:textColor="#FFFFFF"
+            android:textColor="#E8ECF2"
             android:textSize="20sp"
             android:textStyle="bold" />
         <TextView
@@ -238,7 +238,7 @@
             android:background="@drawable/kvadrat_slovo_prazno"
             android:gravity="center"
             android:text="A"
-            android:textColor="#0E2441"
+            android:textColor="#162B4A"
             android:textSize="20sp"
             android:textStyle="bold" />
         <TextView
@@ -247,7 +247,7 @@
             android:background="@drawable/kvadrat_slovo_prazno"
             android:gravity="center"
             android:text="В"
-            android:textColor="#0E2441"
+            android:textColor="#162B4A"
             android:textSize="20sp"
             android:textStyle="bold" />
     </LinearLayout>
@@ -257,7 +257,7 @@
         android:layout_height="wrap_content"
         android:layout_marginTop="4dp"
         android:text="С није у речи ни на једном месту"
-        android:textColor="#3A4C65"
+        android:textColor="#5E6B7A"
         android:textSize="16sp"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/Layout3" />

@@ -56,6 +56,16 @@ data class ShopOfferUi(
     val isAdReward: Boolean = false
 )
 
+
+private val SHOP_NAVY = Color(0xFF162B4A)
+private val SHOP_NAVY_DARK = Color(0xFF0F1E33)
+private val SHOP_NAVY_MID = Color(0xFF243B5C)
+private val SHOP_GRAY = Color(0xFF8995A3)
+private val SHOP_GRAY_LIGHT = Color(0xFFD7DEE8)
+private val SHOP_GRAY_MID = Color(0xFFA8B1BE)
+private val SHOP_RED = Color(0xFFC11521)
+private val SHOP_RED_DARK = Color(0xFF8F111A)
+
 @Composable
 fun ShopScreen(
     coins: Int,
@@ -77,7 +87,7 @@ fun ShopScreen(
         ShopOfferUi(20000, "$29.99", "35%\nBONUS", "НАЈБОЉЕ", "👑")
     )
 
-    Box(Modifier.fillMaxSize().background(Color(0xFF155844))) {
+    Box(Modifier.fillMaxSize().background(SHOP_NAVY_DARK)) {
         ShamrockPatternBackground()
 
         Column(
@@ -127,12 +137,12 @@ fun ShopScreen(
 
 @Composable
 private fun StarterPackCard(onClick: () -> Unit) {
-    Box(Modifier.fillMaxWidth().height(190.dp).clip(RoundedCornerShape(26.dp)).background(Color(0xFFF9B51E)).border(5.dp, Color(0xFFE38217), RoundedCornerShape(26.dp)).padding(10.dp)) {
-        Box(Modifier.fillMaxSize().clip(RoundedCornerShape(20.dp)).background(Color(0xFFF2E0CF))) {
+    Box(Modifier.fillMaxWidth().height(190.dp).clip(RoundedCornerShape(26.dp)).background(SHOP_GRAY).border(5.dp, SHOP_NAVY, RoundedCornerShape(26.dp)).padding(10.dp)) {
+        Box(Modifier.fillMaxSize().clip(RoundedCornerShape(20.dp)).background(SHOP_GRAY_LIGHT)) {
             BeigeBurstBackground(Modifier.matchParentSize())
             SaleBadge(text = "НАЈБОЉА\nПОНУДА", modifier = Modifier.align(Alignment.TopEnd).padding(10.dp))
             Column(Modifier.fillMaxSize().padding(16.dp)) {
-                Box(Modifier.clip(RoundedCornerShape(12.dp)).background(Brush.horizontalGradient(listOf(Color(0xFFB950FF), Color(0xFF7F2DFF)))).padding(horizontal = 14.dp, vertical = 8.dp)) {
+                Box(Modifier.clip(RoundedCornerShape(12.dp)).background(Brush.horizontalGradient(listOf(SHOP_RED, SHOP_RED_DARK))).padding(horizontal = 14.dp, vertical = 8.dp)) {
                     Text("ПОЧЕТНИ ПАКЕТ", color = Color.White, fontSize = 18.sp, fontWeight = FontWeight.Black)
                 }
                 Spacer(Modifier.height(12.dp))
@@ -151,14 +161,14 @@ private fun StarterPackCard(onClick: () -> Unit) {
     }
 }
 
-@Composable private fun SectionTitle(text: String) { Box(Modifier.clip(RoundedCornerShape(14.dp)).background(Color(0x33000000)).padding(horizontal = 14.dp, vertical = 8.dp)) { Text(text, color = Color.White, fontSize = 20.sp, fontWeight = FontWeight.ExtraBold) } }
+@Composable private fun SectionTitle(text: String) { Box(Modifier.clip(RoundedCornerShape(14.dp)).background(Color(0x33162B4A)).padding(horizontal = 14.dp, vertical = 8.dp)) { Text(text, color = Color.White, fontSize = 20.sp, fontWeight = FontWeight.ExtraBold) } }
 
 @Composable
 private fun ShopOfferCard(offer: ShopOfferUi, onClick: () -> Unit) {
     Box(Modifier.width(220.dp).height(340.dp)) {
-        Box(Modifier.fillMaxSize().clip(RoundedCornerShape(26.dp)).background(Color(0xFFF9B51E)).border(5.dp, Color(0xFFE38217), RoundedCornerShape(26.dp)).padding(10.dp)) {
+        Box(Modifier.fillMaxSize().clip(RoundedCornerShape(26.dp)).background(SHOP_GRAY).border(5.dp, SHOP_NAVY, RoundedCornerShape(26.dp)).padding(10.dp)) {
             Column(Modifier.fillMaxSize()) {
-                Box(Modifier.fillMaxWidth().weight(1f).clip(RoundedCornerShape(20.dp)).background(Color(0xFFF2E0CF))) {
+                Box(Modifier.fillMaxWidth().weight(1f).clip(RoundedCornerShape(20.dp)).background(SHOP_GRAY_LIGHT)) {
                     BeigeBurstBackground(Modifier.matchParentSize())
                     Text(offer.emoji, fontSize = 88.sp, modifier = Modifier.align(Alignment.Center))
                     SaleBadge(text = offer.saleText, modifier = Modifier.align(Alignment.TopEnd).padding(10.dp))
@@ -175,46 +185,46 @@ private fun ShopOfferCard(offer: ShopOfferUi, onClick: () -> Unit) {
 }
 
 @Composable
-private fun GameTitle(text: String, modifier: Modifier = Modifier) { Box(modifier) { Text(text, fontSize = 40.sp, fontWeight = FontWeight.Black, color = Color(0xFF5F2BA8), modifier = Modifier.offset(0.dp, 4.dp)); Text(text, fontSize = 40.sp, fontWeight = FontWeight.Black, color = Color(0xFFEDE2FF)) } }
+private fun GameTitle(text: String, modifier: Modifier = Modifier) { Box(modifier) { Text(text, fontSize = 40.sp, fontWeight = FontWeight.Black, color = SHOP_NAVY_DARK, modifier = Modifier.offset(0.dp, 4.dp)); Text(text, fontSize = 40.sp, fontWeight = FontWeight.Black, color = SHOP_GRAY_LIGHT) } }
 
 @Composable
 private fun PurpleCloseButton(onClick: () -> Unit, modifier: Modifier = Modifier) {
-    Box(modifier.size(44.dp).clip(RoundedCornerShape(12.dp)).background(Color(0xFF7A3BDB)).border(3.dp, Color(0xFFE5D4FF), RoundedCornerShape(12.dp)).clickable { onClick() }, contentAlignment = Alignment.Center) {
+    Box(modifier.size(44.dp).clip(RoundedCornerShape(12.dp)).background(SHOP_NAVY).border(3.dp, SHOP_GRAY_LIGHT, RoundedCornerShape(12.dp)).clickable { onClick() }, contentAlignment = Alignment.Center) {
         Text("X", color = Color.White, fontSize = 22.sp, fontWeight = FontWeight.Black)
     }
 }
 
-@Composable private fun CoinCounterPill(coins: Int) { Box(Modifier.clip(RoundedCornerShape(22.dp)).background(Color(0xFF6D8F86)).border(3.dp, Color(0xFFAAC8BF), RoundedCornerShape(22.dp)).padding(horizontal = 14.dp, vertical = 7.dp)) { Row(verticalAlignment = Alignment.CenterVertically) { CoinIcon(18.dp); Spacer(Modifier.width(8.dp)); Text(coins.toString(), color = Color.White, fontSize = 26.sp, fontWeight = FontWeight.Black) } } }
+@Composable private fun CoinCounterPill(coins: Int) { Box(Modifier.clip(RoundedCornerShape(22.dp)).background(SHOP_NAVY_MID).border(3.dp, SHOP_GRAY_MID, RoundedCornerShape(22.dp)).padding(horizontal = 14.dp, vertical = 7.dp)) { Row(verticalAlignment = Alignment.CenterVertically) { CoinIcon(18.dp); Spacer(Modifier.width(8.dp)); Text(coins.toString(), color = Color.White, fontSize = 26.sp, fontWeight = FontWeight.Black) } } }
 
 @Composable
 private fun SaleBadge(text: String, modifier: Modifier = Modifier) {
-    Box(modifier.clip(RoundedCornerShape(10.dp)).background(Color(0xFFF1A927)).border(2.dp, Color(0xFFC76A0C), RoundedCornerShape(10.dp)).padding(horizontal = 8.dp, vertical = 6.dp)) {
+    Box(modifier.clip(RoundedCornerShape(10.dp)).background(SHOP_RED).border(2.dp, SHOP_RED_DARK, RoundedCornerShape(10.dp)).padding(horizontal = 8.dp, vertical = 6.dp)) {
         Text(text, color = Color.White, fontSize = 12.sp, fontWeight = FontWeight.Black, textAlign = TextAlign.Center, lineHeight = 12.sp)
     }
 }
 
-@Composable private fun CornerRibbon(text: String, modifier: Modifier = Modifier) { Box(modifier.clip(RoundedCornerShape(topEnd = 12.dp, bottomEnd = 12.dp)).background(Color(0xFF8A4B14)).padding(horizontal = 10.dp, vertical = 6.dp)) { Text(text, color = Color.White, fontSize = 11.sp, fontWeight = FontWeight.Black) } }
+@Composable private fun CornerRibbon(text: String, modifier: Modifier = Modifier) { Box(modifier.clip(RoundedCornerShape(topEnd = 12.dp, bottomEnd = 12.dp)).background(SHOP_NAVY_MID).padding(horizontal = 10.dp, vertical = 6.dp)) { Text(text, color = Color.White, fontSize = 11.sp, fontWeight = FontWeight.Black) } }
 
 @Composable
 private fun CoinAmountPlate(amount: Int, modifier: Modifier = Modifier) {
-    Box(modifier.clip(RoundedCornerShape(12.dp)).background(Color(0xFF7748B8)).border(2.dp, Color(0xFFD3B7FF), RoundedCornerShape(12.dp)).padding(horizontal = 12.dp, vertical = 6.dp)) {
+    Box(modifier.clip(RoundedCornerShape(12.dp)).background(SHOP_NAVY).border(2.dp, SHOP_GRAY_LIGHT, RoundedCornerShape(12.dp)).padding(horizontal = 12.dp, vertical = 6.dp)) {
         Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.Center, modifier = Modifier.fillMaxWidth()) {
             CoinIcon(16.dp)
             Spacer(Modifier.width(6.dp))
-            OutlinedGameText(text = amount.toString(), fill = Color.White, stroke = Color(0xFF3E0C7F), fontSize = 24.sp)
+            OutlinedGameText(text = amount.toString(), fill = Color.White, stroke = SHOP_NAVY_DARK, fontSize = 24.sp)
         }
     }
 }
 
-@Composable private fun GreenBuyButton(price: String, onClick: () -> Unit, modifier: Modifier = Modifier) { Box(modifier.height(54.dp).clip(RoundedCornerShape(16.dp)).background(Color(0xFF36B452)).border(3.dp, Color(0xFF96F3A5), RoundedCornerShape(16.dp)).clickable { onClick() }, contentAlignment = Alignment.Center) { Text(price, color = Color.White, fontWeight = FontWeight.Black, fontSize = 20.sp) } }
+@Composable private fun GreenBuyButton(price: String, onClick: () -> Unit, modifier: Modifier = Modifier) { Box(modifier.height(54.dp).clip(RoundedCornerShape(16.dp)).background(SHOP_RED).border(3.dp, SHOP_GRAY_LIGHT, RoundedCornerShape(16.dp)).clickable { onClick() }, contentAlignment = Alignment.Center) { Text(price, color = Color.White, fontWeight = FontWeight.Black, fontSize = 20.sp) } }
 
 @Composable
 private fun CoinIcon(iconSize: Dp) {
     Box(Modifier.size(iconSize).drawBehind {
         val r = size.minDimension / 2f
-        drawCircle(Color(0xFFFFC928), radius = r)
-        drawCircle(Color(0xFFE98D09), radius = r, style = Stroke(width = 3.dp.toPx()))
-        drawCircle(Color(0xFFFFE17A), radius = r / 1.7f)
+        drawCircle(SHOP_RED, radius = r)
+        drawCircle(SHOP_RED_DARK, radius = r, style = Stroke(width = 3.dp.toPx()))
+        drawCircle(SHOP_GRAY_LIGHT, radius = r / 1.7f)
     })
 }
 
@@ -229,7 +239,7 @@ private fun OutlinedGameText(text: String, fill: Color, stroke: Color, fontSize:
 @Composable
 private fun ShamrockPatternBackground() {
     Canvas(modifier = Modifier.fillMaxSize()) {
-        val patternColor = Color(0xFF0E4536)
+        val patternColor = SHOP_NAVY
         val cell = 84.dp.toPx()
         val leafR = 12.dp.toPx()
         var y = 0f
@@ -254,7 +264,7 @@ private fun ShamrockPatternBackground() {
 private fun BeigeBurstBackground(modifier: Modifier = Modifier) {
     Canvas(modifier = modifier) {
         val center = Offset(size.width / 2f, size.height / 2f)
-        val rayColor = Color(0xFFF7EBDD)
+        val rayColor = SHOP_GRAY_LIGHT
         for (i in 0 until 16) {
             rotate(degrees = i * 22.5f, pivot = center) {
                 drawPath(Path().apply {
