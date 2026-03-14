@@ -61,15 +61,15 @@ import androidx.compose.animation.core.*
 import androidx.compose.ui.tooling.preview.Preview
 import kotlin.math.roundToInt
 
-private val BG_TOP       = Color(0xFFE8845A)
-private val BG_BOT       = Color(0xFFD4694A)
+private val BG_TOP       = Color(0xFF1F3A2E)
+private val BG_BOT       = Color(0xFF14281F)
 private val STRIPE_COLOR = Color(0x18FFFFFF)
-private val GOLD_LIGHT   = Color(0xFFFFD754)
-private val GOLD_MID     = Color(0xFFFFC430)
-private val GOLD_DARK    = Color(0xFFE8A800)
+private val GOLD_LIGHT   = Color(0xFFF3D264)
+private val GOLD_MID     = Color(0xFFE4BE41)
+private val GOLD_DARK    = Color(0xFFB8962E)
 private val GOLD_STRIPE  = Color(0x22FFFFFF)
-private val FOOTER_BG    = Color(0xFF2A1A0E)
-private val FOOTER_ITEM  = Color(0xFF3D2810)
+private val FOOTER_BG    = Color(0xFF1D1F22)
+private val FOOTER_ITEM  = Color(0xFF2F3338)
 
 private enum class LeaderboardMetric(val label: String) {
     LEVEL("Ниво"),
@@ -703,7 +703,6 @@ private fun GameButtonsSection(
         Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy((10 * scale).dp)) {
             GoldSquareButton(modifier = Modifier.size((82 * scale).dp), onClick = onStatsClick) {
                 Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                    Text("📊", fontSize = 26.sp)
                     Text("СТАТ", color = Color.White, fontWeight = FontWeight.ExtraBold, fontSize = (11 * scale).sp)
                 }
             }
@@ -754,15 +753,14 @@ private fun FooterNavBar(
     onSettings: () -> Unit,
     onLeaderboard: () -> Unit
 ) {
-    data class NavItem(val emoji: String, val label: String, val onClick: () -> Unit,
+    data class NavItem(val label: String, val onClick: () -> Unit,
                        val highlight: Boolean = false)
     val items = listOf(
-        NavItem("🛒", "ПРОДАВНИЦА",     onShop),
-        NavItem("🏆", "ЛИСТА",  onLeaderboard),
-        NavItem("❓", "УПУТСТВО",  onHowTo),
-        NavItem("📖", "ВОДИЧ",    onWip),
+        NavItem("ПРОДАВНИЦА", onShop),
+        NavItem("ЛИСТА", onLeaderboard),
+        NavItem("УПУТСТВО", onHowTo),
+        NavItem("ВОДИЧ", onWip),
         NavItem(
-            if (isGuest) "🔑" else "⚙️",
             if (isGuest) "ПРИЈАВА" else "ПОДЕШАВАЊЕ",
             if (isGuest) onSignIn else onSettings,
             highlight = isGuest
@@ -785,16 +783,31 @@ private fun FooterNavBar(
                 contentAlignment = Alignment.Center
             ) {
                 Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                    Text(item.emoji, fontSize = (20 * scale).sp)
                     Text(
                         item.label,
                         color = if (item.highlight) Color(0xFF60DDFF) else Color(0xCCFFFFFF),
-                        fontSize = (7 * scale).sp, fontWeight = FontWeight.ExtraBold,
+                        fontSize = (10 * scale).sp, fontWeight = FontWeight.ExtraBold,
                         textAlign = TextAlign.Center, maxLines = 1
                     )
                 }
             }
         }
+    }
+}
+
+@Composable
+private fun StatBox(value: String, label: String) {
+    Column(
+        modifier = Modifier
+            .widthIn(min = 88.dp)
+            .clip(RoundedCornerShape(14.dp))
+            .background(Color(0x332F3338))
+            .border(1.dp, Color(0x66FFFFFF), RoundedCornerShape(14.dp))
+            .padding(horizontal = 10.dp, vertical = 8.dp),
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        Text(value, color = Color.White, fontSize = 19.sp, fontWeight = FontWeight.ExtraBold)
+        Text(label, color = Color(0xFFDDE3EA), fontSize = 11.sp, fontWeight = FontWeight.Bold)
     }
 }
 
