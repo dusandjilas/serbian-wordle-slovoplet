@@ -59,7 +59,7 @@ class FirebaseStatsRepository {
             }
 
         val publicLeaderboardData = hashMapOf(
-            "displayName" to (user.displayName ?: user.email ?: "Играч"),
+            "displayName" to (user.displayName ?: user.email ?: "Igrač"),
             "profileAvatar" to profileManager.getProfileAvatar(),
             "classicGamesPlayed" to profileManager.getClassicGamesPlayed(),
             "classicWins" to profileManager.getClassicWins(),
@@ -114,7 +114,7 @@ class FirebaseStatsRepository {
                     val winRate = if (gamesPlayed > 0) (wins * 100) / gamesPlayed else 0
 
                     LeaderboardEntry(
-                        displayName = doc.getString("displayName") ?: "Играч",
+                        displayName = doc.getString("displayName") ?: "Igrač",
                         gamesPlayed = gamesPlayed,
                         winRate = winRate,
                         level = (doc.getLong("level") ?: 1L).toInt(),

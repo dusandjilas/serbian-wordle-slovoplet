@@ -59,7 +59,7 @@ class ProfileActivity : AppCompatActivity() {
             MaterialTheme {
                 ProfileScreen(
                     profileManager = profileManager,
-                    displayName = user?.displayName ?: user?.email?.substringBefore('@') ?: "Гост",
+                    displayName = user?.displayName ?: user?.email?.substringBefore('@') ?: "Gost",
                     email = user?.email,
                     isGuest = user == null,
                     onBack = { finish() }
@@ -111,14 +111,14 @@ private fun ProfileScreen(
                 horizontalArrangement = Arrangement.SpaceBetween
             ) {
                 Column(Modifier.weight(1f)) {
-                    Text("Профил играча", color = Color.White, fontSize = 30.sp, fontWeight = FontWeight.ExtraBold)
+                    Text("Profil igrača", color = Color.White, fontSize = 30.sp, fontWeight = FontWeight.ExtraBold)
                     Text(
-                        if (isGuest) "Гост налог" else "Твој налог, аватар и напредак",
+                        if (isGuest) "Gost nalog" else "Tvoj nalog, avatar i napredak",
                         color = Color(0xFFCBEAFF),
                         fontSize = 14.sp
                     )
                 }
-                Button(onClick = onBack) { Text("Назад") }
+                Button(onClick = onBack) { Text("Nazad") }
             }
 
             HeroProfileCard(
@@ -132,45 +132,45 @@ private fun ProfileScreen(
                 xpProgress = profileManager.getXpProgress()
             )
 
-            SectionCard(title = "Промени слику профила", subtitle = "Изабери икону која ће се приказивати на почетном екрану.") {
+            SectionCard(title = "Promeni sliku profila", subtitle = "Izaberi ikonu koja će se prikazivati na početnom ekranu.") {
                 AvatarPicker(
                     selectedAvatar = selectedAvatar,
                     onAvatarSelected = { avatar ->
                         selectedAvatar = avatar
                         profileManager.setProfileAvatar(avatar)
-                        Toast.makeText(context, "Слика профила је промењена", Toast.LENGTH_SHORT).show()
+                        Toast.makeText(context, "Slika profila je promenjena", Toast.LENGTH_SHORT).show()
                     }
                 )
             }
 
-            SectionCard(title = "Брзи преглед", subtitle = "Најважнији подаци о налогу и игри.") {
+            SectionCard(title = "Brzi pregled", subtitle = "Najvažniji podaci o nalogu i igri.") {
                 Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(10.dp)) {
-                    MiniStat("Ниво", level.toString(), Modifier.weight(1f))
+                    MiniStat("Nivo", level.toString(), Modifier.weight(1f))
                     MiniStat("XP", xp.toString(), Modifier.weight(1f))
-                    MiniStat("Новчићи", profileManager.getStoredCoins().toString(), Modifier.weight(1f))
+                    MiniStat("Novčići", profileManager.getStoredCoins().toString(), Modifier.weight(1f))
                 }
                 Spacer(Modifier.height(10.dp))
                 Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(10.dp)) {
-                    MiniStat("Победе", profileManager.getClassicWins().toString(), Modifier.weight(1f))
+                    MiniStat("Pobede", profileManager.getClassicWins().toString(), Modifier.weight(1f))
                     MiniStat("Win rate", "${profileManager.getClassicWinRate()}%", Modifier.weight(1f))
-                    MiniStat("Низ", profileManager.getClassicStreak().toString(), Modifier.weight(1f))
+                    MiniStat("Niz", profileManager.getClassicStreak().toString(), Modifier.weight(1f))
                 }
             }
 
-            SectionCard(title = "Статистика", subtitle = "Classic и Daily резултати на једном месту.") {
-                ProfileStatRow("Classic одиграно", profileManager.getClassicGamesPlayed().toString())
-                ProfileStatRow("Classic победе", profileManager.getClassicWins().toString())
-                ProfileStatRow("Classic порази", profileManager.getClassicLosses().toString())
-                ProfileStatRow("Најбољи streak", profileManager.getBestClassicStreak().toString())
-                ProfileStatRow("Daily одиграно", profileManager.getDailyGamesPlayed().toString())
-                ProfileStatRow("Daily победе", profileManager.getDailyWins().toString())
-                ProfileStatRow("Daily порази", profileManager.getDailyLosses().toString())
+            SectionCard(title = "Statistika", subtitle = "Classic i Daily rezultati na jednom mestu.") {
+                ProfileStatRow("Classic odigrano", profileManager.getClassicGamesPlayed().toString())
+                ProfileStatRow("Classic pobede", profileManager.getClassicWins().toString())
+                ProfileStatRow("Classic porazi", profileManager.getClassicLosses().toString())
+                ProfileStatRow("Najbolji streak", profileManager.getBestClassicStreak().toString())
+                ProfileStatRow("Daily odigrano", profileManager.getDailyGamesPlayed().toString())
+                ProfileStatRow("Daily pobede", profileManager.getDailyWins().toString())
+                ProfileStatRow("Daily porazi", profileManager.getDailyLosses().toString())
             }
 
-            SectionCard(title = "Достигнућа", subtitle = "Мали подсетник шта си већ откључао/ла.") {
-                AchievementRow("🔥", "Први низ", if (profileManager.getBestClassicStreak() > 0) "Откључано" else "Освоји прву победу")
-                AchievementRow("🏆", "Пет победа", if (profileManager.getClassicWins() >= 5) "Откључано" else "${profileManager.getClassicWins()}/5")
-                AchievementRow("⚡", "Ниво 5", if (level >= 5) "Откључано" else "Ниво $level/5")
+            SectionCard(title = "Dostignuća", subtitle = "Mali podsetnik šta si već otključao/la.") {
+                AchievementRow("🔥", "Prvi niz", if (profileManager.getBestClassicStreak() > 0) "Otključano" else "Osvoji prvu pobedu")
+                AchievementRow("🏆", "Pet pobeda", if (profileManager.getClassicWins() >= 5) "Otključano" else "${profileManager.getClassicWins()}/5")
+                AchievementRow("⚡", "Nivo 5", if (level >= 5) "Otključano" else "Nivo $level/5")
             }
         }
     }
@@ -211,10 +211,10 @@ private fun HeroProfileCard(
             Spacer(Modifier.width(16.dp))
             Column(Modifier.weight(1f)) {
                 Text(displayName, color = Color.White, fontSize = 24.sp, fontWeight = FontWeight.ExtraBold, maxLines = 1, overflow = TextOverflow.Ellipsis)
-                Text(email ?: if (isGuest) "Ниси пријављен/а" else "Без email адресе", color = Color(0xFFD5F3FF), fontSize = 13.sp, maxLines = 1, overflow = TextOverflow.Ellipsis)
+                Text(email ?: if (isGuest) "Nisi prijavljen/a" else "Bez email adrese", color = Color(0xFFD5F3FF), fontSize = 13.sp, maxLines = 1, overflow = TextOverflow.Ellipsis)
                 Spacer(Modifier.height(10.dp))
                 Row(verticalAlignment = Alignment.CenterVertically) {
-                    Text("Ниво $level", color = Gold, fontWeight = FontWeight.Black)
+                    Text("Nivo $level", color = Gold, fontWeight = FontWeight.Black)
                     Spacer(Modifier.width(10.dp))
                     Text("$xpIntoLevel / $xpNeeded XP", color = Color.White, fontSize = 12.sp)
                 }

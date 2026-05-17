@@ -81,10 +81,10 @@ private val GOLD_STRIPE  = Color(0x22C11521)
 private val FOOTER_BG    = Color(0xFF0F1E33)
 
 private enum class LeaderboardMetric(val label: String) {
-    LEVEL("Ниво"),
+    LEVEL("Nivo"),
     STREAK("Streak"),
-    GAMES("Игре"),
-    WINRATE("Победе %")
+    GAMES("Igre"),
+    WINRATE("Pobede %")
 }
 
 class MainActivity : AppCompatActivity() {
@@ -317,11 +317,11 @@ private fun MainScreen(
                 onDismissRequest = { showDailyAlreadyPlayedPopup = false },
                 confirmButton = {
                     TextButton(onClick = { showDailyAlreadyPlayedPopup = false }) {
-                        Text("У реду")
+                        Text("U redu")
                     }
                 },
-                title = { Text("Реч дана је већ одиграна") },
-                text = { Text("Већ си одиграо/ла данашњу Реч дана. Врати се сутра за нову реч!") }
+                title = { Text("Reč dana je već odigrana") },
+                text = { Text("Već si odigrao/la današnju Reč dana. Vrati se sutra za novu reč!") }
             )
         }
     }
@@ -349,14 +349,14 @@ private fun AuthDialog(
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             Text(
-                if (isRegister) "РЕГИСТРАЦИЈА" else "ПРИЈАВА",
+                if (isRegister) "REGISTRACIJA" else "PRIJAVA",
                 color = Color.White, fontSize = 22.sp, fontWeight = FontWeight.ExtraBold
             )
             Spacer(Modifier.height(20.dp))
 
             OutlinedTextField(
                 value = email, onValueChange = { email = it; error = "" },
-                label = { Text("Е-маил", color = Color(0xAAFFFFFF)) },
+                label = { Text("E-mail", color = Color(0xAAFFFFFF)) },
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email),
                 singleLine = true,
                 colors = OutlinedTextFieldDefaults.colors(
@@ -371,7 +371,7 @@ private fun AuthDialog(
             Spacer(Modifier.height(10.dp))
             OutlinedTextField(
                 value = password, onValueChange = { password = it; error = "" },
-                label = { Text("Лозинка", color = Color(0xAAFFFFFF)) },
+                label = { Text("Lozinka", color = Color(0xAAFFFFFF)) },
                 visualTransformation = PasswordVisualTransformation(),
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
                 singleLine = true,
@@ -396,7 +396,7 @@ private fun AuthDialog(
                 CircularProgressIndicator(color = Color(0xFF60DDFF))
             } else {
                 GoldButton(
-                    label = if (isRegister) "НАПРАВИ НАЛОГ" else "ПРИЈАВИ СЕ",
+                    label = if (isRegister) "NAPRAVI NALOG" else "PRIJAVI SE",
                     onClick = {
                         loading = true
                         if (isRegister) {
@@ -423,10 +423,10 @@ private fun AuthDialog(
                                 .addOnFailureListener { e ->
                                     loading = false
                                     error = when (e) {
-                                        is FirebaseAuthWeakPasswordException -> "Лозинка мора имати бар 6 знакова"
-                                        is FirebaseAuthUserCollisionException -> "Е-маил је већ у употреби"
-                                        is FirebaseAuthInvalidCredentialsException -> "Неисправан е-маил"
-                                        else -> "Грешка: ${e.message}"
+                                        is FirebaseAuthWeakPasswordException -> "Lozinka mora imati bar 6 znakova"
+                                        is FirebaseAuthUserCollisionException -> "E-mail je već u upotrebi"
+                                        is FirebaseAuthInvalidCredentialsException -> "Neispravan e-mail"
+                                        else -> "Greška: ${e.message}"
                                     }
                                 }
                         } else {
@@ -438,8 +438,8 @@ private fun AuthDialog(
                                 .addOnFailureListener { e ->
                                     loading = false
                                     error = when (e) {
-                                        is FirebaseAuthInvalidCredentialsException -> "Погрешан е-маил или лозинка"
-                                        else -> "Грешка: ${e.message}"
+                                        is FirebaseAuthInvalidCredentialsException -> "Pogrešan e-mail ili lozinka"
+                                        else -> "Greška: ${e.message}"
                                     }
                                 }
                         }
@@ -447,13 +447,13 @@ private fun AuthDialog(
                 )
                 Spacer(Modifier.height(14.dp))
                 Text(
-                    if (isRegister) "Већ имаш налог? Пријави се" else "Немаш налог? Региструј се",
+                    if (isRegister) "Već imaš nalog? Prijavi se" else "Nemaš nalog? Registruj se",
                     color = Color(0xFF60DDFF), fontWeight = FontWeight.Bold, fontSize = 14.sp,
                     modifier = Modifier.clickable { isRegister = !isRegister; error = "" }
                 )
                 Spacer(Modifier.height(10.dp))
                 Text(
-                    "Одустани",
+                    "Odustani",
                     color = Color(0xAAFFFFFF), fontWeight = FontWeight.Bold, fontSize = 13.sp,
                     modifier = Modifier.clickable { onDismiss() }
                 )
@@ -483,7 +483,7 @@ private fun ChangeDisplayNameDialog(
                 .padding(24.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            Text("ПРОМЕНИ ИМЕ", color = Color.White, fontSize = 22.sp, fontWeight = FontWeight.ExtraBold)
+            Text("PROMENI IME", color = Color.White, fontSize = 22.sp, fontWeight = FontWeight.ExtraBold)
             Spacer(Modifier.height(12.dp))
             OutlinedTextField(
                 value = name,
@@ -492,7 +492,7 @@ private fun ChangeDisplayNameDialog(
                     error = ""
                 },
                 singleLine = true,
-                label = { Text("Име играча") },
+                label = { Text("Ime igrača") },
                 colors = OutlinedTextFieldDefaults.colors(
                     focusedBorderColor = Color(0xFF60DDFF),
                     unfocusedBorderColor = Color(0x66FFFFFF),
@@ -510,16 +510,16 @@ private fun ChangeDisplayNameDialog(
 
             Spacer(Modifier.height(16.dp))
             GoldButton(
-                label = if (loading) "ЧУВАЊЕ..." else "САЧУВАЈ",
+                label = if (loading) "ČUVANJE..." else "SAČUVAJ",
                 onClick = {
                     val newName = name.trim()
                     val user = firebaseAuth.currentUser
                     if (newName.length < 3) {
-                        error = "Име мора имати бар 3 карактера."
+                        error = "Ime mora imati bar 3 karaktera."
                         return@GoldButton
                     }
                     if (user == null) {
-                        error = "Нисте пријављени."
+                        error = "Niste prijavljeni."
                         return@GoldButton
                     }
 
@@ -533,23 +533,23 @@ private fun ChangeDisplayNameDialog(
                             displayName = newName,
                             onSuccess = {
                                 loading = false
-                                Toast.makeText(context, "Име је сачувано", Toast.LENGTH_SHORT).show()
+                                Toast.makeText(context, "Ime je sačuvano", Toast.LENGTH_SHORT).show()
                                 onDismiss()
                             },
                             onFailure = {
                                 loading = false
-                                error = "Име је промењено локално, али не и на листи."
+                                error = "Ime je promenjeno lokalno, ali ne i na listi."
                             }
                         )
                     }.addOnFailureListener {
                         loading = false
-                        error = "Није успело чување имена."
+                        error = "Nije uspelo čuvanje imena."
                     }
                 }
             )
             Spacer(Modifier.height(8.dp))
             Text(
-                "ОТКАЖИ",
+                "OTKAŽI",
                 color = Color(0xAAFFFFFF),
                 fontWeight = FontWeight.Bold,
                 modifier = Modifier.clickable { onDismiss() }
@@ -631,7 +631,7 @@ private fun CenterAvatar(level: Int, xpProgress: Float, isGuest: Boolean, avatar
                     .clip(RoundedCornerShape(8.dp)).background(Color(0xCC1A3A5C))
                     .padding(horizontal = 6.dp, vertical = 2.dp)
             ) {
-                Text("Пријави се", color = Color(0xFF60DDFF), fontSize = 9.sp, fontWeight = FontWeight.Bold)
+                Text("Prijavi se", color = Color(0xFF60DDFF), fontSize = 9.sp, fontWeight = FontWeight.Bold)
             }
         }
     }
@@ -658,7 +658,7 @@ private fun CoinPill(coins: Int, isGuest: Boolean, scale: Float, onPlusClick: ()
                         .border(2.dp, Color(0xFFA06000), CircleShape),
                     contentAlignment = Alignment.Center
                 ) {
-                    Text("Д", color = Color.White, fontWeight = FontWeight.ExtraBold, fontSize = (12 * scale).sp)
+                    Text("D", color = Color.White, fontWeight = FontWeight.ExtraBold, fontSize = (12 * scale).sp)
                 }
             }
         }
@@ -676,7 +676,7 @@ private fun CoinPill(coins: Int, isGuest: Boolean, scale: Float, onPlusClick: ()
 
 @Composable
 private fun WordleBubblesRow(scale: Float) {
-    val letters = "СЛОВОПЛЕТ".toList()
+    val letters = "SLOVOPLET".toList()
     BoxWithConstraints(
         modifier = Modifier
             .fillMaxWidth()
@@ -746,16 +746,16 @@ private fun GameButtonsSection(
         Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy((10 * scale).dp)) {
             GoldSquareButton(modifier = Modifier.size((82 * scale).dp), onClick = onStatsClick) {
                 Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                    Text("СТАТ", color = Color.White, fontWeight = FontWeight.ExtraBold, fontSize = (11 * scale).sp)
+                    Text("STAT", color = Color.White, fontWeight = FontWeight.ExtraBold, fontSize = (11 * scale).sp)
                 }
             }
             GoldWideButton(
-                title = "КЛАСИЧАН", rightTop = classicStreak.toString(), rightBottom = "НИЗ",
+                title = "KLASIČAN", rightTop = classicStreak.toString(), rightBottom = "NIZ",
                 modifier = Modifier.weight(1f).height((82 * scale).dp), onClick = onClassicClick
             )
         }
         GoldWideButton(
-            title = "РЕЧ ДАНА", rightTop = "", rightBottom = "+100",
+            title = "REČ DANA", rightTop = "", rightBottom = "+100",
             modifier = Modifier.fillMaxWidth().height((82 * scale).dp), onClick = onDailyClick
         )
     }
@@ -787,11 +787,11 @@ private fun FooterNavBar(
     data class NavItem(val label: String, val onClick: () -> Unit,
                        val highlight: Boolean = false)
     val items = listOf(
-        NavItem("ПРОДАВНИЦА", onShop),
-        NavItem("ЛИСТА", onLeaderboard),
-        NavItem("РЕЧИ", onHowTo),
+        NavItem("PRODAVNICA", onShop),
+        NavItem("LISTA", onLeaderboard),
+        NavItem("REČI", onHowTo),
         NavItem(
-            if (isGuest) "ПРИЈАВА" else "ПОДЕШАВАЊЕ",
+            if (isGuest) "PRIJAVA" else "PODEŠAVANJE",
             if (isGuest) onSignIn else onSettings,
             highlight = isGuest
         )
@@ -916,11 +916,11 @@ private fun SettingsDialog(onDismiss: () -> Unit, onLogout: () -> Unit) {
                 .padding(24.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            Text("ПОДЕШАВАЊА", color = Color.White, fontSize = 22.sp, fontWeight = FontWeight.ExtraBold)
+            Text("PODEŠAVANJA", color = Color.White, fontSize = 22.sp, fontWeight = FontWeight.ExtraBold)
             Spacer(Modifier.height(16.dp))
 
             Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
-                Text("Музика", color = Color.White, fontWeight = FontWeight.Bold)
+                Text("Muzika", color = Color.White, fontWeight = FontWeight.Bold)
                 Switch(
                     checked = settings.musicEnabled,
                     onCheckedChange = {
@@ -931,7 +931,7 @@ private fun SettingsDialog(onDismiss: () -> Unit, onLogout: () -> Unit) {
             }
 
             Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
-                Text("Звучни ефекти", color = Color.White, fontWeight = FontWeight.Bold)
+                Text("Zvučni efekti", color = Color.White, fontWeight = FontWeight.Bold)
                 Switch(
                     checked = settings.effectsEnabled,
                     onCheckedChange = {
@@ -942,7 +942,7 @@ private fun SettingsDialog(onDismiss: () -> Unit, onLogout: () -> Unit) {
             }
 
             Spacer(Modifier.height(10.dp))
-            Text("Јачина музике: ${(settings.musicVolume * 100).roundToInt()}%", color = Color(0xFFD6D9E0), fontSize = 12.sp)
+            Text("Jačina muzike: ${(settings.musicVolume * 100).roundToInt()}%", color = Color(0xFFD6D9E0), fontSize = 12.sp)
             Slider(
                 value = settings.musicVolume,
                 onValueChange = {
@@ -952,7 +952,7 @@ private fun SettingsDialog(onDismiss: () -> Unit, onLogout: () -> Unit) {
                 valueRange = 0f..1f
             )
 
-            Text("Јачина ефеката: ${(settings.effectsVolume * 100).roundToInt()}%", color = Color(0xFFD6D9E0), fontSize = 12.sp)
+            Text("Jačina efekata: ${(settings.effectsVolume * 100).roundToInt()}%", color = Color(0xFFD6D9E0), fontSize = 12.sp)
             Slider(
                 value = settings.effectsVolume,
                 onValueChange = {
@@ -963,9 +963,9 @@ private fun SettingsDialog(onDismiss: () -> Unit, onLogout: () -> Unit) {
             )
 
             Spacer(Modifier.height(12.dp))
-            GoldButton("ОДЈАВИ СЕ", onLogout)
+            GoldButton("ODJAVI SE", onLogout)
             Spacer(Modifier.height(10.dp))
-            GoldButton("ЗАТВОРИ", onDismiss)
+            GoldButton("ZATVORI", onDismiss)
         }
     }
 }
@@ -980,21 +980,21 @@ private fun StatsDialogContent(profileManager: GameProfileManager, onClose: () -
             .padding(24.dp),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        Text("СТАТИСТИКА", color = Color.White, fontSize = 22.sp, fontWeight = FontWeight.ExtraBold)
+        Text("STATISTIKA", color = Color.White, fontSize = 22.sp, fontWeight = FontWeight.ExtraBold)
         Spacer(Modifier.height(16.dp))
         Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceEvenly) {
-            StatBox(profileManager.getClassicGamesPlayed().toString(), "ИГРЕ")
-            StatBox(profileManager.getClassicWins().toString(), "ПОБЕДЕ")
-            StatBox("${profileManager.getClassicWinRate()}%", "ПОБЕДЕ %")
+            StatBox(profileManager.getClassicGamesPlayed().toString(), "IGRE")
+            StatBox(profileManager.getClassicWins().toString(), "POBEDE")
+            StatBox("${profileManager.getClassicWinRate()}%", "POBEDE %")
         }
         Spacer(Modifier.height(10.dp))
         Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceEvenly) {
-            StatBox(profileManager.getClassicStreak().toString(), "НИЗ")
-            StatBox(profileManager.getBestClassicStreak().toString(), "НАЈБОЉИ")
-            StatBox(profileManager.getClassicLosses().toString(), "ПОРАЗИ")
+            StatBox(profileManager.getClassicStreak().toString(), "NIZ")
+            StatBox(profileManager.getBestClassicStreak().toString(), "NAJBOLJI")
+            StatBox(profileManager.getClassicLosses().toString(), "PORAZI")
         }
         Spacer(Modifier.height(18.dp))
-        Text("Расподела погађања", color = Color.White, fontSize = 15.sp, fontWeight = FontWeight.Bold)
+        Text("Raspodela pogađanja", color = Color.White, fontSize = 15.sp, fontWeight = FontWeight.Bold)
         Spacer(Modifier.height(10.dp))
         Column(Modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(6.dp)) {
             val distribution = profileManager.getAllGuessDistribution()
@@ -1018,7 +1018,7 @@ private fun StatsDialogContent(profileManager: GameProfileManager, onClose: () -
             }
         }
         Spacer(Modifier.height(20.dp))
-        GoldButton("ЗАТВОРИ", onClose)
+        GoldButton("ZATVORI", onClose)
     }
 }
 
@@ -1297,13 +1297,13 @@ fun RemoveAdsDialog(onDismiss: () -> Unit, onBuy: () -> Unit) {
         ) {
             Text("", fontSize = 52.sp)
             Spacer(Modifier.height(10.dp))
-            Text("УКЛОНИ РЕКЛАМЕ", color = Color.White, fontSize = 22.sp,
+            Text("UKLONI REKLAME", color = Color.White, fontSize = 22.sp,
                 fontWeight = FontWeight.ExtraBold, textAlign = TextAlign.Center)
             Spacer(Modifier.height(8.dp))
-            Text("Уживај у игри без прекида.\nЈедном купи, заувек без реклама.",
+            Text("Uživaj u igri bez prekida.\nJednom kupi, zauvek bez reklama.",
                 color = Color(0xCCFFFFFF), fontSize = 14.sp, textAlign = TextAlign.Center)
             Spacer(Modifier.height(22.dp))
-            for (text in listOf("Без банер реклама", "Без видео реклама", "Подршка развоју игре")) {
+            for (text in listOf("Bez baner reklama", "Bez video reklama", "Podrška razvoju igre")) {
                 Row(verticalAlignment = Alignment.CenterVertically,
                     modifier = Modifier.fillMaxWidth().padding(vertical = 5.dp)) {
                     Box(Modifier.size(26.dp).clip(CircleShape).background(Color(0xFF44BB55)),
@@ -1315,9 +1315,9 @@ fun RemoveAdsDialog(onDismiss: () -> Unit, onBuy: () -> Unit) {
                 }
             }
             Spacer(Modifier.height(24.dp))
-            GoldButton("КУПИ — 2,99 €", onBuy)
+            GoldButton("KUPI — 2,99 €", onBuy)
             Spacer(Modifier.height(14.dp))
-            Text("НЕ САДА", color = Color(0xAAFFFFFF), fontWeight = FontWeight.Bold, fontSize = 14.sp,
+            Text("NE SADA", color = Color(0xAAFFFFFF), fontWeight = FontWeight.Bold, fontSize = 14.sp,
                 modifier = Modifier.clickable { onDismiss() })
         }
     }
@@ -1326,10 +1326,10 @@ fun RemoveAdsDialog(onDismiss: () -> Unit, onBuy: () -> Unit) {
 @Composable
 private fun WordChoiceInfoDialog(onDismiss: () -> Unit) {
     val bulletItems = listOf(
-        "Извор је Речник српског језика, Матица српска, Нови Сад, 2011.",
-        "У игри су глаголи, именице, придеви и прилози.",
-        "Глаголи су у инфинитиву, именице у номинативу једнине, а придеви у мушком роду, номинативу једнине.",
-        "Бирали смо речи које су јасне, препознатљиве и погодне за кратку Wordle партију."
+        "Izvor je Rečnik srpskog jezika, Matica srpska, Novi Sad, 2011.",
+        "U igri su glagoli, imenice, pridevi i prilozi.",
+        "Glagoli su u infinitivu, imenice u nominativu jednine, a pridevi u muškom rodu, nominativu jednine.",
+        "Birali smo reči koje su jasne, prepoznatljive i pogodne za kratku Wordle partiju."
     )
 
     ComposeDialog(onDismissRequest = onDismiss) {
@@ -1352,11 +1352,11 @@ private fun WordChoiceInfoDialog(onDismiss: () -> Unit) {
                     .border(2.dp, Color(0xFFFFF0B8), CircleShape),
                 contentAlignment = Alignment.Center
             ) {
-                Text("АБ", color = Color(0xFF27324A), fontSize = 18.sp, fontWeight = FontWeight.Black)
+                Text("AB", color = Color(0xFF27324A), fontSize = 18.sp, fontWeight = FontWeight.Black)
             }
             Spacer(Modifier.height(12.dp))
             Text(
-                "КАКО СМО БИРАЛИ РЕЧИ?",
+                "KAKO SMO BIRALI REČI?",
                 color = Color.White,
                 fontSize = 22.sp,
                 fontWeight = FontWeight.ExtraBold,
@@ -1364,7 +1364,7 @@ private fun WordChoiceInfoDialog(onDismiss: () -> Unit) {
             )
             Spacer(Modifier.height(8.dp))
             Text(
-                "Словоплет користи пажљиво сужен списак речи да свака партија буде фер, разумљива и забавна.",
+                "Slovoplet koristi pažljivo sužen spisak reči da svaka partija bude fer, razumljiva i zabavna.",
                 color = Color(0xFFDCE8F6),
                 fontSize = 14.sp,
                 textAlign = TextAlign.Center,
@@ -1404,7 +1404,7 @@ private fun WordChoiceInfoDialog(onDismiss: () -> Unit) {
                 }
             }
             Spacer(Modifier.height(20.dp))
-            GoldButton("РАЗУМЕМ", onDismiss)
+            GoldButton("RAZUMEM", onDismiss)
         }
     }
 }

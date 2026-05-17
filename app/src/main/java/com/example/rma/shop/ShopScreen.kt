@@ -75,16 +75,16 @@ fun ShopScreen(
     onBuyNoAds: () -> Unit
 ) {
     val smallOffers = listOf(
-        ShopOfferUi(25, "БЕСПЛАТНО", "ПОГЛЕДАЈ\nРЕКЛАМУ", "БЕСПЛАТНО", "🎁", true),
-        ShopOfferUi(1000, "$4.99", "50%\nSALE", "ПОПУЛАРНО", "🪙"),
+        ShopOfferUi(25, "BESPLATNO", "POGLEDAJ\nREKLAMU", "BESPLATNO", "🎁", true),
+        ShopOfferUi(1000, "$4.99", "50%\nSALE", "POPULARNO", "🪙"),
         ShopOfferUi(3000, "$6.99", "50%\nSALE", emoji = "💰"),
         ShopOfferUi(4000, "$8.99", "50%\nSALE", emoji = "🏺")
     )
 
     val bigOffers = listOf(
-        ShopOfferUi(7000, "$12.99", "25%\nBONUS", "ИСПЛАТИВО", "💰"),
+        ShopOfferUi(7000, "$12.99", "25%\nBONUS", "ISPLATIVO", "💰"),
         ShopOfferUi(12000, "$19.99", "30%\nBONUS", emoji = "🏆"),
-        ShopOfferUi(20000, "$29.99", "35%\nBONUS", "НАЈБОЉЕ", "👑")
+        ShopOfferUi(20000, "$29.99", "35%\nBONUS", "NAJBOLJE", "👑")
     )
 
     Box(Modifier.fillMaxSize().background(SHOP_NAVY_DARK)) {
@@ -98,7 +98,7 @@ fun ShopScreen(
                 .padding(horizontal = 16.dp, vertical = 12.dp)
         ) {
             Box(modifier = Modifier.fillMaxWidth()) {
-                GameTitle(text = "ПРОДАВНИЦА", modifier = Modifier.align(Alignment.Center))
+                GameTitle(text = "PRODAVNICA", modifier = Modifier.align(Alignment.Center))
                 PurpleCloseButton(onClick = onBack, modifier = Modifier.align(Alignment.TopEnd))
             }
 
@@ -111,7 +111,7 @@ fun ShopScreen(
             StarterPackCard(onClick = { onBuyNoAds(); onBuyCoins(600) })
 
             Spacer(Modifier.height(18.dp))
-            SectionTitle("Пакети новчића")
+            SectionTitle("Paketi novčića")
             Spacer(Modifier.height(10.dp))
 
             LazyRow(horizontalArrangement = Arrangement.spacedBy(14.dp), contentPadding = PaddingValues(horizontal = 4.dp)) {
@@ -123,7 +123,7 @@ fun ShopScreen(
             }
 
             Spacer(Modifier.height(18.dp))
-            SectionTitle("Мега пакети")
+            SectionTitle("Mega paketi")
             Spacer(Modifier.height(10.dp))
 
             LazyRow(horizontalArrangement = Arrangement.spacedBy(14.dp), contentPadding = PaddingValues(horizontal = 4.dp)) {
@@ -140,10 +140,10 @@ private fun StarterPackCard(onClick: () -> Unit) {
     Box(Modifier.fillMaxWidth().height(190.dp).clip(RoundedCornerShape(26.dp)).background(SHOP_GRAY).border(5.dp, SHOP_NAVY, RoundedCornerShape(26.dp)).padding(10.dp)) {
         Box(Modifier.fillMaxSize().clip(RoundedCornerShape(20.dp)).background(SHOP_GRAY_LIGHT)) {
             BeigeBurstBackground(Modifier.matchParentSize())
-            SaleBadge(text = "НАЈБОЉА\nПОНУДА", modifier = Modifier.align(Alignment.TopEnd).padding(10.dp))
+            SaleBadge(text = "NAJBOLJA\nPONUDA", modifier = Modifier.align(Alignment.TopEnd).padding(10.dp))
             Column(Modifier.fillMaxSize().padding(16.dp)) {
                 Box(Modifier.clip(RoundedCornerShape(12.dp)).background(Brush.horizontalGradient(listOf(SHOP_RED, SHOP_RED_DARK))).padding(horizontal = 14.dp, vertical = 8.dp)) {
-                    Text("ПОЧЕТНИ ПАКЕТ", color = Color.White, fontSize = 18.sp, fontWeight = FontWeight.Black)
+                    Text("POČETNI PAKET", color = Color.White, fontSize = 18.sp, fontWeight = FontWeight.Black)
                 }
                 Spacer(Modifier.height(12.dp))
                 Row(verticalAlignment = Alignment.CenterVertically) {
@@ -151,7 +151,7 @@ private fun StarterPackCard(onClick: () -> Unit) {
                     Spacer(Modifier.width(10.dp))
                     Column {
                         OutlinedGameText("600", fill = Color.White, stroke = Color(0xFFBF5A07), fontSize = 30.sp)
-                        Text("Новчићи + Без реклама", color = Color(0xFF7A3E05), fontSize = 18.sp, fontWeight = FontWeight.Bold)
+                        Text("Novčići + Bez reklama", color = Color(0xFF7A3E05), fontSize = 18.sp, fontWeight = FontWeight.Bold)
                     }
                 }
                 Spacer(Modifier.weight(1f))

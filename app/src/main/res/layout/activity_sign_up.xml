@@ -19,14 +19,14 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:fontFamily="@font/fonttri"
-            android:text="Словоплет"
+            android:text="Slovoplet"
             android:textColor="#162b4a"
             android:textSize="42sp" />
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginTop="8dp"
-            android:text="Креирајте налог"
+            android:text="Kreirajte nalog"
             android:textColor="#5E6B7A"
             android:textSize="16sp" />
         <com.google.android.material.card.MaterialCardView
@@ -45,7 +45,7 @@
                     android:id="@+id/emailLayout"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:hint="Емаил"
+                    android:hint="Email"
                     app:boxBackgroundMode="outline"
                     app:boxCornerRadiusBottomEnd="14dp"
                     app:boxCornerRadiusBottomStart="14dp"
@@ -62,7 +62,7 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="12dp"
-                    android:hint="Шифра"
+                    android:hint="Šifra"
                     app:boxBackgroundMode="outline"
                     app:boxCornerRadiusBottomEnd="14dp"
                     app:boxCornerRadiusBottomStart="14dp"
@@ -80,7 +80,7 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="12dp"
-                    android:hint="Поновите шифру"
+                    android:hint="Ponovite šifru"
                     app:boxBackgroundMode="outline"
                     app:boxCornerRadiusBottomEnd="14dp"
                     app:boxCornerRadiusBottomStart="14dp"
@@ -98,7 +98,7 @@
                     android:layout_width="match_parent"
                     android:layout_height="48dp"
                     android:layout_marginTop="16dp"
-                    android:text="Креирај налог"
+                    android:text="Kreiraj nalog"
                     android:textAllCaps="false"
                     android:textColor="@android:color/white"
                     app:backgroundTint="#162b4a"
@@ -110,7 +110,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginTop="18dp"
-            android:text="Већ имате налог? Пријавите се"
+            android:text="Već imate nalog? Prijavite se"
             android:textColor="#162b4a"
             android:textStyle="bold" />
     </LinearLayout>

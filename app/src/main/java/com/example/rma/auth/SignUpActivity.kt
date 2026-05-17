@@ -51,10 +51,10 @@ class SignUpActivity : AppCompatActivity() {
                         }
                     }
                 } else {
-                    Toast.makeText(this, "Шифре се не слажу!", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(this, "Šifre se ne slažu!", Toast.LENGTH_SHORT).show()
                 }
             } else {
-                Toast.makeText(this, "Празна поља морају бити попуњена!", Toast.LENGTH_SHORT).show()
+                Toast.makeText(this, "Prazna polja moraju biti popunjena!", Toast.LENGTH_SHORT).show()
             }
 
         }

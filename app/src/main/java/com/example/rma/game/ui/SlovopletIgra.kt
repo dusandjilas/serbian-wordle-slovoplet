@@ -129,6 +129,42 @@ private val SKIP_COLOR    = Color(0xFFB5B870)
 private const val PREFS_ONBOARDING = "onboarding_prefs"
 private const val KEY_HAS_SEEN_INFO = "has_seen_info"
 
+private val KEYBOARD_ROWS = listOf("ЉЊЕРТЗУИОПШ", "АСДФГХЈКЛЧЋ", "ЏЦВБНМЂЖ")
+
+private fun Char.toLatinLetter(): String = when (this) {
+    'А' -> "A"
+    'Б' -> "B"
+    'В' -> "V"
+    'Г' -> "G"
+    'Д' -> "D"
+    'Ђ' -> "Đ"
+    'Е' -> "E"
+    'Ж' -> "Ž"
+    'З' -> "Z"
+    'И' -> "I"
+    'Ј' -> "J"
+    'К' -> "K"
+    'Л' -> "L"
+    'Љ' -> "Lj"
+    'М' -> "M"
+    'Н' -> "N"
+    'Њ' -> "Nj"
+    'О' -> "O"
+    'П' -> "P"
+    'Р' -> "R"
+    'С' -> "S"
+    'Т' -> "T"
+    'Ћ' -> "Ć"
+    'У' -> "U"
+    'Ф' -> "F"
+    'Х' -> "H"
+    'Ц' -> "C"
+    'Ч' -> "Č"
+    'Џ' -> "Dž"
+    'Ш' -> "Š"
+    else -> toString()
+}
+
 class SlovopletIgra : AppCompatActivity() {
 
     private lateinit var adManager: AdManager
@@ -149,10 +185,10 @@ class SlovopletIgra : AppCompatActivity() {
 
         if (selectedMode == GameMode.DAILY && profileManager.hasPlayedDailyToday()) {
             AndroidAlertDialog.Builder(this)
-                .setTitle("Реч дана је већ одиграна")
-                .setMessage("Данашњу Реч дана си већ завршио/ла. Врати се сутра за нову реч.")
+                .setTitle("Reč dana je već odigrana")
+                .setMessage("Današnju Reč dana si već završio/la. Vrati se sutra za novu reč.")
                 .setCancelable(false)
-                .setPositiveButton("Назад") { _, _ ->
+                .setPositiveButton("Nazad") { _, _ ->
                     startActivity(Intent(this, MainActivity::class.java))
                     finish()
                 }
@@ -330,7 +366,7 @@ private fun WordleGameScreen(
     fun revealOneLetterHint() {
         val unrevealed = viewModel.targetWord.filter { keyboardState[it] == null }
         if (unrevealed.isEmpty()) {
-            Toast.makeText(context, "Нема скривених слова!", Toast.LENGTH_SHORT).show(); return
+            Toast.makeText(context, "Nema skrivenih slova!", Toast.LENGTH_SHORT).show(); return
         }
         val letter = unrevealed.random()
         keyboardState[letter] = LetterState.PRESENT
@@ -338,7 +374,7 @@ private fun WordleGameScreen(
     }
 
     fun revealThreeRandomKeysHint() {
-        val allKeys    = ("ЉЊЕРТЗУИОПШ" + "АСДФГХЈКЛЧЋ" + "ЏЦВБНМЂЖ").toList()
+        val allKeys    = KEYBOARD_ROWS.joinToString("").toList()
         val unrevealed = allKeys.filter { keyboardState[it] == null }
         unrevealed.shuffled().take(3).forEach { ch ->
             keyboardState[ch] = mergeState(
@@ -372,7 +408,7 @@ private fun WordleGameScreen(
             animTrigger++
             stateRepo.save(viewModel.gameMode, viewModel.targetWord, viewModel.guesses, "")
         } else {
-            Toast.makeText(context, "Реч није важећа", Toast.LENGTH_SHORT).show()
+            Toast.makeText(context, "Reč nije važeća", Toast.LENGTH_SHORT).show()
         }
     }
 
@@ -468,8 +504,8 @@ private fun WordleGameScreen(
             VirtualKeyboard(keyboardState = keyboardState, lastHint = lastHint) { key ->
                 if (viewModel.hasWon || viewModel.hasLost || pendingSubmit) return@VirtualKeyboard
                 when (key) {
-                    "УНЕСИ" -> submitGuessNow()
-                    "БРИШИ"   -> if (trenutniPokusaj.isNotEmpty()) trenutniPokusaj = trenutniPokusaj.dropLast(1)
+                    "SUBMIT" -> submitGuessNow()
+                    "DELETE"   -> if (trenutniPokusaj.isNotEmpty()) trenutniPokusaj = trenutniPokusaj.dropLast(1)
                     else    -> if (trenutniPokusaj.length < viewModel.wordLength) trenutniPokusaj += key
                 }
             }
@@ -507,7 +543,7 @@ private fun WordleGameScreen(
                             showNeedCoinsPopup = false
                         }
                     } else {
-                        Toast.makeText(context, "Реклама није спремна, покушај касније", Toast.LENGTH_SHORT).show()
+                        Toast.makeText(context, "Reklama nije spremna, pokušaj kasnije", Toast.LENGTH_SHORT).show()
                     }
                 },
                 onNoThanks = { showNeedCoinsPopup = false }
@@ -519,11 +555,11 @@ private fun WordleGameScreen(
                 onDismissRequest = { showDailyBonusPopup = false },
                 confirmButton = {
                     androidx.compose.material3.TextButton(onClick = { showDailyBonusPopup = false }) {
-                        Text("Супер")
+                        Text("Super")
                     }
                 },
-                title = { Text("Дневни бонус") },
-                text = { Text("Освојио/ла си +100 🪙 за победу у Речи дана!") }
+                title = { Text("Dnevni bonus") },
+                text = { Text("Osvojio/la si +100 🪙 za pobedu u Reči dana!") }
             )
         }
 
@@ -648,7 +684,7 @@ private fun CoinPill(coins: Int, onPlus: () -> Unit) {
             modifier = Modifier.size(32.dp).clip(RoundedCornerShape(16.dp))
                 .background(Color(0xFFE8A010)).clickable { onPlus() },
             contentAlignment = Alignment.Center
-        ) { Text("Д", color = Color.White, fontWeight = FontWeight.Black, fontSize = 14.sp) }
+        ) { Text("D", color = Color.White, fontWeight = FontWeight.Black, fontSize = 14.sp) }
         Spacer(Modifier.width(2.dp))
         Box(
             modifier = Modifier.size(20.dp).clip(RoundedCornerShape(10.dp))
@@ -716,7 +752,7 @@ private fun GridCell(char: Char, size: Dp, fill: Color, flipAngle: Float = 0f) {
     ) {
         if (char != ' ') {
             Text(
-                text       = char.toString(),
+                text       = char.toLatinLetter(),
                 color      = if (isEmpty) Color(0xFF333322) else Color.White,
                 fontWeight = FontWeight.Black,
                 fontSize   = (size.value * 0.44f).sp
@@ -731,7 +767,7 @@ fun VirtualKeyboard(
     lastHint: Char?,
     onKeyClick: (String) -> Unit
 ) {
-    val rows = listOf("ЉЊЕРТЗУИОПШ", "АСДФГХЈКЛЧЋ", "ЏЦВБНМЂЖ")
+    val rows = KEYBOARD_ROWS
     val configuration = LocalConfiguration.current
     val screenW = configuration.screenWidthDp.dp
     val keyW: Dp = ((screenW - 24.dp - 4.dp * 10) / 11).coerceAtMost(40.dp)
@@ -751,7 +787,7 @@ fun VirtualKeyboard(
             ) {
                 for (ch in row) {
                     LetterKey(
-                        key = ch.toString(), keyW = keyW, keyH = keyH,
+                        key = ch.toString(), label = ch.toLatinLetter(), keyW = keyW, keyH = keyH,
                         keyboardState = keyboardState, lastHint = lastHint, onKeyClick = onKeyClick
                     )
                     Spacer(Modifier.width(4.dp))
@@ -765,7 +801,7 @@ fun VirtualKeyboard(
 
 @Composable
 private fun LetterKey(
-    key: String, keyW: Dp, keyH: Dp,
+    key: String, label: String, keyW: Dp, keyH: Dp,
     keyboardState: SnapshotStateMap<Char, LetterState>,
     lastHint: Char?,
     onKeyClick: (String) -> Unit
@@ -778,6 +814,7 @@ private fun LetterKey(
         else                -> KEY_DEFAULT
     }
     val textColor = if (keyboardState[first] == null) Color(0xFF222222) else Color.White
+    val labelScale = if (label.length > 1) 0.34f else 0.46f
     val isHinted  = first != null && first == lastHint
     val scale     = remember { Animatable(1f) }
     LaunchedEffect(lastHint) {
@@ -791,8 +828,8 @@ private fun LetterKey(
             .shadow(3.dp, RoundedCornerShape(8.dp), ambientColor = Color(0x44000000))
             .clip(RoundedCornerShape(8.dp)).background(bg).clickable { onKeyClick(key) }
     ) {
-        Text(key, color = textColor, fontWeight = FontWeight.Bold,
-            fontSize = (keyW.value * 0.46f).sp, maxLines = 1)
+        Text(label, color = textColor, fontWeight = FontWeight.Bold,
+            fontSize = (keyW.value * labelScale).sp, maxLines = 1)
     }
 }
 
@@ -804,7 +841,7 @@ private fun BackspaceKey(keyW: Dp, keyH: Dp, onKeyClick: (String) -> Unit) {
             .width((keyW.value * 1.6f).dp).height(keyH)
             .shadow(3.dp, RoundedCornerShape(8.dp), ambientColor = Color(0x55000000))
             .clip(RoundedCornerShape(8.dp)).background(Color(0xFF555555))
-            .clickable { onKeyClick("БРИШИ") }
+            .clickable { onKeyClick("DELETE") }
     ) {
         Text("⌫", color = Color.White, fontSize = (keyW.value * 0.50f).sp, fontWeight = FontWeight.Bold)
     }
@@ -816,7 +853,7 @@ private fun BottomActionRow(
     onHint1: () -> Unit, onHint3: () -> Unit, onSubmit: () -> Unit, onComplete: () -> Unit
 ) {
     val submitBg       = when (submitState) { true -> SUBMIT_BLUE; false -> SUBMIT_RED; null -> SUBMIT_GRAY }
-    val submitLabel    = if (submitState == false) "НИЈЕ ВАЖЕЋЕ" else "ПОТВРДИ"
+    val submitLabel    = if (submitState == false) "NIJE VAŽEĆE" else "POTVRDI"
     val submitFontSize = if (submitState == false) 11.sp else 16.sp
 
     Row(modifier = Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically,
@@ -881,10 +918,10 @@ private fun FirstGameAuthPromptDialog(
                 .padding(20.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            Text("Сачувај напредак", color = Color.White, fontSize = 24.sp, fontWeight = FontWeight.Black)
+            Text("Sačuvaj napredak", color = Color.White, fontSize = 24.sp, fontWeight = FontWeight.Black)
             Spacer(Modifier.height(10.dp))
             Text(
-                "Пријави се да сачуваш XP и статистику, или настави као гост.",
+                "Prijavi se da sačuvaš XP i statistiku, ili nastavi kao gost.",
                 color = Color(0xFFD8E9FF),
                 textAlign = TextAlign.Center
             )
@@ -894,14 +931,14 @@ private fun FirstGameAuthPromptDialog(
                     .clip(RoundedCornerShape(22.dp)).background(Color(0xFF44BB55))
                     .clickable { onSignIn() },
                 contentAlignment = Alignment.Center
-            ) { Text("ПРИЈАВИ СЕ", color = Color.White, fontWeight = FontWeight.Black) }
+            ) { Text("PRIJAVI SE", color = Color.White, fontWeight = FontWeight.Black) }
             Spacer(Modifier.height(8.dp))
             Box(
                 modifier = Modifier.fillMaxWidth().height(50.dp)
                     .clip(RoundedCornerShape(22.dp)).background(Color(0x44FFFFFF))
                     .clickable { onContinueAsGuest() },
                 contentAlignment = Alignment.Center
-            ) { Text("НАСТАВИ КАО ГОСТ", color = Color.White, fontWeight = FontWeight.Black) }
+            ) { Text("NASTAVI KAO GOST", color = Color.White, fontWeight = FontWeight.Black) }
         }
     }
 }
@@ -921,11 +958,11 @@ fun EndGameDialog(
             Column(horizontalAlignment = Alignment.CenterHorizontally) {
                 Text(if (hasWon) "🎉" else "😞", fontSize = 60.sp)
                 Spacer(Modifier.height(10.dp))
-                Text(if (hasWon) "ЧЕСТИТАМО!" else "НИСТЕ ПОГОДИЛИ",
+                Text(if (hasWon) "ČESTITAMO!" else "NISTE POGODILI",
                     fontSize = 24.sp, fontWeight = FontWeight.Black,
                     color = Color.White, textAlign = TextAlign.Center)
                 Spacer(Modifier.height(14.dp))
-                Text("Реч је била:", fontSize = 13.sp, color = Color(0xAAFFFFFF))
+                Text("Reč je bila:", fontSize = 13.sp, color = Color(0xAAFFFFFF))
                 Spacer(Modifier.height(4.dp))
                 Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
                     for (ch in targetWord) {
@@ -933,7 +970,7 @@ fun EndGameDialog(
                             modifier = Modifier.size(38.dp).clip(RoundedCornerShape(8.dp))
                                 .background(if (hasWon) Color(0xFF2979FF) else Color(0xFFBF1020)),
                             contentAlignment = Alignment.Center
-                        ) { Text(ch.toString(), color = Color.White, fontWeight = FontWeight.Black, fontSize = 16.sp) }
+                        ) { Text(ch.toLatinLetter(), color = Color.White, fontWeight = FontWeight.Black, fontSize = 16.sp) }
                     }
                 }
                 Spacer(Modifier.height(16.dp))
@@ -942,7 +979,7 @@ fun EndGameDialog(
                         .background(Color(0x33FFFFFF)).padding(horizontal = 20.dp, vertical = 10.dp)
                 ) {
                     Row(verticalAlignment = Alignment.CenterVertically) {
-                        Text("ПОКУШАЈА:", fontSize = 13.sp, color = Color(0xAAFFFFFF))
+                        Text("POKUŠAJA:", fontSize = 13.sp, color = Color(0xAAFFFFFF))
                         Spacer(Modifier.width(8.dp))
                         Text(score.toString(), fontSize = 28.sp, fontWeight = FontWeight.Black, color = Color.White)
                     }
@@ -954,21 +991,21 @@ fun EndGameDialog(
                             .clip(RoundedCornerShape(26.dp)).background(Color(0xFF44BB55))
                             .clickable { onPlayAgain() },
                         contentAlignment = Alignment.Center
-                    ) { Text("НОВА РЕЧ", color = Color.White, fontSize = 17.sp, fontWeight = FontWeight.Black) }
+                    ) { Text("NOVA REČ", color = Color.White, fontSize = 17.sp, fontWeight = FontWeight.Black) }
                     Spacer(Modifier.height(10.dp))
                     Box(
                         modifier = Modifier.fillMaxWidth().height(52.dp)
                             .clip(RoundedCornerShape(26.dp)).background(Color(0x44FFFFFF))
                             .clickable { onBackToMain() },
                         contentAlignment = Alignment.Center
-                    ) { Text("НАЗАД", color = Color.White, fontSize = 17.sp, fontWeight = FontWeight.Black) }
+                    ) { Text("NAZAD", color = Color.White, fontSize = 17.sp, fontWeight = FontWeight.Black) }
                 } else {
                     Box(
                         modifier = Modifier.fillMaxWidth().height(52.dp)
                             .clip(RoundedCornerShape(26.dp)).background(Color(0x44FFFFFF))
                             .clickable { onBackToMain() },
                         contentAlignment = Alignment.Center
-                    ) { Text("НАЗАД НА ГЛАВНИ ЕКРАН", color = Color.White, fontSize = 15.sp, fontWeight = FontWeight.Black) }
+                    ) { Text("NAZAD NA GLAVNI EKRAN", color = Color.White, fontSize = 15.sp, fontWeight = FontWeight.Black) }
                 }
             }
         }
@@ -983,7 +1020,7 @@ fun NeedCoinsDialog(reward: Int, adReady: Boolean, onClaimAd: () -> Unit, onNoTh
         shape            = RoundedCornerShape(26.dp),
         text = {
             Column(horizontalAlignment = Alignment.CenterHorizontally, modifier = Modifier.fillMaxWidth()) {
-                Text("УЗМИ БЕСПЛАТНЕ НОВЧИЋЕ", fontSize = 22.sp, fontWeight = FontWeight.Black, color = Color.White)
+                Text("UZMI BESPLATNE NOVČIĆE", fontSize = 22.sp, fontWeight = FontWeight.Black, color = Color.White)
                 Spacer(Modifier.height(14.dp))
                 Box(
                     modifier = Modifier.fillMaxWidth().height(180.dp)
@@ -998,11 +1035,11 @@ fun NeedCoinsDialog(reward: Int, adReady: Boolean, onClaimAd: () -> Unit, onNoTh
                         .clickable(enabled = adReady) { onClaimAd() },
                     contentAlignment = Alignment.Center
                 ) {
-                    Text(if (!adReady) "РЕКЛАМА СЕ УЧИТАВА..." else "ПРЕУЗМИ",
+                    Text(if (!adReady) "REKLAMA SE UČITAVA..." else "PREUZMI",
                         color = Color.White, fontSize = 20.sp, fontWeight = FontWeight.Black)
                 }
                 Spacer(Modifier.height(10.dp))
-                Text("НЕ, ХВАЛА", color = Color.White, fontWeight = FontWeight.Bold,
+                Text("NE, HVALA", color = Color.White, fontWeight = FontWeight.Bold,
                     modifier = Modifier.clickable { onNoThanks() })
             }
         },
