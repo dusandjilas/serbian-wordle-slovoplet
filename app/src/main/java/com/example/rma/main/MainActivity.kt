@@ -125,8 +125,8 @@ private fun MainScreen(
     val configuration = LocalConfiguration.current
     val context = LocalContext.current
     val scale = (configuration.screenWidthDp / 390f).coerceIn(0.85f, 1.2f)
-    val user = firebaseAuth.currentUser
-    val isGuest = user == null
+    var currentUser by remember(firebaseAuth) { mutableStateOf(firebaseAuth.currentUser) }
+    val isGuest = currentUser == null
 
     var coins by remember { mutableIntStateOf(coinRepo.getLocal()) }
     var level by remember { mutableIntStateOf(if (isGuest) 1 else profileManager.getLevel()) }
@@ -134,12 +134,24 @@ private fun MainScreen(
     var classicStreak by remember { mutableIntStateOf(profileManager.getClassicStreak()) }
 
     fun refreshHeaderStats() {
-        if (!isGuest) {
+        if (isGuest) {
+            coins = coinRepo.getLocal()
+            level = 1
+            xpProgress = 0f
+        } else {
             coinRepo.load { reconciled -> coins = reconciled }
             level = profileManager.getLevel()
             xpProgress = profileManager.getXpProgress()
         }
         classicStreak = profileManager.getClassicStreak()
+    }
+
+    DisposableEffect(firebaseAuth) {
+        val authStateListener = FirebaseAuth.AuthStateListener { auth ->
+            currentUser = auth.currentUser
+        }
+        firebaseAuth.addAuthStateListener(authStateListener)
+        onDispose { firebaseAuth.removeAuthStateListener(authStateListener) }
     }
 
     LaunchedEffect(isGuest) { refreshHeaderStats() }
