@@ -74,7 +74,7 @@ class SignInActivity : AppCompatActivity() {
                     }
                 }
             } else {
-                Toast.makeText(this, "Не смете оставити празна поља!", Toast.LENGTH_SHORT).show()
+                Toast.makeText(this, "Ne smete ostaviti prazna polja!", Toast.LENGTH_SHORT).show()
             }
         }
 

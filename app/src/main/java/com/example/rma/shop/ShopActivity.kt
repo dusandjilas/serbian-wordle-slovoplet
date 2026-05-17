@@ -34,7 +34,7 @@ class ShopActivity : AppCompatActivity() {
                         if (adManager.isAdReady()) {
                             adManager.showAd { coins = coinRepo.add(25) }
                         } else {
-                            Toast.makeText(this, "Реклама није спремна, покушај касније", Toast.LENGTH_SHORT).show()
+                            Toast.makeText(this, "Reklama nije spremna, pokušaj kasnije", Toast.LENGTH_SHORT).show()
                         }
                     },
                     onBuyCoins = { amount -> coins = coinRepo.add(amount) },
