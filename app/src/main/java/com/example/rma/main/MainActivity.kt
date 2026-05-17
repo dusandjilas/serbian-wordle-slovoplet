@@ -1,10 +1,7 @@
 package com.example.rma
 
-import android.app.Dialog
 import android.content.Intent
 import android.os.Bundle
-import android.view.ViewGroup
-import android.widget.Button
 import android.widget.Toast
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
@@ -100,7 +97,6 @@ class MainActivity : AppCompatActivity() {
                     firebaseAuth   = firebaseAuth,
                     profileManager = profileManager,
                     coinRepo       = coinRepo,
-                    onHowTo        = { dijalogObjasnjenjeMain() },
                     onOpenShop     = { startActivity(Intent(this, ShopActivity::class.java)) },
                     onStartClassic = {
                         startActivity(Intent(this, SlovopletIgra::class.java)
@@ -115,14 +111,6 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    private fun dijalogObjasnjenjeMain() {
-        val dialog = Dialog(this)
-        dialog.setContentView(R.layout.dialog_objasnjenje_main)
-        dialog.window?.setLayout(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT)
-        dialog.setCancelable(true)
-        dialog.findViewById<Button>(R.id.buttonIskljuci).setOnClickListener { dialog.dismiss() }
-        dialog.show()
-    }
 }
 
 @Composable
@@ -130,7 +118,6 @@ private fun MainScreen(
     firebaseAuth: FirebaseAuth,
     profileManager: GameProfileManager,
     coinRepo: CoinRepository,
-    onHowTo: () -> Unit,
     onOpenShop: () -> Unit,
     onStartClassic: () -> Unit,
     onStartDaily: () -> Unit
@@ -171,7 +158,7 @@ private fun MainScreen(
 
     var showStats     by remember { mutableStateOf(false) }
     var showRemoveAds by remember { mutableStateOf(false) }
-    var showWip       by remember { mutableStateOf(false) }
+    var showWordChoiceInfo by remember { mutableStateOf(false) }
     var showAuthDialog by remember { mutableStateOf(false) }
     var showSettings by remember { mutableStateOf(false) }
     var showLeaderboard by remember { mutableStateOf(false) }
@@ -232,8 +219,7 @@ private fun MainScreen(
                         } else {
                             onStartDaily()
                         }
-                    },
-                    onWipClick     = { showWip = true }
+                    }
                 )
                 Spacer(Modifier.height(12.dp))
             }
@@ -241,9 +227,8 @@ private fun MainScreen(
             FooterNavBar(
                 isGuest       = isGuest,
                 scale         = scale,
-                onHowTo       = onHowTo,
+                onHowTo       = { showWordChoiceInfo = true },
                 onShop        = onOpenShop,
-                onWip         = { showWip = true },
                 onSignIn      = { showAuthDialog = true },
                 onSettings    = { showSettings = true },
                 onLeaderboard = { showLeaderboard = true }
@@ -274,7 +259,9 @@ private fun MainScreen(
                 onBuy     = { showRemoveAds = false }
             )
         }
-        if (showWip) WipDialog { showWip = false }
+        if (showWordChoiceInfo) {
+            WordChoiceInfoDialog(onDismiss = { showWordChoiceInfo = false })
+        }
         if (showSettings) {
             SettingsDialog(
                 onDismiss = { showSettings = false },
@@ -692,7 +679,7 @@ private fun WordleBubblesRow(scale: Float) {
 @Composable
 private fun GameButtonsSection(
     classicStreak: Int, scale: Float, onStatsClick: () -> Unit,
-    onClassicClick: () -> Unit, onDailyClick: () -> Unit, onWipClick: () -> Unit
+    onClassicClick: () -> Unit, onDailyClick: () -> Unit
 ) {
     Column(
         modifier = Modifier.fillMaxWidth().padding(horizontal = 12.dp)
@@ -715,16 +702,6 @@ private fun GameButtonsSection(
             title = "РЕЧ ДАНА", rightTop = "", rightBottom = "+100",
             modifier = Modifier.fillMaxWidth().height((82 * scale).dp), onClick = onDailyClick
         )
-        Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy((10 * scale).dp)) {
-            GoldWideButton(
-                title = "РЕЧЕНИЦА", rightTop = "SOON", rightBottom = "soon",
-                modifier = Modifier.weight(1f).height((72 * scale).dp), onClick = onWipClick, titleSize = (14 * scale).sp
-            )
-            GoldWideButton(
-                title = "ТАЈНА РЕЧ", rightTop = "SOON", rightBottom = "soon",
-                modifier = Modifier.weight(1f).height((72 * scale).dp), onClick = onWipClick, titleSize = (14 * scale).sp
-            )
-        }
     }
 }
 @Preview(showBackground = true, showSystemUi = true)
@@ -736,8 +713,7 @@ fun GameButtonsSectionPreview() {
             scale = 1f,
             onStatsClick = {},
             onClassicClick = {},
-            onDailyClick = {},
-            onWipClick = {}
+            onDailyClick = {}
         )
     }
 }
@@ -748,7 +724,6 @@ private fun FooterNavBar(
     scale: Float,
     onHowTo: () -> Unit,
     onShop: () -> Unit,
-    onWip: () -> Unit,
     onSignIn: () -> Unit,
     onSettings: () -> Unit,
     onLeaderboard: () -> Unit
@@ -758,8 +733,7 @@ private fun FooterNavBar(
     val items = listOf(
         NavItem("ПРОДАВНИЦА", onShop),
         NavItem("ЛИСТА", onLeaderboard),
-        NavItem("УПУТСТВО", onHowTo),
-        NavItem("ВОДИЧ", onWip),
+        NavItem("РЕЧИ", onHowTo),
         NavItem(
             if (isGuest) "ПРИЈАВА" else "ПОДЕШАВАЊЕ",
             if (isGuest) onSignIn else onSettings,
@@ -1231,23 +1205,87 @@ fun RemoveAdsDialog(onDismiss: () -> Unit, onBuy: () -> Unit) {
 }
 
 @Composable
-fun WipDialog(onDismiss: () -> Unit) {
+private fun WordChoiceInfoDialog(onDismiss: () -> Unit) {
+    val bulletItems = listOf(
+        "Извор је Речник српског језика, Матица српска, Нови Сад, 2011.",
+        "У игри су глаголи, именице, придеви и прилози.",
+        "Глаголи су у инфинитиву, именице у номинативу једнине, а придеви у мушком роду, номинативу једнине.",
+        "Бирали смо речи које су јасне, препознатљиве и погодне за кратку Wordle партију."
+    )
+
     ComposeDialog(onDismissRequest = onDismiss) {
         Column(
-            modifier = Modifier.fillMaxWidth().padding(16.dp)
-                .clip(RoundedCornerShape(28.dp))
-                .background(Brush.verticalGradient(listOf(Color(0xFF2A3A60), Color(0xFF162B4A))))
-                .padding(32.dp),
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp)
+                .verticalScroll(rememberScrollState())
+                .clip(RoundedCornerShape(30.dp))
+                .background(Brush.verticalGradient(listOf(Color(0xFF27466F), Color(0xFF152844))))
+                .border(2.dp, Color(0xFF8FA8C7), RoundedCornerShape(30.dp))
+                .padding(22.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            Text("🚧", fontSize = 52.sp)
+            Box(
+                modifier = Modifier
+                    .size(58.dp)
+                    .clip(CircleShape)
+                    .background(Brush.verticalGradient(listOf(Color(0xFFFFD76A), Color(0xFFE59B2D))))
+                    .border(2.dp, Color(0xFFFFF0B8), CircleShape),
+                contentAlignment = Alignment.Center
+            ) {
+                Text("АБ", color = Color(0xFF27324A), fontSize = 18.sp, fontWeight = FontWeight.Black)
+            }
             Spacer(Modifier.height(12.dp))
-            Text("У ИЗРАДИ", color = Color.White, fontSize = 22.sp, fontWeight = FontWeight.ExtraBold)
+            Text(
+                "КАКО СМО БИРАЛИ РЕЧИ?",
+                color = Color.White,
+                fontSize = 22.sp,
+                fontWeight = FontWeight.ExtraBold,
+                textAlign = TextAlign.Center
+            )
             Spacer(Modifier.height(8.dp))
-            Text("Ова функција је тренутно у развоју.\nУскоро доступно!",
-                color = Color(0xAAFFFFFF), fontSize = 14.sp, textAlign = TextAlign.Center)
-            Spacer(Modifier.height(24.dp))
-            GoldButton("У РЕДУ", onDismiss)
+            Text(
+                "Словоплет користи пажљиво сужен списак речи да свака партија буде фер, разумљива и забавна.",
+                color = Color(0xFFDCE8F6),
+                fontSize = 14.sp,
+                textAlign = TextAlign.Center,
+                lineHeight = 20.sp
+            )
+            Spacer(Modifier.height(18.dp))
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .clip(RoundedCornerShape(22.dp))
+                    .background(Color(0x332F3338))
+                    .border(1.dp, Color(0x55FFFFFF), RoundedCornerShape(22.dp))
+                    .padding(14.dp),
+                verticalArrangement = Arrangement.spacedBy(10.dp)
+            ) {
+                bulletItems.forEach { item ->
+                    Row(verticalAlignment = Alignment.Top) {
+                        Box(
+                            modifier = Modifier
+                                .padding(top = 2.dp)
+                                .size(22.dp)
+                                .clip(CircleShape)
+                                .background(Color(0xFFC11521)),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Text("✓", color = Color.White, fontSize = 12.sp, fontWeight = FontWeight.Black)
+                        }
+                        Spacer(Modifier.width(10.dp))
+                        Text(
+                            item,
+                            color = Color.White,
+                            fontSize = 13.sp,
+                            lineHeight = 18.sp,
+                            modifier = Modifier.weight(1f)
+                        )
+                    }
+                }
+            }
+            Spacer(Modifier.height(20.dp))
+            GoldButton("РАЗУМЕМ", onDismiss)
         }
     }
 }
