@@ -1,4 +1,4 @@
-package com.example.rma
+package com.example.rma.core.repository
 
 import android.content.Context
 import com.example.rma.game.GameMode

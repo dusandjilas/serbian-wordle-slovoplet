@@ -1,4 +1,14 @@
-package com.example.rma
+package com.example.rma.game.ui
+
+import com.example.rma.R
+import com.example.rma.ads.AdManager
+import com.example.rma.auth.SignInActivity
+import com.example.rma.core.managers.AppFlowPrefs
+import com.example.rma.core.managers.GameProfileManager
+import com.example.rma.core.repository.CoinRepository
+import com.example.rma.core.repository.GameStateRepository
+import com.example.rma.main.MainActivity
+import com.example.rma.shop.ShopActivity
 
 import android.app.Dialog
 import android.app.AlertDialog as AndroidAlertDialog
@@ -732,13 +742,14 @@ fun VirtualKeyboard(
         verticalArrangement = Arrangement.spacedBy(5.dp),
         modifier = Modifier.fillMaxWidth()
     ) {
-        rows.forEachIndexed { rowIdx, row ->
+        for (rowIdx in rows.indices) {
+            val row = rows[rowIdx]
             Row(
                 horizontalArrangement = Arrangement.Center,
                 verticalAlignment     = Alignment.CenterVertically,
                 modifier              = Modifier.fillMaxWidth()
             ) {
-                row.forEach { ch ->
+                for (ch in row) {
                     LetterKey(
                         key = ch.toString(), keyW = keyW, keyH = keyH,
                         keyboardState = keyboardState, lastHint = lastHint, onKeyClick = onKeyClick
@@ -917,7 +928,7 @@ fun EndGameDialog(
                 Text("Реч је била:", fontSize = 13.sp, color = Color(0xAAFFFFFF))
                 Spacer(Modifier.height(4.dp))
                 Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
-                    targetWord.forEach { ch ->
+                    for (ch in targetWord) {
                         Box(
                             modifier = Modifier.size(38.dp).clip(RoundedCornerShape(8.dp))
                                 .background(if (hasWon) Color(0xFF2979FF) else Color(0xFFBF1020)),

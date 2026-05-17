@@ -6,7 +6,7 @@
     android:layout_height="match_parent"
     android:background="#E8ECF2"
     android:fillViewport="true"
-    tools:context=".SignUpActivity">
+    tools:context=".auth.SignUpActivity">
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"

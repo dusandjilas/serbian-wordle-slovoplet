@@ -1,4 +1,15 @@
-package com.example.rma
+package com.example.rma.main
+
+import com.example.rma.R
+import com.example.rma.auth.SignInActivity
+import com.example.rma.core.managers.AudioSettingsManager
+import com.example.rma.core.managers.GameProfileManager
+import com.example.rma.core.managers.PlayerNameManager
+import com.example.rma.core.repository.CoinRepository
+import com.example.rma.core.repository.FirebaseStatsRepository
+import com.example.rma.game.ui.SlovopletIgra
+import com.example.rma.profile.ProfileActivity
+import com.example.rma.shop.ShopActivity
 
 import android.content.Intent
 import android.os.Bundle
@@ -758,7 +769,7 @@ private fun FooterNavBar(
         horizontalArrangement = Arrangement.spacedBy(6.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
-        items.forEach { item ->
+        for (item in items) {
             val bg = if (item.highlight) Color(0xFF1A4A8A) else FOOTER_ITEM
             val border = if (item.highlight) Color(0xFF60DDFF) else Color(0xFF5A3820)
             Box(
@@ -894,7 +905,9 @@ private fun StatsDialogContent(profileManager: GameProfileManager, onClose: () -
         Text("Расподела погађања", color = Color.White, fontSize = 15.sp, fontWeight = FontWeight.Bold)
         Spacer(Modifier.height(10.dp))
         Column(Modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(6.dp)) {
-            profileManager.getAllGuessDistribution().forEachIndexed { i, v ->
+            val distribution = profileManager.getAllGuessDistribution()
+            for (i in distribution.indices) {
+                val v = distribution[i]
                 Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
                     Text((i + 1).toString(), color = Color.White, fontWeight = FontWeight.Bold,
                         modifier = Modifier.width(20.dp))
@@ -961,7 +974,7 @@ private fun LeaderboardDialogContent(
         Spacer(Modifier.height(10.dp))
 
         Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-            listOf("Friends", "Players", "Teams").forEach { label ->
+            for (label in listOf("Friends", "Players", "Teams")) {
                 Box(
                     modifier = Modifier.weight(1f)
                         .clip(RoundedCornerShape(10.dp))
@@ -994,7 +1007,7 @@ private fun LeaderboardDialogContent(
         Spacer(Modifier.height(10.dp))
 
         Row(horizontalArrangement = Arrangement.spacedBy(6.dp), modifier = Modifier.fillMaxWidth()) {
-            LeaderboardMetric.entries.forEach { tab ->
+            for (tab in LeaderboardMetric.entries) {
                 val selected = tab == selectedTab
                 Box(
                     modifier = Modifier.weight(1f)
@@ -1013,7 +1026,9 @@ private fun LeaderboardDialogContent(
             error != null -> Text(error ?: "", color = Color(0xFFFFD6D6))
             sortedEntries.isEmpty() -> Text("No players yet.", color = Color.White)
             else -> Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                sortedEntries.take(8).forEachIndexed { index, entry ->
+                val visibleEntries = sortedEntries.take(8)
+                for (index in visibleEntries.indices) {
+                    val entry = visibleEntries[index]
                     LeaderboardMetricRow(rank = index + 1, player = entry.displayName, selectedMetric = selectedTab, entry = entry)
                 }
             }
@@ -1196,7 +1211,7 @@ fun RemoveAdsDialog(onDismiss: () -> Unit, onBuy: () -> Unit) {
             Text("Уживај у игри без прекида.\nЈедном купи, заувек без реклама.",
                 color = Color(0xCCFFFFFF), fontSize = 14.sp, textAlign = TextAlign.Center)
             Spacer(Modifier.height(22.dp))
-            listOf("Без банер реклама", "Без видео реклама", "Подршка развоју игре").forEach { text ->
+            for (text in listOf("Без банер реклама", "Без видео реклама", "Подршка развоју игре")) {
                 Row(verticalAlignment = Alignment.CenterVertically,
                     modifier = Modifier.fillMaxWidth().padding(vertical = 5.dp)) {
                     Box(Modifier.size(26.dp).clip(CircleShape).background(Color(0xFF44BB55)),
@@ -1273,7 +1288,7 @@ private fun WordChoiceInfoDialog(onDismiss: () -> Unit) {
                     .padding(14.dp),
                 verticalArrangement = Arrangement.spacedBy(10.dp)
             ) {
-                bulletItems.forEach { item ->
+                for (item in bulletItems) {
                     Row(verticalAlignment = Alignment.Top) {
                         Box(
                             modifier = Modifier

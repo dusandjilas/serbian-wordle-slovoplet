@@ -1,4 +1,6 @@
-package com.example.rma
+package com.example.rma.core.repository
+
+import com.example.rma.core.managers.GameProfileManager
 
 import android.util.Log
 import com.google.firebase.auth.FirebaseAuth

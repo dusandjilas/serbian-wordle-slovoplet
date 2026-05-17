@@ -1,4 +1,4 @@
-package com.example.rma
+package com.example.rma.shop
 
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background

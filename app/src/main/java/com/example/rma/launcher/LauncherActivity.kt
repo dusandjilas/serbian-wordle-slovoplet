@@ -1,4 +1,10 @@
-package com.example.rma
+package com.example.rma.launcher
+
+import com.example.rma.R
+import com.example.rma.auth.SignInActivity
+import com.example.rma.core.managers.AppFlowPrefs
+import com.example.rma.game.ui.SlovopletIgra
+import com.example.rma.main.MainActivity
 
 import android.content.Intent
 import android.os.Bundle

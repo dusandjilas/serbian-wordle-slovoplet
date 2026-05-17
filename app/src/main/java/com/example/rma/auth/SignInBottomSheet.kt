@@ -1,4 +1,6 @@
-package com.example.rma
+package com.example.rma.auth
+
+import com.example.rma.main.MainActivity
 
 import android.content.Intent
 import android.os.Bundle

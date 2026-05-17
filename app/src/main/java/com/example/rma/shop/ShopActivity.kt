@@ -1,4 +1,7 @@
-package com.example.rma
+package com.example.rma.shop
+
+import com.example.rma.ads.AdManager
+import com.example.rma.core.repository.CoinRepository
 
 import android.os.Bundle
 import androidx.activity.compose.setContent

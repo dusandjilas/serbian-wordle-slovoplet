@@ -1,4 +1,4 @@
-package com.example.rma
+package com.example.rma.core.managers
 
 import android.content.Context
 

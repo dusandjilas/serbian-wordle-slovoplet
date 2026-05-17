@@ -1,4 +1,4 @@
-package com.example.rma
+package com.example.rma.ads
 
 import android.app.Activity
 import android.content.Context

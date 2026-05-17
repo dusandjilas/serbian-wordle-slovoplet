@@ -1,4 +1,6 @@
-package com.example.rma
+package com.example.rma.profile
+
+import com.example.rma.core.managers.GameProfileManager
 
 import android.os.Bundle
 import androidx.activity.compose.setContent
