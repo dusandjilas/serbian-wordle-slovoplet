@@ -49,6 +49,7 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.IntOffset
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -68,6 +69,7 @@ import com.google.firebase.auth.FirebaseAuthWeakPasswordException
 import androidx.compose.animation.core.*
 import androidx.compose.ui.tooling.preview.Preview
 import kotlin.math.roundToInt
+import kotlin.math.min
 
 private val BG_TOP       = Color(0xFF243B5C)
 private val BG_BOT       = Color(0xFF162B4A)
@@ -77,7 +79,6 @@ private val GOLD_MID     = Color(0xFF8995A3)
 private val GOLD_DARK    = Color(0xFF5E6B7A)
 private val GOLD_STRIPE  = Color(0x22C11521)
 private val FOOTER_BG    = Color(0xFF0F1E33)
-private val FOOTER_ITEM  = Color(0xFF243B5C)
 
 private enum class LeaderboardMetric(val label: String) {
     LEVEL("Ниво"),
@@ -135,7 +136,9 @@ private fun MainScreen(
 ) {
     val configuration = LocalConfiguration.current
     val context = LocalContext.current
-    val scale = (configuration.screenWidthDp / 390f).coerceIn(0.85f, 1.2f)
+    val widthScale = configuration.screenWidthDp / 390f
+    val heightScale = configuration.screenHeightDp / 820f
+    val scale = min(widthScale, heightScale).coerceIn(0.72f, 1.12f)
     var currentUser by remember(firebaseAuth) { mutableStateOf(firebaseAuth.currentUser) }
     val isGuest = currentUser == null
 
@@ -220,6 +223,7 @@ private fun MainScreen(
                     level      = level,
                     xpProgress = xpProgress,
                     scale      = scale,
+                    widthScale = widthScale,
                     onAdClick  = { showRemoveAds = true },
                     onAvatarClick = {
                         if (isGuest) showAuthDialog = true else context.startActivity(Intent(context, ProfileActivity::class.java))
@@ -554,10 +558,12 @@ private fun ChangeDisplayNameDialog(
 private fun TopHeaderBar(
     isGuest: Boolean, coins: Int, level: Int, xpProgress: Float,
     scale: Float,
+    widthScale: Float,
     onAdClick: () -> Unit, onAvatarClick: () -> Unit, onPlusClick: () -> Unit
 ) {
-    val adSize = (36 * scale).dp
-    Box(modifier = Modifier.fillMaxWidth().padding(horizontal = 12.dp, vertical = 10.dp)) {
+    val adSize = (34 * scale).dp
+    val avatarSize = (112 * min(scale, widthScale)).coerceIn(84f, 112f).dp
+    Box(modifier = Modifier.fillMaxWidth().padding(horizontal = 8.dp, vertical = 8.dp)) {
         Box(
             modifier = Modifier.align(Alignment.CenterStart).size(adSize).clip(CircleShape)
                 .background(Color(0xFFE24A3B)).clickable { onAdClick() },
@@ -567,7 +573,7 @@ private fun TopHeaderBar(
         }
 
         Box(Modifier.align(Alignment.Center).clickable { onAvatarClick() }) {
-            CenterAvatar(level = level, xpProgress = xpProgress, isGuest = isGuest)
+            CenterAvatar(level = level, xpProgress = xpProgress, isGuest = isGuest, size = avatarSize)
         }
 
         Box(Modifier.align(Alignment.CenterEnd)) {
@@ -577,26 +583,26 @@ private fun TopHeaderBar(
 }
 
 @Composable
-private fun CenterAvatar(level: Int, xpProgress: Float, isGuest: Boolean) {
-    Box(contentAlignment = Alignment.Center, modifier = Modifier.size(120.dp)) {
+private fun CenterAvatar(level: Int, xpProgress: Float, isGuest: Boolean, size: Dp = 112.dp) {
+    Box(contentAlignment = Alignment.Center, modifier = Modifier.size(size)) {
         Box(
-            Modifier.size(116.dp).clip(CircleShape)
-                .background(Color(0xFF6B3A1F)).border(5.dp, Color(0xFF9B6A3F), CircleShape)
+            Modifier.size(size * 0.96f).clip(CircleShape)
+                .background(Color(0xFF6B3A1F)).border(4.dp, Color(0xFF9B6A3F), CircleShape)
         )
         CircularProgressIndicator(
             progress   = { xpProgress.coerceIn(0f, 1f) },
-            modifier   = Modifier.size(108.dp),
-            strokeWidth = 7.dp,
+            modifier   = Modifier.size(size * 0.9f),
+            strokeWidth = 6.dp,
             color      = Color(0xFF60DDFF),
             trackColor = Color(0x33004466)
         )
         Box(
-            modifier = Modifier.size(90.dp).clip(CircleShape)
+            modifier = Modifier.size(size * 0.75f).clip(CircleShape)
                 .background(Brush.verticalGradient(listOf(Color(0xFFCCF870), Color(0xFF88D030))))
                 .border(4.dp, Color(0xFF558820), CircleShape),
             contentAlignment = Alignment.Center
         ) {
-            Text(if (isGuest) "?" else "🍎", fontSize = 40.sp)
+            Text(if (isGuest) "?" else "🍎", fontSize = (size.value * 0.33f).sp)
         }
         Box(
             modifier = Modifier.align(Alignment.TopCenter).offset(y = 2.dp)
@@ -609,11 +615,11 @@ private fun CenterAvatar(level: Int, xpProgress: Float, isGuest: Boolean) {
         }
         Box(
             modifier = Modifier.align(Alignment.BottomCenter).offset(y = 2.dp)
-                .size(28.dp).clip(CircleShape)
+                .size(size * 0.24f).clip(CircleShape)
                 .background(Color(0xFFE8A800)).border(2.dp, Color(0xFFA06000), CircleShape),
             contentAlignment = Alignment.Center
         ) {
-            Text("W", color = Color.White, fontWeight = FontWeight.ExtraBold, fontSize = 12.sp)
+            Text("W", color = Color.White, fontWeight = FontWeight.ExtraBold, fontSize = (size.value * 0.1f).sp)
         }
         if (isGuest) {
             Box(
@@ -666,34 +672,57 @@ private fun CoinPill(coins: Int, isGuest: Boolean, scale: Float, onPlusClick: ()
 
 @Composable
 private fun WordleBubblesRow(scale: Float) {
-    data class Bub(val ch: String, val bg: Color, val shadow: Color)
-    val bubbles = listOf(
-        Bub("С", Color(0xFFE8A0C8), Color(0xFFB06090)),
-        Bub("Л", Color(0xFFD0C8E8), Color(0xFF8870B0)),
-        Bub("О", Color(0xFF70C8E8), Color(0xFF3090B8)),
-        Bub("В", Color(0xFFB0D890), Color(0xFF5A9040)),
-        Bub("О", Color(0xFFE8D070), Color(0xFFB09030)),
-        Bub("П", Color(0xFFE89060), Color(0xFFB05020)),
-        Bub("Л", Color(0xFF80C888), Color(0xFF408840)),
-        Bub("Е", Color(0xFFE8B890), Color(0xFFB07050)),
-        Bub("Т", Color(0xFFE87070), Color(0xFFB03030)),
-    )
-    Row(horizontalArrangement = Arrangement.spacedBy((5 * scale).dp), modifier = Modifier.padding(horizontal = (10 * scale).dp)) {
-        bubbles.forEach { b ->
-            Box(
-                modifier = Modifier.size((38 * scale).dp)
-                    .drawBehind {
-                        drawCircle(b.shadow, size.minDimension / 2f,
-                            Offset(size.width / 2f, size.height / 2f + 3.dp.toPx()))
-                    }
-                    .clip(CircleShape)
-                    .background(Brush.verticalGradient(listOf(lightenColor(b.bg, 0.22f), b.bg)))
-                    .border(2.dp, b.shadow.copy(alpha = 0.45f), CircleShape),
-                contentAlignment = Alignment.Center
-            ) {
-                Text(b.ch, fontSize = 18.sp, fontWeight = FontWeight.ExtraBold,
-                    color = b.shadow.copy(alpha = 0.55f), modifier = Modifier.offset(y = (1.5f * scale).dp))
-                Text(b.ch, fontSize = 18.sp, fontWeight = FontWeight.ExtraBold, color = Color.White)
+    val letters = "СЛОВОПЛЕТ".toList()
+    BoxWithConstraints(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 10.dp),
+        contentAlignment = Alignment.Center
+    ) {
+        val gap = (5 * scale).dp
+        val horizontalPadding = (10 * scale).dp
+        val maxTile = (36 * scale).dp
+        val availableForTiles = (maxWidth - horizontalPadding * 2f - gap * (letters.size - 1).toFloat()) / letters.size.toFloat()
+        val tileSize = minOf(maxTile, availableForTiles).coerceAtLeast(24.dp)
+
+        Row(
+            horizontalArrangement = Arrangement.spacedBy(gap),
+            verticalAlignment = Alignment.CenterVertically,
+            modifier = Modifier
+                .clip(RoundedCornerShape((20 * scale).dp))
+                .background(Brush.horizontalGradient(listOf(Color(0x332CD6FF), Color(0x2212F29A))))
+                .border(1.dp, Color(0x338EEBFF), RoundedCornerShape((20 * scale).dp))
+                .padding(horizontal = horizontalPadding, vertical = (10 * scale).dp)
+        ) {
+            letters.forEachIndexed { index, ch ->
+                val colors = when (index % 3) {
+                    0 -> listOf(Color(0xFF4DE1FF), Color(0xFF1570FF))
+                    1 -> listOf(Color(0xFFFFD166), Color(0xFFE89000))
+                    else -> listOf(Color(0xFF7CFFB2), Color(0xFF00A86B))
+                }
+                Box(
+                    modifier = Modifier
+                        .size(tileSize)
+                        .drawBehind {
+                            drawRoundRect(
+                                Color(0x55000000),
+                                topLeft = Offset(0f, 2.dp.toPx()),
+                                size = Size(size.width, size.height),
+                                cornerRadius = CornerRadius(10.dp.toPx())
+                            )
+                        }
+                        .clip(RoundedCornerShape((9 * scale).dp))
+                        .background(Brush.verticalGradient(colors))
+                        .border(1.dp, Color.White.copy(alpha = 0.45f), RoundedCornerShape((9 * scale).dp)),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text(
+                        ch.toString(),
+                        fontSize = (17 * scale).sp,
+                        fontWeight = FontWeight.Black,
+                        color = Color.White
+                    )
+                }
             }
         }
     }
@@ -765,30 +794,89 @@ private fun FooterNavBar(
     )
 
     Row(
-        modifier = Modifier.fillMaxWidth().background(FOOTER_BG).navigationBarsPadding().padding(horizontal = 8.dp, vertical = 8.dp),
+        modifier = Modifier
+            .fillMaxWidth()
+            .background(FOOTER_BG)
+            .navigationBarsPadding()
+            .padding(horizontal = 8.dp, vertical = 8.dp),
         horizontalArrangement = Arrangement.spacedBy(6.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
         for (item in items) {
-            val bg = if (item.highlight) Color(0xFF1A4A8A) else FOOTER_ITEM
-            val border = if (item.highlight) Color(0xFF60DDFF) else Color(0xFF5A3820)
-            Box(
-                modifier = Modifier.weight(1f).height(58.dp)
-                    .clip(RoundedCornerShape(14.dp)).background(bg)
-                    .border(1.5.dp, border, RoundedCornerShape(14.dp))
-                    .clickable { item.onClick() },
-                contentAlignment = Alignment.Center
-            ) {
-                Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                    Text(
-                        item.label,
-                        color = if (item.highlight) Color(0xFF60DDFF) else Color(0xCCFFFFFF),
-                        fontSize = (10 * scale).sp, fontWeight = FontWeight.ExtraBold,
-                        textAlign = TextAlign.Center, maxLines = 1
+            GameNavButton(
+                label = item.label,
+                highlighted = item.highlight,
+                scale = scale,
+                onClick = item.onClick,
+                modifier = Modifier.weight(1f).height((56 * scale).coerceIn(48f, 58f).dp)
+            )
+        }
+    }
+}
+
+@Composable
+private fun GameNavButton(
+    label: String,
+    highlighted: Boolean,
+    scale: Float,
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    val src = remember { MutableInteractionSource() }
+    val pressed by src.collectIsPressedAsState()
+    val infiniteTransition = rememberInfiniteTransition(label = "navStripe")
+    val stripeOffset by infiniteTransition.animateFloat(
+        initialValue = 0f,
+        targetValue = 1f,
+        animationSpec = infiniteRepeatable(tween(1800, easing = LinearEasing)),
+        label = "navStripeOffset"
+    )
+    val top = if (highlighted) Color(0xFF62E6FF) else GOLD_LIGHT
+    val bottom = if (highlighted) Color(0xFF1775FF) else GOLD_MID
+    val textColor = if (highlighted) Color.White else Color(0xFFF8FBFF)
+    val shadowColor = if (highlighted) Color(0xFF0B3D86) else GOLD_DARK
+
+    Box(
+        modifier = modifier
+            .offset { IntOffset(0, if (pressed) 3.dp.roundToPx() else 0) }
+            .drawBehind {
+                if (!pressed) {
+                    drawRoundRect(
+                        shadowColor,
+                        Offset(0f, 4.dp.toPx()),
+                        Size(size.width, size.height),
+                        CornerRadius(15.dp.toPx())
                     )
                 }
             }
-        }
+            .clip(RoundedCornerShape(15.dp))
+            .background(Brush.verticalGradient(listOf(top, bottom)))
+            .drawBehind {
+                val sw = 14.dp.toPx()
+                val total = sw * 2f
+                var x = -size.height + (stripeOffset * total)
+                while (x < size.width + size.height) {
+                    withTransform({ rotate(-35f, Offset(size.width / 2f, size.height / 2f)) }) {
+                        drawRect(Color.White.copy(alpha = if (highlighted) 0.12f else 0.08f), Offset(x, -size.height), Size(sw, size.height * 3))
+                    }
+                    x += total
+                }
+            }
+            .border(1.dp, Color.White.copy(alpha = 0.35f), RoundedCornerShape(15.dp))
+            .clickable(interactionSource = src, indication = null) { onClick() }
+            .padding(horizontal = 4.dp),
+        contentAlignment = Alignment.Center
+    ) {
+        Text(
+            label,
+            color = textColor,
+            fontSize = (9.5f * scale).coerceIn(8.2f, 10.5f).sp,
+            fontWeight = FontWeight.Black,
+            textAlign = TextAlign.Center,
+            maxLines = 2,
+            overflow = TextOverflow.Ellipsis,
+            lineHeight = (11.5f * scale).coerceIn(10f, 12.5f).sp
+        )
     }
 }
 
@@ -1333,10 +1421,3 @@ private fun BannerAdContainer() {
         })
     }
 }
-
-private fun lightenColor(color: Color, amount: Float) = Color(
-    red   = color.red   + (1f - color.red)   * amount,
-    green = color.green + (1f - color.green) * amount,
-    blue  = color.blue  + (1f - color.blue)  * amount,
-    alpha = color.alpha
-)
