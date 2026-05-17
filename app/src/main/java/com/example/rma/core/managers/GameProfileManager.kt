@@ -30,6 +30,8 @@ class GameProfileManager(context: Context) {
         private const val KEY_DAILY_WINS          = "daily_wins"
         private const val KEY_DAILY_LOSSES        = "daily_losses"
         private const val KEY_TOTAL_XP            = "total_xp"
+        private const val KEY_PROFILE_AVATAR      = "profile_avatar"
+        private const val DEFAULT_PROFILE_AVATAR  = "🍎"
         private const val KEY_GUESS_DIST_PREFIX   = "guess_dist_"
         private const val MAX_GUESSES             = 6
 
@@ -60,6 +62,14 @@ class GameProfileManager(context: Context) {
         val prev  = (level - 1) * (level - 1) * 200
         val next  = level * level * 200
         return if (next == prev) 0f else ((xp - prev).toFloat() / (next - prev)).coerceIn(0f, 1f)
+    }
+
+    fun getProfileAvatar(): String =
+        prefs.getString(key(KEY_PROFILE_AVATAR), DEFAULT_PROFILE_AVATAR) ?: DEFAULT_PROFILE_AVATAR
+
+    fun setProfileAvatar(avatar: String) {
+        prefs.edit().putString(key(KEY_PROFILE_AVATAR), avatar).apply()
+        firebaseStatsRepository.syncStats(this)
     }
 
     fun awardClassicXp(guessCount: Int): Int {
@@ -176,6 +186,7 @@ class GameProfileManager(context: Context) {
         val lastDailyPlayedDate = data["lastDailyPlayedDate"] as? String
         val lastDailyWon = data["lastDailyWon"] as? Boolean ?: false
         val storedCoins = (data["storedCoins"] as? Long)?.toInt() ?: 0
+        val profileAvatar = data["profileAvatar"] as? String ?: DEFAULT_PROFILE_AVATAR
 
         val guessDistribution =
             (data["guessDistribution"] as? List<*>)?.mapNotNull { (it as? Long)?.toInt() }
@@ -193,6 +204,7 @@ class GameProfileManager(context: Context) {
             .putBoolean(key("daily_last_won"), lastDailyWon)
             .putInt(key("stored_coins"), storedCoins)
             .putInt(key(KEY_TOTAL_XP), xp)
+            .putString(key(KEY_PROFILE_AVATAR), profileAvatar)
 
         if (lastDailyPlayedDate != null) {
             editor.putString(key(KEY_DAILY_PLAYED_DATE), lastDailyPlayedDate)

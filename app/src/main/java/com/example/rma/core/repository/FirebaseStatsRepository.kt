@@ -26,6 +26,7 @@ class FirebaseStatsRepository {
             "uid" to user.uid,
             "displayName" to (user.displayName ?: user.email ?: "Guest"),
             "email" to user.email,
+            "profileAvatar" to profileManager.getProfileAvatar(),
 
             "classicWins" to profileManager.getClassicWins(),
             "classicLosses" to profileManager.getClassicLosses(),
@@ -59,6 +60,7 @@ class FirebaseStatsRepository {
 
         val publicLeaderboardData = hashMapOf(
             "displayName" to (user.displayName ?: user.email ?: "Играч"),
+            "profileAvatar" to profileManager.getProfileAvatar(),
             "classicGamesPlayed" to profileManager.getClassicGamesPlayed(),
             "classicWins" to profileManager.getClassicWins(),
             "level" to profileManager.getLevel(),

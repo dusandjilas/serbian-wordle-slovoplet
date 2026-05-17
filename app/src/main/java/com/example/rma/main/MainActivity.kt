@@ -146,16 +146,19 @@ private fun MainScreen(
     var level by remember { mutableIntStateOf(if (isGuest) 1 else profileManager.getLevel()) }
     var xpProgress by remember { mutableFloatStateOf(if (isGuest) 0f else profileManager.getXpProgress()) }
     var classicStreak by remember { mutableIntStateOf(profileManager.getClassicStreak()) }
+    var avatarEmoji by remember { mutableStateOf(if (isGuest) "?" else profileManager.getProfileAvatar()) }
 
     fun refreshHeaderStats() {
         if (isGuest) {
             coins = coinRepo.getLocal()
             level = 1
             xpProgress = 0f
+            avatarEmoji = "?"
         } else {
             coinRepo.load { reconciled -> coins = reconciled }
             level = profileManager.getLevel()
             xpProgress = profileManager.getXpProgress()
+            avatarEmoji = profileManager.getProfileAvatar()
         }
         classicStreak = profileManager.getClassicStreak()
     }
@@ -222,6 +225,7 @@ private fun MainScreen(
                     coins      = coins,
                     level      = level,
                     xpProgress = xpProgress,
+                    avatarEmoji = avatarEmoji,
                     scale      = scale,
                     widthScale = widthScale,
                     onAdClick  = { showRemoveAds = true },
@@ -556,7 +560,7 @@ private fun ChangeDisplayNameDialog(
 
 @Composable
 private fun TopHeaderBar(
-    isGuest: Boolean, coins: Int, level: Int, xpProgress: Float,
+    isGuest: Boolean, coins: Int, level: Int, xpProgress: Float, avatarEmoji: String,
     scale: Float,
     widthScale: Float,
     onAdClick: () -> Unit, onAvatarClick: () -> Unit, onPlusClick: () -> Unit
@@ -573,7 +577,7 @@ private fun TopHeaderBar(
         }
 
         Box(Modifier.align(Alignment.Center).clickable { onAvatarClick() }) {
-            CenterAvatar(level = level, xpProgress = xpProgress, isGuest = isGuest, size = avatarSize)
+            CenterAvatar(level = level, xpProgress = xpProgress, isGuest = isGuest, avatarEmoji = avatarEmoji, size = avatarSize)
         }
 
         Box(Modifier.align(Alignment.CenterEnd)) {
@@ -583,7 +587,7 @@ private fun TopHeaderBar(
 }
 
 @Composable
-private fun CenterAvatar(level: Int, xpProgress: Float, isGuest: Boolean, size: Dp = 112.dp) {
+private fun CenterAvatar(level: Int, xpProgress: Float, isGuest: Boolean, avatarEmoji: String, size: Dp = 112.dp) {
     Box(contentAlignment = Alignment.Center, modifier = Modifier.size(size)) {
         Box(
             Modifier.size(size * 0.96f).clip(CircleShape)
@@ -602,7 +606,7 @@ private fun CenterAvatar(level: Int, xpProgress: Float, isGuest: Boolean, size: 
                 .border(4.dp, Color(0xFF558820), CircleShape),
             contentAlignment = Alignment.Center
         ) {
-            Text(if (isGuest) "?" else "🍎", fontSize = (size.value * 0.33f).sp)
+            Text(if (isGuest) "?" else avatarEmoji, fontSize = (size.value * 0.33f).sp)
         }
         Box(
             modifier = Modifier.align(Alignment.TopCenter).offset(y = 2.dp)
