@@ -1,4 +1,4 @@
-package com.example.rma
+package com.example.rma.core.managers
 
 import com.google.firebase.auth.FirebaseUser
 import com.google.firebase.auth.UserProfileChangeRequest

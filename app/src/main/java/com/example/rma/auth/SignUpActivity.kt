@@ -1,4 +1,6 @@
-package com.example.rma
+package com.example.rma.auth
+
+import com.example.rma.core.managers.PlayerNameManager
 
 import android.content.Intent
 import android.os.Bundle

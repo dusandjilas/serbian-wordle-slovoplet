@@ -11,7 +11,7 @@
             android:name="com.google.android.gms.ads.APPLICATION_ID"
             android:value="ca-app-pub-3940256099942544~3347511713"/>
         <activity
-            android:name=".LauncherActivity"
+            android:name=".launcher.LauncherActivity"
             android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN"/>
@@ -19,22 +19,22 @@
             </intent-filter>
         </activity>
         <activity
-            android:name=".SignInActivity"
+            android:name=".auth.SignInActivity"
             android:exported="false"/>
         <activity
-            android:name=".SignUpActivity"
+            android:name=".auth.SignUpActivity"
             android:exported="false"/>
         <activity
-            android:name=".MainActivity"
+            android:name=".main.MainActivity"
             android:exported="false"/>
         <activity
-            android:name=".ProfileActivity"
+            android:name=".profile.ProfileActivity"
             android:exported="false"/>
         <activity
-            android:name=".ShopActivity"
+            android:name=".shop.ShopActivity"
             android:exported="false"/>
         <activity
-            android:name=".SlovopletIgra"
+            android:name=".game.ui.SlovopletIgra"
             android:exported="false"/>
     </application>
 </manifest>

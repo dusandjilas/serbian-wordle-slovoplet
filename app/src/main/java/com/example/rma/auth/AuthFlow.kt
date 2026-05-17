@@ -1,4 +1,8 @@
-package com.example.rma
+package com.example.rma.auth
+
+import com.example.rma.core.managers.GameProfileManager
+import com.example.rma.core.repository.FirebaseStatsRepository
+import com.example.rma.main.MainActivity
 
 import android.content.Context
 import android.content.Intent

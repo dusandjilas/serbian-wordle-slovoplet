@@ -1,4 +1,6 @@
-package com.example.rma
+package com.example.rma.core.managers
+
+import com.example.rma.core.repository.FirebaseStatsRepository
 
 import android.content.Context
 import android.content.SharedPreferences
