@@ -1065,35 +1065,15 @@ private fun LeaderboardDialogContent(
         Text("Leaderboard", color = Color.White, fontSize = 28.sp, fontWeight = FontWeight.ExtraBold)
         Spacer(Modifier.height(10.dp))
 
-        Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-            for (label in listOf("Friends", "Players", "Teams")) {
-                Box(
-                    modifier = Modifier.weight(1f)
-                        .clip(RoundedCornerShape(10.dp))
-                        .background(if (label == "Players") Color(0xFF8FC1FF) else Color(0x66587CB2))
-                        .padding(vertical = 8.dp),
-                    contentAlignment = Alignment.Center
-                ) { Text(label, color = Color.White, fontWeight = FontWeight.Bold, fontSize = 12.sp) }
-            }
-        }
-
-        Spacer(Modifier.height(8.dp))
-
-        Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-            Box(
-                modifier = Modifier.weight(1f)
-                    .clip(RoundedCornerShape(12.dp))
-                    .background(Color(0xFFF1B847))
-                    .padding(vertical = 8.dp),
-                contentAlignment = Alignment.Center
-            ) { Text("World", color = Color.White, fontWeight = FontWeight.ExtraBold) }
-            Box(
-                modifier = Modifier.weight(1f)
-                    .clip(RoundedCornerShape(12.dp))
-                    .background(Color(0xFF6E84B7))
-                    .padding(vertical = 8.dp),
-                contentAlignment = Alignment.Center
-            ) { Text("Serbia", color = Color.White, fontWeight = FontWeight.ExtraBold) }
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .clip(RoundedCornerShape(12.dp))
+                .background(Color(0xFFF1B847))
+                .padding(vertical = 8.dp),
+            contentAlignment = Alignment.Center
+        ) {
+            Text("World", color = Color.White, fontWeight = FontWeight.ExtraBold)
         }
 
         Spacer(Modifier.height(10.dp))
