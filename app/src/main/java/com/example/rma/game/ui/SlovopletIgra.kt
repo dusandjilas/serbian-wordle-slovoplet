@@ -85,6 +85,7 @@ import com.example.rma.viewmodel.WordleViewModelFactory
 import com.google.android.gms.ads.AdRequest
 import com.google.android.gms.ads.AdSize
 import com.google.android.gms.ads.AdView
+import com.google.android.gms.ads.MobileAds
 import com.google.firebase.auth.FirebaseAuth
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
@@ -172,6 +173,7 @@ class SlovopletIgra : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_slovoplet_igra)
+        MobileAds.initialize(this)
 
         adManager = AdManager(this)
         adManager.loadAd("ca-app-pub-3940256099942544/5224354917")
@@ -330,6 +332,10 @@ private fun WordleGameScreen(
                         keyboardState[c] = mergeState(keyboardState[c], gr.letterStates[i])
                     }
                 }
+                saved.keyboardStates.forEach { (key, state) ->
+                    keyboardState[key] = mergeState(keyboardState[key], state)
+                }
+                onLastHintChange(saved.lastHint)
                 saved.guesses.forEachIndexed { row, gr ->
                     gr.letterStates.forEachIndexed { col, _ ->
                         if (!revealedCells.contains(Pair(row, col)))
@@ -349,7 +355,9 @@ private fun WordleGameScreen(
                     mode         = viewModel.gameMode,
                     targetWord   = viewModel.targetWord,
                     guesses      = viewModel.guesses,
-                    currentInput = trenutniPokusaj
+                    currentInput = trenutniPokusaj,
+                    keyboardStates = keyboardState.toMap(),
+                    lastHint = lastHint
                 )
             }
         }
@@ -371,6 +379,14 @@ private fun WordleGameScreen(
         val letter = unrevealed.random()
         keyboardState[letter] = LetterState.PRESENT
         onLastHintChange(letter)
+        stateRepo.save(
+            viewModel.gameMode,
+            viewModel.targetWord,
+            viewModel.guesses,
+            trenutniPokusaj,
+            keyboardState.toMap(),
+            letter
+        )
     }
 
     fun revealThreeRandomKeysHint() {
@@ -382,6 +398,14 @@ private fun WordleGameScreen(
                 if (viewModel.targetWord.contains(ch)) LetterState.PRESENT else LetterState.ABSENT
             )
         }
+        stateRepo.save(
+            viewModel.gameMode,
+            viewModel.targetWord,
+            viewModel.guesses,
+            trenutniPokusaj,
+            keyboardState.toMap(),
+            lastHint
+        )
     }
 
     fun trySpendOrPopup(cost: Int, onSuccess: () -> Unit) {
@@ -406,7 +430,14 @@ private fun WordleGameScreen(
             }
             animRow     = rowIndex
             animTrigger++
-            stateRepo.save(viewModel.gameMode, viewModel.targetWord, viewModel.guesses, "")
+            stateRepo.save(
+                viewModel.gameMode,
+                viewModel.targetWord,
+                viewModel.guesses,
+                "",
+                keyboardState.toMap(),
+                lastHint
+            )
         } else {
             Toast.makeText(context, "Reč nije važeća", Toast.LENGTH_SHORT).show()
         }
