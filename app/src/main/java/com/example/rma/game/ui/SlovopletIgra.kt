@@ -371,6 +371,14 @@ private fun WordleGameScreen(
         else -> false
     }
 
+    fun hasOneLetterHintAvailable(): Boolean =
+        viewModel.targetWord.any { keyboardState[it] == null }
+
+    fun hasThreeKeysHintAvailable(): Boolean {
+        val allKeys = KEYBOARD_ROWS.joinToString("").toList()
+        return allKeys.any { keyboardState[it] == null }
+    }
+
     fun revealOneLetterHint() {
         val unrevealed = viewModel.targetWord.filter { keyboardState[it] == null }
         if (unrevealed.isEmpty()) {
@@ -547,8 +555,20 @@ private fun WordleGameScreen(
                 hint1Cost   = hint1Cost,
                 hint3Cost   = hint3Cost,
                 submitState = submitState,
-                onHint1     = { trySpendOrPopup(hint1Cost) { revealOneLetterHint() } },
-                onHint3     = { trySpendOrPopup(hint3Cost) { revealThreeRandomKeysHint() } },
+                onHint1     = {
+                    if (!hasOneLetterHintAvailable()) {
+                        Toast.makeText(context, "Nema skrivenih slova!", Toast.LENGTH_SHORT).show()
+                    } else {
+                        trySpendOrPopup(hint1Cost) { revealOneLetterHint() }
+                    }
+                },
+                onHint3     = {
+                    if (!hasThreeKeysHintAvailable()) {
+                        Toast.makeText(context, "Sva slova su već otkrivena!", Toast.LENGTH_SHORT).show()
+                    } else {
+                        trySpendOrPopup(hint3Cost) { revealThreeRandomKeysHint() }
+                    }
+                },
                 onSubmit    = { submitGuessNow() },
                 onComplete  = {
                     if (!viewModel.hasWon && !viewModel.hasLost && !pendingSubmit) {
