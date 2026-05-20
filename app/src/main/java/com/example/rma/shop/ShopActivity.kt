@@ -11,6 +11,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.collectAsState
 import android.widget.Toast
 
 class ShopActivity : AppCompatActivity() {
@@ -19,22 +20,24 @@ class ShopActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         adManager = AdManager(this)
-        adManager.loadAd("ca-app-pub-3940256099942544/5224354917")
+        adManager.loadAd()
 
         val coinRepo = CoinRepository(this)
 
         setContent {
             MaterialTheme {
                 var coins by remember { mutableIntStateOf(coinRepo.getLocal()) }
+                val isAdReady by adManager.adReady.collectAsState()
 
                 ShopScreen(
                     coins = coins,
                     onBack = { finish() },
                     onFreeAd25 = {
-                        if (adManager.isAdReady()) {
+                        if (isAdReady && adManager.isAdReady()) {
                             adManager.showAd { coins = coinRepo.add(25) }
                         } else {
-                            Toast.makeText(this, "Reklama nije spremna, pokušaj kasnije", Toast.LENGTH_SHORT).show()
+                            adManager.loadAd()
+                            Toast.makeText(this, "Reklama se učitava, pokušaj ponovo za par sekundi", Toast.LENGTH_SHORT).show()
                         }
                     },
                     onBuyCoins = { amount -> coins = coinRepo.add(amount) },
@@ -42,5 +45,10 @@ class ShopActivity : AppCompatActivity() {
                 )
             }
         }
+    }
+
+    override fun onResume() {
+        super.onResume()
+        if (!adManager.isAdReady()) adManager.loadAd()
     }
 }

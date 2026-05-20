@@ -255,8 +255,6 @@ private fun MainScreen(
                 Spacer(Modifier.height(12.dp))
             }
 
-            BannerAdContainer()
-
             FooterNavBar(
                 isGuest       = isGuest,
                 scale         = scale,
@@ -266,6 +264,8 @@ private fun MainScreen(
                 onSettings    = { showSettings = true },
                 onLeaderboard = { showLeaderboard = true }
             )
+
+            BannerAdContainer()
         }
 
         if (showStats) {
