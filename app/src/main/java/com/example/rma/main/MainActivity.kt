@@ -571,7 +571,7 @@ private fun TopHeaderBar(
     Box(modifier = Modifier.fillMaxWidth().padding(horizontal = 8.dp, vertical = 8.dp)) {
         Box(
             modifier = Modifier.align(Alignment.CenterStart).size(adSize).clip(CircleShape)
-                .background(Color(0xFFE24A3B)).clickable { onAdClick() },
+                .background(Brush.verticalGradient(listOf(Color(0xFF7ED4FF), Color(0xFF2A6CD4)))).border(2.dp, Color.White.copy(alpha = 0.45f), CircleShape).clickable { onAdClick() },
             contentAlignment = Alignment.Center
         ) {
             Text("AD", color = Color.White, fontWeight = FontWeight.Black, fontSize = (11 * scale).sp)
@@ -654,13 +654,7 @@ private fun CoinPill(coins: Int, isGuest: Boolean, scale: Float, onPlusClick: ()
                     color = Color.White, fontWeight = FontWeight.ExtraBold, fontSize = (20 * scale).sp
                 )
                 Spacer(Modifier.width(6.dp))
-                Box(
-                    Modifier.size((26 * scale).dp).clip(CircleShape).background(Color(0xFFE8A800))
-                        .border(2.dp, Color(0xFFA06000), CircleShape),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Text("D", color = Color.White, fontWeight = FontWeight.ExtraBold, fontSize = (12 * scale).sp)
-                }
+                Green3DCoinIcon(size = (26 * scale).dp, label = "D", fontSize = (12 * scale).sp)
             }
         }
         Spacer(Modifier.width((4 * scale).dp))
@@ -1303,10 +1297,7 @@ fun RemoveAdsDialog(onDismiss: () -> Unit, onBuy: () -> Unit) {
             for (text in listOf("Bez baner reklama", "Bez video reklama", "Podrška razvoju igre")) {
                 Row(verticalAlignment = Alignment.CenterVertically,
                     modifier = Modifier.fillMaxWidth().padding(vertical = 5.dp)) {
-                    Box(Modifier.size(26.dp).clip(CircleShape).background(Color(0xFF44BB55)),
-                        contentAlignment = Alignment.Center) {
-                        Text("✓", color = Color.White, fontSize = 14.sp, fontWeight = FontWeight.ExtraBold)
-                    }
+                    Badge3DIcon(size = 26.dp, symbol = "✓", bgTop = Color(0xFF6BD8FF), bgBottom = Color(0xFF2F74D8)) { }
                     Spacer(Modifier.width(12.dp))
                     Text(text, color = Color.White, fontSize = 14.sp)
                 }
@@ -1317,6 +1308,36 @@ fun RemoveAdsDialog(onDismiss: () -> Unit, onBuy: () -> Unit) {
             Text("NE SADA", color = Color(0xAAFFFFFF), fontWeight = FontWeight.Bold, fontSize = 14.sp,
                 modifier = Modifier.clickable { onDismiss() })
         }
+    }
+}
+
+
+@Composable
+private fun Green3DCoinIcon(size: Dp, label: String, fontSize: TextUnit) {
+    Box(
+        modifier = Modifier.size(size).drawBehind {
+            val r = this.size.minDimension / 2f
+            drawCircle(Color(0xFF0C4F26), radius = r)
+            drawCircle(brush = Brush.verticalGradient(listOf(Color(0xFF68E994), Color(0xFF1F9F55), Color(0xFF0A5C2A))), radius = r * 0.92f)
+            drawCircle(Color(0xFFD7FFE4).copy(alpha = 0.85f), radius = r * 0.4f, center = Offset(r * 0.7f, r * 0.62f))
+            drawCircle(Color(0xFF083D1D), radius = r * 0.92f, style = Stroke(width = 2.dp.toPx()))
+        },
+        contentAlignment = Alignment.Center
+    ) {
+        Text(label, color = Color.White, fontWeight = FontWeight.ExtraBold, fontSize = fontSize)
+    }
+}
+
+@Composable
+private fun Badge3DIcon(size: Dp, symbol: String, bgTop: Color, bgBottom: Color, onClick: () -> Unit = {}) {
+    Box(
+        Modifier.size(size).clip(CircleShape)
+            .background(Brush.verticalGradient(listOf(bgTop, bgBottom)))
+            .border(2.dp, Color.White.copy(alpha = 0.45f), CircleShape)
+            .clickable { onClick() },
+        contentAlignment = Alignment.Center
+    ) {
+        Text(symbol, color = Color.White, fontSize = 14.sp, fontWeight = FontWeight.ExtraBold)
     }
 }
 
