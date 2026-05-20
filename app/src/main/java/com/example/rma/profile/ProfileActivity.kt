@@ -48,7 +48,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.rma.core.managers.GameProfileManager
 import com.google.firebase.auth.FirebaseAuth
-
+import androidx.compose.foundation.layout.ColumnScope
 class ProfileActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -245,7 +245,11 @@ private fun HeroProfileCard(
 }
 
 @Composable
-private fun SectionCard(title: String, subtitle: String, content: @Composable Column.() -> Unit) {
+private fun SectionCard(
+    title: String,
+    subtitle: String,
+    content: @Composable ColumnScope.() -> Unit
+) {
     Card(
         colors = CardDefaults.cardColors(containerColor = CardBlue.copy(alpha = 0.96f)),
         shape = RoundedCornerShape(22.dp),

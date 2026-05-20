@@ -1247,6 +1247,22 @@ fun GoldWideButton(
 }
 
 @Composable
+private fun BannerAdContainer() {
+    val context = LocalContext.current
+    Box(
+        Modifier.fillMaxWidth().background(Color(0xFF1A0E06)).navigationBarsPadding().padding(vertical = 4.dp),
+        contentAlignment = Alignment.Center
+    ) {
+        AndroidView(factory = {
+            AdView(context).apply {
+                setAdSize(AdSize.BANNER)
+                adUnitId = "ca-app-pub-3940256099942544/6300978111"
+                loadAd(AdRequest.Builder().build())
+            }
+        })
+    }
+}
+@Composable
 fun GoldButton(label: String, onClick: () -> Unit, modifier: Modifier = Modifier) {
     val src     = remember { MutableInteractionSource() }
     val pressed by src.collectIsPressedAsState()
@@ -1390,19 +1406,4 @@ private fun WordChoiceInfoDialog(onDismiss: () -> Unit) {
     }
 }
 
-@Composable
-private fun BannerAdContainer() {
-    val context = LocalContext.current
-    Box(
-        Modifier.fillMaxWidth().background(Color(0xFF1A0E06)).navigationBarsPadding().padding(vertical = 4.dp),
-        contentAlignment = Alignment.Center
-    ) {
-        AndroidView(factory = {
-            AdView(context).apply {
-                setAdSize(AdSize.BANNER)
-                adUnitId = "ca-app-pub-3940256099942544/6300978111"
-                loadAd(AdRequest.Builder().build())
-            }
-        })
-    }
-}
+
