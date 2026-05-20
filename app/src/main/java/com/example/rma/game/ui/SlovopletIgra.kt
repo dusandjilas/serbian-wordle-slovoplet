@@ -100,6 +100,7 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -311,6 +312,7 @@ private fun WordleGameScreen(
     var pendingReward      by remember { mutableIntStateOf(0) }
     var pendingSubmit      by remember { mutableStateOf(false) }
     var showFirstTimeAuthPrompt by remember { mutableStateOf(false) }
+    val adReady by adManager.adReady.collectAsState()
 
     var animTrigger by remember { mutableIntStateOf(0) }
     var animRow     by remember { mutableIntStateOf(-1) }
@@ -585,9 +587,9 @@ private fun WordleGameScreen(
         if (showNeedCoinsPopup) {
             NeedCoinsDialog(
                 reward    = pendingReward,
-                adReady   = adManager.isAdReady(),
+                adReady   = adReady,
                 onClaimAd = {
-                    if (adManager.isAdReady()) {
+                    if (adReady) {
                         adManager.showAd {
                             val newTotal = coinRepo.add(pendingReward)
                             onCoinsChanged(newTotal)
