@@ -16,7 +16,14 @@ class GameStateRepository(context: Context) {
     private fun key(mode: GameMode, suffix: String) = "${mode.name.lowercase()}_$suffix"
 
 
-    fun save(mode: GameMode, targetWord: String, guesses: List<GuessResult>, currentInput: String = "") {
+    fun save(
+        mode: GameMode,
+        targetWord: String,
+        guesses: List<GuessResult>,
+        currentInput: String = "",
+        keyboardStates: Map<Char, LetterState> = emptyMap(),
+        lastHint: Char? = null
+    ) {
         val guessesJson = JSONArray().apply {
             guesses.forEach { gr ->
                 put(JSONObject().apply {
@@ -26,10 +33,15 @@ class GameStateRepository(context: Context) {
                 })
             }
         }
+        val keyboardJson = JSONObject().apply {
+            keyboardStates.forEach { (key, value) -> put(key.toString(), value.name) }
+        }
         prefs.edit()
             .putString(key(mode, "target"),  targetWord)
             .putString(key(mode, "guesses"), guessesJson.toString())
             .putString(key(mode, "input"),   currentInput)
+            .putString(key(mode, "keyboard"), keyboardJson.toString())
+            .putString(key(mode, "last_hint"), lastHint?.toString())
             .putString(key(mode, "date"),    LocalDate.now().toString())
             .apply()
     }
@@ -44,6 +56,8 @@ class GameStateRepository(context: Context) {
             .remove(key(mode, "target"))
             .remove(key(mode, "guesses"))
             .remove(key(mode, "input"))
+            .remove(key(mode, "keyboard"))
+            .remove(key(mode, "last_hint"))
             .remove(key(mode, "date"))
             .apply()
     }
@@ -60,6 +74,8 @@ class GameStateRepository(context: Context) {
 
         val guessesJson = prefs.getString(key(mode, "guesses"), null) ?: return null
         val input       = prefs.getString(key(mode, "input"), "") ?: ""
+        val keyboardJson = prefs.getString(key(mode, "keyboard"), "{}") ?: "{}"
+        val lastHint = prefs.getString(key(mode, "last_hint"), null)?.firstOrNull()
 
         return try {
             val arr = JSONArray(guessesJson)
@@ -72,7 +88,21 @@ class GameStateRepository(context: Context) {
                     letterStates = (0 until states.length()).map { LetterState.valueOf(states.getString(it)) }
                 )
             }
-            SavedGameState(target = target, guesses = guesses, currentInput = input)
+            val keyboard = JSONObject(keyboardJson).let { obj ->
+                obj.keys().asSequence().mapNotNull { k ->
+                    val ch = k.firstOrNull() ?: return@mapNotNull null
+                    val stateName = obj.optString(k, "")
+                    val state = runCatching { LetterState.valueOf(stateName) }.getOrNull() ?: return@mapNotNull null
+                    ch to state
+                }.toMap()
+            }
+            SavedGameState(
+                target = target,
+                guesses = guesses,
+                currentInput = input,
+                keyboardStates = keyboard,
+                lastHint = lastHint
+            )
         } catch (e: Exception) {
             null
         }
@@ -82,5 +112,7 @@ class GameStateRepository(context: Context) {
 data class SavedGameState(
     val target: String,
     val guesses: List<GuessResult>,
-    val currentInput: String = ""
+    val currentInput: String = "",
+    val keyboardStates: Map<Char, LetterState> = emptyMap(),
+    val lastHint: Char? = null
 )

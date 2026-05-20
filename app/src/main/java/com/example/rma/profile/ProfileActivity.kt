@@ -25,7 +25,6 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.LinearProgressIndicator
@@ -120,7 +119,17 @@ private fun ProfileScreen(
                         fontSize = 14.sp
                     )
                 }
-                Button(onClick = onBack) { Text("Nazad") }
+                Box(
+                    modifier = Modifier
+                        .clip(RoundedCornerShape(14.dp))
+                        .background(Color(0xFFC11521))
+                        .border(3.dp, Color(0xFFE8ECF2), RoundedCornerShape(14.dp))
+                        .clickable { onBack() }
+                        .padding(horizontal = 18.dp, vertical = 10.dp),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text("Nazad", color = Color.White, fontWeight = FontWeight.Black)
+                }
             }
 
             HeroProfileCard(
