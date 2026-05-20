@@ -10,11 +10,15 @@ import com.google.android.gms.ads.MobileAds
 import com.google.android.gms.ads.rewarded.RewardItem
 import com.google.android.gms.ads.rewarded.RewardedAd
 import com.google.android.gms.ads.rewarded.RewardedAdLoadCallback
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
 
 class AdManager(private val context: Context) {
 
     private var rewardedAd: RewardedAd? = null
     private var adUnitId: String = DEFAULT_REWARDED_AD_UNIT_ID
+    private val _adReady = MutableStateFlow(false)
+    val adReady: StateFlow<Boolean> = _adReady
 
     init {
         MobileAds.initialize(context)
@@ -30,11 +34,13 @@ class AdManager(private val context: Context) {
                 override fun onAdLoaded(ad: RewardedAd) {
                     Log.d("AdManager", "Rewarded ad loaded")
                     rewardedAd = ad
+                    _adReady.value = true
                 }
 
                 override fun onAdFailedToLoad(adError: LoadAdError) {
                     Log.d("AdManager", "Failed to load ad: ${adError.message}")
                     rewardedAd = null
+                    _adReady.value = false
                 }
             }
         )
@@ -46,12 +52,14 @@ class AdManager(private val context: Context) {
             ad.fullScreenContentCallback = object : FullScreenContentCallback() {
                 override fun onAdDismissedFullScreenContent() {
                     rewardedAd = null
+                    _adReady.value = false
                     loadAd(this@AdManager.adUnitId)
                 }
 
                 override fun onAdFailedToShowFullScreenContent(adError: com.google.android.gms.ads.AdError) {
                     Log.d("AdManager", "Failed to show ad: ${adError.message}")
                     rewardedAd = null
+                    _adReady.value = false
                     loadAd(this@AdManager.adUnitId)
                 }
             }
@@ -66,7 +74,7 @@ class AdManager(private val context: Context) {
     }
 
     fun isAdReady(): Boolean {
-        return rewardedAd != null
+        return _adReady.value && rewardedAd != null
     }
 
     private companion object {
