@@ -220,12 +220,18 @@ private fun CoinAmountPlate(amount: Int, modifier: Modifier = Modifier) {
 
 @Composable
 private fun CoinIcon(iconSize: Dp) {
-    Box(Modifier.size(iconSize).drawBehind {
-        val r = size.minDimension / 2f
-        drawCircle(SHOP_RED, radius = r)
-        drawCircle(SHOP_RED_DARK, radius = r, style = Stroke(width = 3.dp.toPx()))
-        drawCircle(SHOP_GRAY_LIGHT, radius = r / 1.7f)
-    })
+    Box(
+        Modifier.size(iconSize).drawBehind {
+            val r = size.minDimension / 2f
+            drawCircle(Color(0xFF0E5B2C), radius = r)
+            drawCircle(
+                brush = Brush.verticalGradient(listOf(Color(0xFF63E08F), Color(0xFF1E9C53), Color(0xFF0B5A2A))),
+                radius = r * 0.92f
+            )
+            drawCircle(Color(0xFFC8FFD9).copy(alpha = 0.8f), radius = r * 0.42f, center = Offset(r * 0.72f, r * 0.64f))
+            drawCircle(Color(0xFF083D1D), radius = r * 0.92f, style = Stroke(width = 2.dp.toPx()))
+        }
+    )
 }
 
 @Composable

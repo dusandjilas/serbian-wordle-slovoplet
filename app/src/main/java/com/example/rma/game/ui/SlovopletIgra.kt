@@ -694,7 +694,7 @@ private fun TopBar(score: Int, coins: Int, onInfo: () -> Unit, onPlusCoins: () -
     Row(modifier = Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
         Box(
             modifier = Modifier.size(36.dp).clip(RoundedCornerShape(18.dp))
-                .background(Color(0xFFE24A3B)).clickable { onPlusCoins() },
+                .background(Brush.verticalGradient(listOf(Color(0xFF7ED4FF), Color(0xFF2A6CD4)))).border(2.dp, Color.White.copy(alpha = 0.45f), RoundedCornerShape(18.dp)).clickable { onPlusCoins() },
             contentAlignment = Alignment.Center
         ) { Text("AD", color = Color.White, fontWeight = FontWeight.Black, fontSize = 11.sp) }
 
@@ -727,23 +727,36 @@ private fun CoinPill(coins: Int, onPlus: () -> Unit) {
             contentAlignment = Alignment.Center
         ) {
             Row(verticalAlignment = Alignment.CenterVertically) {
-                Box(Modifier.size(18.dp).clip(RoundedCornerShape(9.dp)).background(Color(0xFFCCCCCC)))
+                Green3DCoinIcon(size = 18.dp)
                 Spacer(Modifier.width(6.dp))
                 Text(coins.toString(), color = Color.White, fontWeight = FontWeight.Black, fontSize = 14.sp)
             }
         }
         Spacer(Modifier.width(4.dp))
-        Box(
-            modifier = Modifier.size(32.dp).clip(RoundedCornerShape(16.dp))
-                .background(Color(0xFFE8A010)).clickable { onPlus() },
-            contentAlignment = Alignment.Center
-        ) { Text("D", color = Color.White, fontWeight = FontWeight.Black, fontSize = 14.sp) }
+        Box(modifier = Modifier.clickable { onPlus() }) { Green3DCoinIcon(size = 32.dp, label = "D") }
         Spacer(Modifier.width(2.dp))
         Box(
             modifier = Modifier.size(20.dp).clip(RoundedCornerShape(10.dp))
                 .background(Color(0xFF44BB55)),
             contentAlignment = Alignment.Center
         ) { Text("+", color = Color.White, fontWeight = FontWeight.Black, fontSize = 14.sp) }
+    }
+}
+
+
+@Composable
+private fun Green3DCoinIcon(size: Dp, label: String = "", labelSize: TextUnit = 14.sp) {
+    Box(
+        modifier = Modifier.size(size).drawBehind {
+            val r = this.size.minDimension / 2f
+            drawCircle(Color(0xFF0C4F26), radius = r)
+            drawCircle(brush = Brush.verticalGradient(listOf(Color(0xFF6AEB96), Color(0xFF209F56), Color(0xFF0A5C2A))), radius = r * 0.92f)
+            drawCircle(Color(0xFFD7FFE4).copy(alpha = 0.8f), radius = r * 0.36f, center = Offset(r * 0.72f, r * 0.62f))
+            drawCircle(Color(0xFF083D1D), radius = r * 0.92f, style = Stroke(width = 2.dp.toPx()))
+        },
+        contentAlignment = Alignment.Center
+    ) {
+        if (label.isNotEmpty()) Text(label, color = Color.White, fontWeight = FontWeight.Black, fontSize = labelSize)
     }
 }
 
@@ -806,7 +819,7 @@ private fun GridCell(char: Char, size: Dp, fill: Color, flipAngle: Float = 0f) {
         if (char != ' ') {
             Text(
                 text       = char.toLatinLetter(),
-                color      = if (isEmpty) Color(0xFF333322) else Color.White,
+                color      = Color.White,
                 fontWeight = FontWeight.Black,
                 fontSize   = (size.value * 0.44f).sp
             )
@@ -866,7 +879,7 @@ private fun LetterKey(
         LetterState.ABSENT  -> KEY_ABSENT
         else                -> KEY_DEFAULT
     }
-    val textColor = if (keyboardState[first] == null) Color(0xFF222222) else Color.White
+    val textColor = Color.White
     val labelScale = if (label.length > 1) 0.34f else 0.46f
     val isHinted  = first != null && first == lastHint
     val scale     = remember { Animatable(1f) }
