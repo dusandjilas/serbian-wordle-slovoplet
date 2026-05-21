@@ -581,7 +581,7 @@ private fun WordleGameScreen(
             )
 
             Spacer(Modifier.height(10.dp))
-            AdBanner(adUnitId = "ca-app-pub-3940256099942544/6300978111")
+            // Temporarily disabled banner ad to prevent Chromium WebView rendering issues on some devices.
         }
 
         if (showNeedCoinsPopup) {
