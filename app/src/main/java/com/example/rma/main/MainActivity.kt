@@ -266,7 +266,7 @@ private fun MainScreen(
                 onLeaderboard = { showLeaderboard = true }
             )
 
-            BannerAdContainer()
+            // Temporarily disabled banner ad to prevent Chromium WebView rendering issues on some devices.
         }
 
         if (showStats) {
