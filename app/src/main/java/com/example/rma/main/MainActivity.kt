@@ -74,14 +74,20 @@ import com.example.rma.game.ui.NeedCoinsDialog
 import kotlin.math.roundToInt
 import kotlin.math.min
 
-private val BG_TOP       = Color(0xFF243B5C)
-private val BG_BOT       = Color(0xFF162B4A)
-private val STRIPE_COLOR = Color(0x228995A3)
-private val GOLD_LIGHT   = Color(0xFFA8B1BE)
-private val GOLD_MID     = Color(0xFF8995A3)
-private val GOLD_DARK    = Color(0xFF5E6B7A)
-private val GOLD_STRIPE  = Color(0x22C11521)
-private val FOOTER_BG    = Color(0xFF0F1E33)
+private val BLUE_1       = Color(0xFF2C437D)
+private val BLUE_2       = Color(0xFF3B547D)
+private val BLUE_3       = Color(0xFF446C94)
+private val BLUE_4       = Color(0xFF5180B0)
+private val BLUE_5       = Color(0xFF7DB4C9)
+
+private val BG_TOP       = BLUE_1
+private val BG_BOT       = BLUE_2
+private val STRIPE_COLOR = BLUE_5.copy(alpha = 0.18f)
+private val GOLD_LIGHT   = BLUE_5
+private val GOLD_MID     = BLUE_4
+private val GOLD_DARK    = BLUE_3
+private val GOLD_STRIPE  = BLUE_2.copy(alpha = 0.22f)
+private val FOOTER_BG    = BLUE_1
 
 private enum class LeaderboardMetric(val label: String) {
     LEVEL("Nivo"),
@@ -369,7 +375,7 @@ private fun AuthDialog(
             modifier = Modifier
                 .fillMaxWidth().padding(16.dp)
                 .clip(RoundedCornerShape(28.dp))
-                .background(Brush.verticalGradient(listOf(Color(0xFF1E3560), Color(0xFF162B4A))))
+                .background(Brush.verticalGradient(listOf(BLUE_2, BLUE_1)))
                 .padding(28.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
@@ -504,7 +510,7 @@ private fun ChangeDisplayNameDialog(
                 .fillMaxWidth()
                 .padding(16.dp)
                 .clip(RoundedCornerShape(28.dp))
-                .background(Brush.verticalGradient(listOf(Color(0xFF1E3560), Color(0xFF162B4A))))
+                .background(Brush.verticalGradient(listOf(BLUE_2, BLUE_1)))
                 .padding(24.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
@@ -594,8 +600,8 @@ private fun TopHeaderBar(
     val avatarSize = (112 * min(scale, widthScale)).coerceIn(84f, 112f).dp
     Box(modifier = Modifier.fillMaxWidth().padding(horizontal = 8.dp, vertical = 8.dp)) {
         Box(
-            modifier = Modifier.align(Alignment.CenterStart).size(adSize).clip(CircleShape)
-                .background(Brush.verticalGradient(listOf(Color(0xFF7ED4FF), Color(0xFF2A6CD4)))).border(2.dp, Color.White.copy(alpha = 0.45f), CircleShape).clickable { onAdClick() },
+            modifier = Modifier.align(Alignment.CenterStart).size(adSize).clip(RoundedCornerShape(adSize / 2))
+                .background(Brush.verticalGradient(listOf(BLUE_5, BLUE_4))).border(2.dp, Color.White.copy(alpha = 0.45f), RoundedCornerShape(adSize / 2)).clickable { onAdClick() },
             contentAlignment = Alignment.Center
         ) {
             Text("AD", color = Color.White, fontWeight = FontWeight.Black, fontSize = (11 * scale).sp)
@@ -931,7 +937,7 @@ private fun SettingsDialog(onDismiss: () -> Unit, onLogout: () -> Unit) {
                 .fillMaxWidth()
                 .padding(16.dp)
                 .clip(RoundedCornerShape(28.dp))
-                .background(Brush.verticalGradient(listOf(Color(0xFF1E3560), Color(0xFF162B4A))))
+                .background(Brush.verticalGradient(listOf(BLUE_2, BLUE_1)))
                 .padding(24.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
@@ -995,7 +1001,7 @@ private fun StatsDialogContent(profileManager: GameProfileManager, onClose: () -
     Column(
         modifier = Modifier.fillMaxWidth().padding(16.dp)
             .clip(RoundedCornerShape(28.dp))
-            .background(Brush.verticalGradient(listOf(Color(0xFF1E3560), Color(0xFF162B4A))))
+            .background(Brush.verticalGradient(listOf(BLUE_2, BLUE_1)))
             .padding(24.dp),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
@@ -1024,10 +1030,10 @@ private fun StatsDialogContent(profileManager: GameProfileManager, onClose: () -
                         modifier = Modifier.width(20.dp))
                     Spacer(Modifier.width(8.dp))
                     Box(Modifier.weight(1f).height(26.dp).clip(RoundedCornerShape(10.dp))
-                        .background(Color(0xFF2A355A))) {
+                        .background(BLUE_2)) {
                         val frac = if (maxValue == 0) 0f else v.toFloat() / maxValue
                         Box(Modifier.fillMaxHeight().fillMaxWidth(frac.coerceIn(0f, 1f))
-                            .clip(RoundedCornerShape(10.dp)).background(Color(0xFFC11521)))
+                            .clip(RoundedCornerShape(10.dp)).background(BLUE_4))
                         Box(Modifier.fillMaxSize(), contentAlignment = Alignment.CenterEnd) {
                             Text(v.toString(), color = Color.White, fontWeight = FontWeight.Bold,
                                 modifier = Modifier.padding(end = 8.dp))
@@ -1076,7 +1082,7 @@ private fun LeaderboardDialogContent(
     Column(
         modifier = Modifier.fillMaxWidth().padding(8.dp)
             .clip(RoundedCornerShape(24.dp))
-            .background(Brush.verticalGradient(listOf(Color(0xFF4E7FC6), Color(0xFF2E4B80))))
+            .background(Brush.verticalGradient(listOf(BLUE_4, BLUE_2)))
             .border(3.dp, Color(0xFF9CC2F8), RoundedCornerShape(24.dp))
             .padding(12.dp),
         horizontalAlignment = Alignment.CenterHorizontally
@@ -1088,7 +1094,7 @@ private fun LeaderboardDialogContent(
             modifier = Modifier
                 .fillMaxWidth()
                 .clip(RoundedCornerShape(12.dp))
-                .background(Color(0xFFF1B847))
+                .background(BLUE_5)
                 .padding(vertical = 8.dp),
             contentAlignment = Alignment.Center
         ) {
@@ -1103,7 +1109,7 @@ private fun LeaderboardDialogContent(
                 Box(
                     modifier = Modifier.weight(1f)
                         .clip(RoundedCornerShape(10.dp))
-                        .background(if (selected) Color(0xFFF1B847) else Color(0xFF4C6699))
+                        .background(if (selected) BLUE_5 else BLUE_3)
                         .clickable { selectedTab = tab }
                         .padding(vertical = 7.dp),
                     contentAlignment = Alignment.Center
@@ -1114,7 +1120,7 @@ private fun LeaderboardDialogContent(
         Spacer(Modifier.height(10.dp))
         when {
             loading -> CircularProgressIndicator(color = Color.White)
-            error != null -> Text(error ?: "", color = Color(0xFFFFD6D6))
+            error != null -> Text(error ?: "", color = BLUE_5)
             sortedEntries.isEmpty() -> Text("No players yet.", color = Color.White)
             else -> Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                 val visibleEntries = sortedEntries.take(8)
@@ -1429,7 +1435,7 @@ private fun WordChoiceInfoDialog(onDismiss: () -> Unit) {
                                 .padding(top = 2.dp)
                                 .size(22.dp)
                                 .clip(CircleShape)
-                                .background(Color(0xFFC11521)),
+                                .background(BLUE_4),
                             contentAlignment = Alignment.Center
                         ) {
                             Text("✓", color = Color.White, fontSize = 12.sp, fontWeight = FontWeight.Black)
