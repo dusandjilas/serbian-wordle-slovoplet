@@ -7,15 +7,12 @@ import com.example.rma.core.managers.AppFlowPrefs
 import com.example.rma.core.managers.GameProfileManager
 import com.example.rma.core.repository.CoinRepository
 import com.example.rma.core.repository.GameStateRepository
-import com.example.rma.main.MainActivity
 import com.example.rma.shop.ShopActivity
 
 import android.app.Dialog
-import android.app.AlertDialog as AndroidAlertDialog
 import android.content.Intent
 import android.os.Bundle
-import android.media.AudioManager
-import android.media.ToneGenerator
+import android.view.SoundEffectConstants
 import android.view.ViewGroup
 import android.widget.Toast
 import androidx.activity.viewModels
@@ -187,19 +184,6 @@ class SlovopletIgra : AppCompatActivity() {
         val modeString   = intent.getStringExtra("game_mode") ?: "CLASSIC"
         val selectedMode = if (modeString == "DAILY") GameMode.DAILY else GameMode.CLASSIC
         val profileManager = GameProfileManager(this)
-
-        if (selectedMode == GameMode.DAILY && profileManager.hasPlayedDailyToday()) {
-            AndroidAlertDialog.Builder(this)
-                .setTitle("Reč dana je već odigrana")
-                .setMessage("Današnju Reč dana si već završio/la. Vrati se sutra za novu reč.")
-                .setCancelable(false)
-                .setPositiveButton("Nazad") { _, _ ->
-                    startActivity(Intent(this, MainActivity::class.java))
-                    finish()
-                }
-                .show()
-            return
-        }
 
         viewModel.setMode(selectedMode)
 
@@ -894,19 +878,17 @@ private fun LetterKey(
     val labelScale = if (label.length > 1) 0.34f else 0.46f
     val isHinted  = first != null && first == lastHint
     val scale     = remember { Animatable(1f) }
-    val tone = remember { ToneGenerator(AudioManager.STREAM_MUSIC, 45) }
+    val localView = androidx.compose.ui.platform.LocalView.current
     LaunchedEffect(lastHint) {
         if (isHinted) { scale.animateTo(1.25f, tween(180)); scale.animateTo(1f, tween(180)) }
     }
-    DisposableEffect(Unit) { onDispose { tone.release() } }
-
     Box(
         contentAlignment = Alignment.Center,
         modifier = Modifier
             .width(keyW).height(keyH).scale(scale.value)
             .shadow(3.dp, RoundedCornerShape(8.dp), ambientColor = Color(0x44000000))
             .clip(RoundedCornerShape(8.dp)).background(bg).clickable {
-                tone.startTone(ToneGenerator.TONE_CDMA_KEYPAD_VOLUME_KEY_LITE, 70)
+                localView.playSoundEffect(SoundEffectConstants.CLICK)
                 onKeyClick(key)
             }
     ) {

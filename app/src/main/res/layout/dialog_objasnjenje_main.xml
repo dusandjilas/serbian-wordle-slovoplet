@@ -8,7 +8,8 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:padding="16dp">
+    android:padding="16dp"
+    android:background="#C2C7EA">
     <TextView
         android:id="@+id/naslov"
         android:layout_width="0dp"
@@ -39,7 +40,7 @@
         android:layout_marginTop="8dp"
         android:fontFamily="@font/helvetica"
         android:text="Izvor reči je Rečnik sprkog jezika, izdavač Matica srpska, Novi Sad, iz 2011 godine. Od vrsta reči ima samo glagole, imenice, prideve i priloge."
-        android:textColor="#2A3F61"
+        android:textColor="#5E6B7A"
         android:textSize="12sp"
         app:layout_constraintEnd_toStartOf="@+id/buttonIskljuci"
         app:layout_constraintStart_toStartOf="parent"
@@ -50,7 +51,7 @@
         android:layout_height="wrap_content"
         android:fontFamily="@font/helvetica"
         android:text=" Promenjive vrste reči nemaju sve oblike: glagoli - samo infinitiv imenice - samo nominativ, samo jednina pridevi - samo muški rod, samo nominativ, samo jednina."
-        android:textColor="#2A3F61"
+        android:textColor="#5E6B7A"
         android:textSize="12sp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintStart_toStartOf="parent"
@@ -64,7 +65,7 @@
         android:layout_marginStart="4dp"
         android:fontFamily="@font/helvetica"
         android:text=" takođe nema ni: vlastitih imenica, prisvojnih prideva izvedenih od vlastitih imenica, glagolskih prideva, glagolskih piloga..."
-        android:textColor="#2A3F61"
+        android:textColor="#5E6B7A"
         android:textSize="12sp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintStart_toStartOf="parent"
