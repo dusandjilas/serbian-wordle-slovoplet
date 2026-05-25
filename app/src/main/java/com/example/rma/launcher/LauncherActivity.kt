@@ -1,6 +1,5 @@
 package com.example.rma.launcher
 
-import com.example.rma.R
 import com.example.rma.auth.SignInActivity
 import com.example.rma.core.managers.AppFlowPrefs
 import com.example.rma.game.ui.SlovopletIgra
@@ -8,7 +7,6 @@ import com.example.rma.main.MainActivity
 
 import android.content.Intent
 import android.os.Bundle
-import android.widget.Button
 import androidx.appcompat.app.AppCompatActivity
 import com.google.firebase.auth.FirebaseAuth
 
@@ -34,21 +32,9 @@ class LauncherActivity : AppCompatActivity() {
 
         if (currentUser != null) {
             startActivity(Intent(this, MainActivity::class.java))
-            finish()
         } else {
-            setContentView(R.layout.activity_launcher)
-
-            val signInButton = findViewById<Button>(R.id.buttonSignIn)
-            val guestButton = findViewById<Button>(R.id.buttonGuest)
-
-            signInButton.setOnClickListener {
-                startActivity(Intent(this, SignInActivity::class.java))
-            }
-
-            guestButton.setOnClickListener {
-                startActivity(Intent(this, MainActivity::class.java))
-                finish()
-            }
+            startActivity(Intent(this, SignInActivity::class.java))
         }
+        finish()
     }
 }

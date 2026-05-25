@@ -14,6 +14,8 @@ import android.app.Dialog
 import android.app.AlertDialog as AndroidAlertDialog
 import android.content.Intent
 import android.os.Bundle
+import android.media.AudioManager
+import android.media.ToneGenerator
 import android.view.ViewGroup
 import android.widget.Toast
 import androidx.activity.viewModels
@@ -118,7 +120,7 @@ val fonttri = FontFamily(Font(R.font.fonttri))
 private val BG            = Color(0xFF1F3A2E)
 private val CELL_EMPTY_BG = Color(0xFF2F3338)
 private val CELL_BORDER   = Color(0xFF4A5058)
-private val KEY_DEFAULT   = Color(0xFFE1E5EB)
+private val KEY_DEFAULT   = Color(0xFF6A7482)
 private val KEY_CORRECT   = Color(0xFF4CAF50)
 private val KEY_PRESENT   = Color(0xFFF4C542)
 private val KEY_ABSENT    = Color(0xFF3A3A3C)
@@ -311,6 +313,7 @@ private fun WordleGameScreen(
     var showDailyBonusPopup by remember { mutableStateOf(false) }
     var pendingReward      by remember { mutableIntStateOf(0) }
     var pendingSubmit      by remember { mutableStateOf(false) }
+    var hintInfoDialog by remember { mutableStateOf<String?>(null) }
     var showFirstTimeAuthPrompt by remember { mutableStateOf(false) }
     val adReady by adManager.adReady.collectAsState()
 
@@ -557,20 +560,8 @@ private fun WordleGameScreen(
                 hint1Cost   = hint1Cost,
                 hint3Cost   = hint3Cost,
                 submitState = submitState,
-                onHint1     = {
-                    if (!hasOneLetterHintAvailable()) {
-                        Toast.makeText(context, "Nema skrivenih slova!", Toast.LENGTH_SHORT).show()
-                    } else {
-                        trySpendOrPopup(hint1Cost) { revealOneLetterHint() }
-                    }
-                },
-                onHint3     = {
-                    if (!hasThreeKeysHintAvailable()) {
-                        Toast.makeText(context, "Sva slova su već otkrivena!", Toast.LENGTH_SHORT).show()
-                    } else {
-                        trySpendOrPopup(hint3Cost) { revealThreeRandomKeysHint() }
-                    }
-                },
+                onHint1     = { hintInfoDialog = "single" },
+                onHint3     = { hintInfoDialog = "triple" },
                 onSubmit    = { submitGuessNow() },
                 onComplete  = {
                     if (!viewModel.hasWon && !viewModel.hasLost && !pendingSubmit) {
@@ -582,6 +573,26 @@ private fun WordleGameScreen(
 
             Spacer(Modifier.height(10.dp))
             // Temporarily disabled banner ad to prevent Chromium WebView rendering issues on some devices.
+        }
+
+
+        if (hintInfoDialog != null) {
+            HintInfoDialog(
+                type = hintInfoDialog!!,
+                cost1 = hint1Cost,
+                cost3 = hint3Cost,
+                onClose = { hintInfoDialog = null },
+                onConfirm = {
+                    if (hintInfoDialog == "single") {
+                        if (!hasOneLetterHintAvailable()) Toast.makeText(context, "Nema skrivenih slova!", Toast.LENGTH_SHORT).show()
+                        else trySpendOrPopup(hint1Cost) { revealOneLetterHint() }
+                    } else {
+                        if (!hasThreeKeysHintAvailable()) Toast.makeText(context, "Sva slova su već otkrivena!", Toast.LENGTH_SHORT).show()
+                        else trySpendOrPopup(hint3Cost) { revealThreeRandomKeysHint() }
+                    }
+                    hintInfoDialog = null
+                }
+            )
         }
 
         if (showNeedCoinsPopup) {
@@ -883,19 +894,24 @@ private fun LetterKey(
     val labelScale = if (label.length > 1) 0.34f else 0.46f
     val isHinted  = first != null && first == lastHint
     val scale     = remember { Animatable(1f) }
+    val tone = remember { ToneGenerator(AudioManager.STREAM_MUSIC, 45) }
     LaunchedEffect(lastHint) {
         if (isHinted) { scale.animateTo(1.25f, tween(180)); scale.animateTo(1f, tween(180)) }
     }
+    DisposableEffect(Unit) { onDispose { tone.release() } }
 
     Box(
         contentAlignment = Alignment.Center,
         modifier = Modifier
             .width(keyW).height(keyH).scale(scale.value)
             .shadow(3.dp, RoundedCornerShape(8.dp), ambientColor = Color(0x44000000))
-            .clip(RoundedCornerShape(8.dp)).background(bg).clickable { onKeyClick(key) }
+            .clip(RoundedCornerShape(8.dp)).background(bg).clickable {
+                tone.startTone(ToneGenerator.TONE_PROP_BEEP, 60)
+                onKeyClick(key)
+            }
     ) {
         Text(label, color = textColor, fontWeight = FontWeight.Bold,
-            fontSize = (keyW.value * labelScale).sp, maxLines = 1)
+            fontSize = (keyW.value * labelScale).sp, maxLines = 1, modifier = Modifier.scale(scale.value))
     }
 }
 
@@ -966,6 +982,26 @@ private fun HintButton(emoji: String, cost: Int, onClick: () -> Unit) {
         Row(verticalAlignment = Alignment.CenterVertically) {
             Text("🪙", fontSize = 11.sp); Spacer(Modifier.width(2.dp))
             Text(cost.toString(), fontSize = 11.sp, fontWeight = FontWeight.Bold, color = Color(0xFF444433))
+        }
+    }
+}
+
+@Composable
+private fun HintInfoDialog(type: String, cost1: Int, cost3: Int, onClose: () -> Unit, onConfirm: () -> Unit) {
+    val title = if (type == "single") "Hint: jedno slovo" else "Hint: 3 slova"
+    val desc = if (type == "single") "Otkriva jedno nasumično slovo koje pripada tačnoj reči. Cena: ${cost1} novčića." else "Otkriva status za 3 nasumična slova na tastaturi. Cena: ${cost3} novčića."
+    Dialog(onDismissRequest = onClose, properties = DialogProperties(usePlatformDefaultWidth = false)) {
+        Column(Modifier.fillMaxWidth().padding(18.dp).clip(RoundedCornerShape(20.dp)).background(Color(0xFF1D2B45)).border(2.dp, Color(0xFF9CC2F8), RoundedCornerShape(20.dp)).padding(16.dp)) {
+            Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.End) {
+                Text("✕", color = Color.White, modifier = Modifier.clickable { onClose() }, fontSize = 20.sp)
+            }
+            Text(title, color = Color.White, fontWeight = FontWeight.Black, fontSize = 20.sp)
+            Spacer(Modifier.height(8.dp))
+            Text(desc, color = Color(0xFFE1E8F5), fontSize = 14.sp)
+            Spacer(Modifier.height(14.dp))
+            Box(Modifier.fillMaxWidth().height(46.dp).clip(RoundedCornerShape(14.dp)).background(Color(0xFFC11521)).clickable { onConfirm() }, contentAlignment = Alignment.Center) {
+                Text("Potvrdi", color = Color.White, fontWeight = FontWeight.Bold)
+            }
         }
     }
 }
