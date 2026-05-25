@@ -295,6 +295,7 @@ private fun WordleGameScreen(
     var resultHandled      by remember { mutableStateOf(false) }
     val guesses            = viewModel.guesses
     var showNeedCoinsPopup by remember { mutableStateOf(false) }
+    var showRemoveAdsDialog by remember { mutableStateOf(false) }
     var pendingReward      by remember { mutableIntStateOf(0) }
     var pendingSubmit      by remember { mutableStateOf(false) }
     var hintInfoDialog by remember { mutableStateOf<String?>(null) }
@@ -517,10 +518,7 @@ private fun WordleGameScreen(
                 score = guesses.size,
                 coins = coins,
                 onInfo = onShowInfo,
-                onAdClick = {
-                    pendingReward = 25
-                    showNeedCoinsPopup = true
-                },
+                onAdClick = { showRemoveAdsDialog = true },
                 onPlusCoins = onOpenShop
             )
 
@@ -609,6 +607,15 @@ private fun WordleGameScreen(
                     }
                 },
                 onNoThanks = { showNeedCoinsPopup = false }
+            )
+        }
+        if (showRemoveAdsDialog) {
+            RemoveAdsDialog(
+                onDismiss = { showRemoveAdsDialog = false },
+                onBuy = {
+                    showRemoveAdsDialog = false
+                    context.startActivity(Intent(context, ShopActivity::class.java))
+                }
             )
         }
 
@@ -1093,6 +1100,29 @@ fun EndGameDialog(
                     ) { Text("NAZAD NA GLAVNI EKRAN", color = Color.White, fontSize = 15.sp, fontWeight = FontWeight.Black) }
                 }
             }
+        }
+    }
+}
+
+@Composable
+private fun RemoveAdsDialog(onDismiss: () -> Unit, onBuy: () -> Unit) {
+    ComposeDialog(onDismissRequest = onDismiss) {
+        Column(
+            modifier = Modifier.fillMaxWidth().padding(16.dp)
+                .clip(RoundedCornerShape(28.dp))
+                .background(Brush.verticalGradient(listOf(Color(0xFF8B2080), Color(0xFF4A0060))))
+                .padding(28.dp),
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            Text("UKLONI REKLAME", color = Color.White, fontSize = 22.sp, fontWeight = FontWeight.ExtraBold, textAlign = TextAlign.Center)
+            Spacer(Modifier.height(8.dp))
+            Text("Uživaj u igri bez prekida. Jednom kupi, zauvek bez reklama.", color = Color(0xCCFFFFFF), fontSize = 14.sp, textAlign = TextAlign.Center)
+            Spacer(Modifier.height(22.dp))
+            Button(onClick = onBuy, colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFFFC34D))) {
+                Text("OTVORI SHOP", color = Color(0xFF4A0060), fontWeight = FontWeight.Bold)
+            }
+            Spacer(Modifier.height(10.dp))
+            Text("NE SADA", color = Color.White, modifier = Modifier.clickable { onDismiss() })
         }
     }
 }

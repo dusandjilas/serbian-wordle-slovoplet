@@ -137,7 +137,7 @@ fun ShopScreen(
 
 @Composable
 private fun StarterPackCard(onClick: () -> Unit) {
-    Box(Modifier.fillMaxWidth().height(190.dp).clip(RoundedCornerShape(26.dp)).background(SHOP_GRAY).border(5.dp, SHOP_NAVY, RoundedCornerShape(26.dp)).padding(10.dp)) {
+    Box(Modifier.fillMaxWidth().height(220.dp).clip(RoundedCornerShape(26.dp)).background(SHOP_GRAY).border(5.dp, SHOP_NAVY, RoundedCornerShape(26.dp)).padding(10.dp)) {
         Box(Modifier.fillMaxSize().clip(RoundedCornerShape(20.dp)).background(SHOP_GRAY_LIGHT)) {
             BeigeBurstBackground(Modifier.matchParentSize())
             SaleBadge(text = "NAJBOLJA\nPONUDA", modifier = Modifier.align(Alignment.TopEnd).padding(10.dp))
