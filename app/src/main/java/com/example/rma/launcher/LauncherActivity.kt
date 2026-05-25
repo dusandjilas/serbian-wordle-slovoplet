@@ -16,6 +16,7 @@ class LauncherActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        setContentView(com.example.rma.R.layout.activity_launcher)
 
         if (!AppFlowPrefs.isFirstGameFinished(this)) {
             startActivity(
