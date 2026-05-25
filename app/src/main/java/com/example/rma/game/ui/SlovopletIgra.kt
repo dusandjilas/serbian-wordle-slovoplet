@@ -97,6 +97,8 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.material.Button
+import androidx.compose.material.ButtonDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
@@ -1126,6 +1128,7 @@ private fun RemoveAdsDialog(onDismiss: () -> Unit, onBuy: () -> Unit) {
         }
     }
 }
+
 
 @Composable
 fun NeedCoinsDialog(reward: Int, adReady: Boolean, onClaimAd: () -> Unit, onNoThanks: () -> Unit) {
