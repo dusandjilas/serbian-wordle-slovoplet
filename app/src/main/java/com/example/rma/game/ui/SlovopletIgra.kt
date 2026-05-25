@@ -310,7 +310,6 @@ private fun WordleGameScreen(
     var resultHandled      by remember { mutableStateOf(false) }
     val guesses            = viewModel.guesses
     var showNeedCoinsPopup by remember { mutableStateOf(false) }
-    var showDailyBonusPopup by remember { mutableStateOf(false) }
     var pendingReward      by remember { mutableIntStateOf(0) }
     var pendingSubmit      by remember { mutableStateOf(false) }
     var hintInfoDialog by remember { mutableStateOf<String?>(null) }
@@ -325,6 +324,7 @@ private fun WordleGameScreen(
     }
 
     var stateRestored by remember { mutableStateOf(false) }
+    var loadingGame by remember { mutableStateOf(true) }
     LaunchedEffect(Unit) {
         if (!stateRestored) {
             stateRestored = true
@@ -349,6 +349,7 @@ private fun WordleGameScreen(
                 }
                 if (viewModel.hasWon || viewModel.hasLost) prikaziDijalog = true
             }
+            loadingGame = false
         }
     }
 
@@ -503,7 +504,6 @@ private fun WordleGameScreen(
                     if (viewModel.hasWon) {
                         val newTotal = coinRepo.add(100)
                         onCoinsChanged(newTotal)
-                        showDailyBonusPopup = true
                     }
                 }
             }
@@ -522,9 +522,22 @@ private fun WordleGameScreen(
             .windowInsetsPadding(WindowInsets.statusBars)
             .padding(horizontal = 12.dp, vertical = 6.dp)
     ) {
-        Column(modifier = Modifier.fillMaxSize(), horizontalAlignment = Alignment.CenterHorizontally) {
+        if (loadingGame) {
+            Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                androidx.compose.material3.CircularProgressIndicator(color = Color.White)
+            }
+        } else Column(modifier = Modifier.fillMaxSize(), horizontalAlignment = Alignment.CenterHorizontally) {
 
-            TopBar(score = guesses.size, coins = coins, onInfo = onShowInfo, onPlusCoins = onOpenShop)
+            TopBar(
+                score = guesses.size,
+                coins = coins,
+                onInfo = onShowInfo,
+                onAdClick = {
+                    pendingReward = 25
+                    showNeedCoinsPopup = true
+                },
+                onPlusCoins = onOpenShop
+            )
 
             Box(
                 modifier = Modifier
@@ -614,19 +627,6 @@ private fun WordleGameScreen(
             )
         }
 
-        if (showDailyBonusPopup) {
-            androidx.compose.material3.AlertDialog(
-                onDismissRequest = { showDailyBonusPopup = false },
-                confirmButton = {
-                    androidx.compose.material3.TextButton(onClick = { showDailyBonusPopup = false }) {
-                        Text("Super")
-                    }
-                },
-                title = { Text("Dnevni bonus") },
-                text = { Text("Osvojio/la si +100 🪙 za pobedu u Reči dana!") }
-            )
-        }
-
         if (prikaziDijalog) {
             EndGameDialog(
                 hasWon      = viewModel.hasWon,
@@ -701,11 +701,11 @@ private fun AdBanner(adUnitId: String) {
 }
 
 @Composable
-private fun TopBar(score: Int, coins: Int, onInfo: () -> Unit, onPlusCoins: () -> Unit) {
+private fun TopBar(score: Int, coins: Int, onInfo: () -> Unit, onAdClick: () -> Unit, onPlusCoins: () -> Unit) {
     Row(modifier = Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
         Box(
             modifier = Modifier.size(36.dp).clip(RoundedCornerShape(18.dp))
-                .background(Brush.verticalGradient(listOf(Color(0xFF7ED4FF), Color(0xFF2A6CD4)))).border(2.dp, Color.White.copy(alpha = 0.45f), RoundedCornerShape(18.dp)).clickable { onPlusCoins() },
+                .background(Brush.verticalGradient(listOf(Color(0xFF7ED4FF), Color(0xFF2A6CD4)))).border(2.dp, Color.White.copy(alpha = 0.45f), RoundedCornerShape(18.dp)).clickable { onAdClick() },
             contentAlignment = Alignment.Center
         ) { Text("AD", color = Color.White, fontWeight = FontWeight.Black, fontSize = 11.sp) }
 
@@ -906,7 +906,7 @@ private fun LetterKey(
             .width(keyW).height(keyH).scale(scale.value)
             .shadow(3.dp, RoundedCornerShape(8.dp), ambientColor = Color(0x44000000))
             .clip(RoundedCornerShape(8.dp)).background(bg).clickable {
-                tone.startTone(ToneGenerator.TONE_PROP_BEEP, 60)
+                tone.startTone(ToneGenerator.TONE_CDMA_KEYPAD_VOLUME_KEY_LITE, 70)
                 onKeyClick(key)
             }
     ) {
