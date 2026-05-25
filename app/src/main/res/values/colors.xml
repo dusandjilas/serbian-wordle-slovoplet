@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <color name="black">#162B4A</color>
-    <color name="white">#E8ECF2</color>
-    <color name="purple_500">#C11521</color>
-    <color name="palette_red">#C11521</color>
-    <color name="palette_gray">#8995A3</color>
-    <color name="palette_navy">#162B4A</color>
+    <color name="black">#3B3B3B</color>
+    <color name="white">#FFE6AE</color>
+    <color name="purple_500">#794608</color>
+    <color name="palette_red">#4B2A07</color>
+    <color name="palette_gray">#D49C49</color>
+    <color name="palette_navy">#3B3B3B</color>
 </resources>
