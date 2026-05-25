@@ -570,7 +570,7 @@ private fun WordleGameScreen(
             )
 
             Spacer(Modifier.height(10.dp))
-            // Temporarily disabled banner ad to prevent Chromium WebView rendering issues on some devices.
+
         }
 
 

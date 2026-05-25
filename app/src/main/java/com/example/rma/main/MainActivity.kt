@@ -1419,7 +1419,7 @@ private fun WordChoiceInfoDialog(onDismiss: () -> Unit) {
                 fontWeight = FontWeight.ExtraBold,
                 textAlign = TextAlign.Center
             )
-            Spacer(Modifier.height(8.dp))
+        Spacer(Modifier.height(8.dp))
             Text(
                 "Slovoplet koristi sužen spisak reči da svaka partija bude fer, razumljiva i zabavna.",
                 color = Color(0xFFDCE8F6),
