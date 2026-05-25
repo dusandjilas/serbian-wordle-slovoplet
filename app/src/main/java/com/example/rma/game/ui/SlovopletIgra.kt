@@ -1108,7 +1108,7 @@ fun EndGameDialog(
 
 @Composable
 private fun RemoveAdsDialog(onDismiss: () -> Unit, onBuy: () -> Unit) {
-    ComposeDialog(onDismissRequest = onDismiss) {
+    androidx.compose.ui.window.Dialog(onDismissRequest = onDismiss) {
         Column(
             modifier = Modifier.fillMaxWidth().padding(16.dp)
                 .clip(RoundedCornerShape(28.dp))
@@ -1120,7 +1120,7 @@ private fun RemoveAdsDialog(onDismiss: () -> Unit, onBuy: () -> Unit) {
             Spacer(Modifier.height(8.dp))
             Text("Uživaj u igri bez prekida. Jednom kupi, zauvek bez reklama.", color = Color(0xCCFFFFFF), fontSize = 14.sp, textAlign = TextAlign.Center)
             Spacer(Modifier.height(22.dp))
-            Button(onClick = onBuy, colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFFFC34D))) {
+            Button(onClick = onBuy, colors = ButtonDefaults.buttonColors(backgroundColor = Color(0xFFFFC34D))) {
                 Text("OTVORI SHOP", color = Color(0xFF4A0060), fontWeight = FontWeight.Bold)
             }
             Spacer(Modifier.height(10.dp))
