@@ -1,6 +1,7 @@
 package com.example.rma.main
 
 import com.example.rma.R
+import com.example.rma.ads.AdManager
 import com.example.rma.auth.SignInActivity
 import com.example.rma.core.managers.AudioSettingsManager
 import com.example.rma.core.managers.GameProfileManager
@@ -91,6 +92,7 @@ private enum class LeaderboardMetric(val label: String) {
 class MainActivity : AppCompatActivity() {
 
     private lateinit var firebaseAuth: FirebaseAuth
+    private lateinit var adManager: AdManager
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -99,6 +101,7 @@ class MainActivity : AppCompatActivity() {
 
         firebaseAuth = FirebaseAuth.getInstance()
         MobileAds.initialize(this)
+        adManager = AdManager(this).also { it.loadAd("ca-app-pub-3940256099942544/5224354917") }
 
         val profileManager = GameProfileManager(this)
         val coinRepo = CoinRepository(this)
@@ -110,6 +113,7 @@ class MainActivity : AppCompatActivity() {
                     firebaseAuth   = firebaseAuth,
                     profileManager = profileManager,
                     coinRepo       = coinRepo,
+                    adManager      = adManager,
                     onOpenShop     = { startActivity(Intent(this, ShopActivity::class.java)) },
                     onStartClassic = {
                         startActivity(Intent(this, SlovopletIgra::class.java)
@@ -131,6 +135,7 @@ private fun MainScreen(
     firebaseAuth: FirebaseAuth,
     profileManager: GameProfileManager,
     coinRepo: CoinRepository,
+    adManager: AdManager,
     onOpenShop: () -> Unit,
     onStartClassic: () -> Unit,
     onStartDaily: () -> Unit
@@ -187,7 +192,9 @@ private fun MainScreen(
     val statsRepository = remember { FirebaseStatsRepository() }
 
     var showStats     by remember { mutableStateOf(false) }
-    var showRemoveAds by remember { mutableStateOf(false) }
+    val adReady by adManager.adReady.collectAsState()
+    var showNeedCoinsPopup by remember { mutableStateOf(false) }
+    var pendingReward by remember { mutableIntStateOf(0) }
     var showWordChoiceInfo by remember { mutableStateOf(false) }
     var showAuthDialog by remember { mutableStateOf(false) }
     var showSettings by remember { mutableStateOf(false) }
@@ -229,7 +236,10 @@ private fun MainScreen(
                     avatarEmoji = avatarEmoji,
                     scale      = scale,
                     widthScale = widthScale,
-                    onAdClick  = { showRemoveAds = true },
+                    onAdClick  = {
+                        pendingReward = 25
+                        showNeedCoinsPopup = true
+                    },
                     onAvatarClick = {
                         if (isGuest) showAuthDialog = true else context.startActivity(Intent(context, ProfileActivity::class.java))
                     },
@@ -286,10 +296,22 @@ private fun MainScreen(
                 }
             }
         }
-        if (showRemoveAds) {
-            RemoveAdsDialog(
-                onDismiss = { showRemoveAds = false },
-                onBuy     = { showRemoveAds = false }
+        if (showNeedCoinsPopup) {
+            NeedCoinsDialog(
+                reward = pendingReward,
+                adReady = adReady,
+                onClaimAd = {
+                    if (adReady) {
+                        adManager.showAd {
+                            val newTotal = coinRepo.add(pendingReward)
+                            coins = newTotal
+                            showNeedCoinsPopup = false
+                        }
+                    } else {
+                        Toast.makeText(context, "Reklama nije spremna, pokušaj kasnije", Toast.LENGTH_SHORT).show()
+                    }
+                },
+                onNoThanks = { showNeedCoinsPopup = false }
             )
         }
         if (showWordChoiceInfo) {
@@ -1427,5 +1449,4 @@ private fun WordChoiceInfoDialog(onDismiss: () -> Unit) {
         }
     }
 }
-
 
