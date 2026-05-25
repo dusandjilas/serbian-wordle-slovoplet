@@ -1302,7 +1302,7 @@ fun GoldButton(label: String, onClick: () -> Unit, modifier: Modifier = Modifier
             .clickable(interactionSource = src, indication = null) { onClick() },
         contentAlignment = Alignment.Center
     ) {
-        Text(label, color = Color(0xFF7A4400), fontSize = 17.sp, fontWeight = FontWeight.ExtraBold)
+        Text(label, color = Color(0xFF7FFFFF), fontSize = 17.sp, fontWeight = FontWeight.ExtraBold)
     }
 }
 
@@ -1412,7 +1412,7 @@ private fun WordChoiceInfoDialog(onDismiss: () -> Unit) {
             )
             Spacer(Modifier.height(8.dp))
             Text(
-                "Slovoplet koristi pažljivo sužen spisak reči da svaka partija bude fer, razumljiva i zabavna.",
+                "Slovoplet koristi sužen spisak reči da svaka partija bude fer, razumljiva i zabavna.",
                 color = Color(0xFFDCE8F6),
                 fontSize = 14.sp,
                 textAlign = TextAlign.Center,
