@@ -1121,7 +1121,7 @@ private fun RemoveAdsDialog(onDismiss: () -> Unit, onBuy: () -> Unit) {
             Text("Uživaj u igri bez prekida. Jednom kupi, zauvek bez reklama.", color = Color(0xCCFFFFFF), fontSize = 14.sp, textAlign = TextAlign.Center)
             Spacer(Modifier.height(22.dp))
             Button(onClick = onBuy, colors = ButtonDefaults.buttonColors(backgroundColor = Color(0xFFFFC34D))) {
-                Text("OTVORI SHOP", color = Color(0xFF4A0060), fontWeight = FontWeight.Bold)
+                Text("OTVORI PRODAVNICU", color = Color(0xFF4A0060), fontWeight = FontWeight.Bold)
             }
             Spacer(Modifier.height(10.dp))
             Text("NE SADA", color = Color.White, modifier = Modifier.clickable { onDismiss() })
