@@ -216,7 +216,7 @@ private fun CoinAmountPlate(amount: Int, modifier: Modifier = Modifier) {
     }
 }
 
-@Composable private fun GreenBuyButton(price: String, onClick: () -> Unit, modifier: Modifier = Modifier) { Box(modifier.height(54.dp).clip(RoundedCornerShape(16.dp)).background(SHOP_RED).border(3.dp, SHOP_GRAY_LIGHT, RoundedCornerShape(16.dp)).clickable { onClick() }, contentAlignment = Alignment.Center) { Text(price, color = Color.White, fontWeight = FontWeight.Black, fontSize = 20.sp) } }
+@Composable private fun GreenBuyButton(price: String, onClick: () -> Unit, modifier: Modifier = Modifier) { Box(modifier.height(54.dp).clip(RoundedCornerShape(16.dp)).background(SHOP_RED).border(3.dp, SHOP_GRAY_LIGHT, RoundedCornerShape(16.dp)).clickable { onClick() }, contentAlignment = Alignment.Center) { OutlinedGameText(text = price, fill = Color.White, stroke = SHOP_RED_DARK, fontSize = 22.sp) } }
 
 @Composable
 private fun CoinIcon(iconSize: Dp) {

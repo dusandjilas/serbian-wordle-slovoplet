@@ -1058,7 +1058,7 @@ private fun LeaderboardDialogContent(
             .padding(12.dp),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        Text("Leaderboard", color = Color.White, fontSize = 28.sp, fontWeight = FontWeight.ExtraBold)
+        Text("Leaderboard", color = Color.White, fontSize = 24.sp, fontWeight = FontWeight.ExtraBold, textAlign = TextAlign.Center)
         Spacer(Modifier.height(10.dp))
 
         Box(
@@ -1074,7 +1074,7 @@ private fun LeaderboardDialogContent(
 
         Spacer(Modifier.height(10.dp))
 
-        Row(horizontalArrangement = Arrangement.spacedBy(6.dp), modifier = Modifier.fillMaxWidth()) {
+        Row(horizontalArrangement = Arrangement.spacedBy(4.dp), modifier = Modifier.fillMaxWidth()) {
             for (tab in LeaderboardMetric.entries) {
                 val selected = tab == selectedTab
                 Box(
@@ -1084,7 +1084,7 @@ private fun LeaderboardDialogContent(
                         .clickable { selectedTab = tab }
                         .padding(vertical = 7.dp),
                     contentAlignment = Alignment.Center
-                ) { Text(tab.label, color = Color.White, fontWeight = FontWeight.Bold, fontSize = 11.sp) }
+                ) { Text(tab.label, color = Color.White, fontWeight = FontWeight.Bold, fontSize = 10.sp, maxLines = 1) }
             }
         }
 
@@ -1135,14 +1135,14 @@ private fun LeaderboardMetricRow(
             .padding(horizontal = 10.dp, vertical = 8.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
-        Text(rank.toString(), color = Color(0xFF1F2E4A), fontWeight = FontWeight.ExtraBold, fontSize = 20.sp, modifier = Modifier.width(26.dp))
+        Text(rank.toString(), color = Color(0xFF1F2E4A), fontWeight = FontWeight.ExtraBold, fontSize = 16.sp, modifier = Modifier.width(22.dp))
         Column(Modifier.weight(1f).padding(start = 8.dp)) {
-            Text(player.uppercase(), color = Color(0xFF1F2E4A), fontWeight = FontWeight.ExtraBold, fontSize = 14.sp, maxLines = 1, overflow = TextOverflow.Ellipsis)
+            Text(player.uppercase(), color = Color(0xFF1F2E4A), fontWeight = FontWeight.ExtraBold, fontSize = 12.sp, maxLines = 1, overflow = TextOverflow.Ellipsis)
             Text("LEVEL ${entry.level}", color = Color(0xFF3F526F), fontSize = 11.sp, fontWeight = FontWeight.Bold)
         }
         Column(horizontalAlignment = Alignment.End) {
             Text("👑", fontSize = 18.sp)
-            Text(value, color = Color(0xFF1F2E4A), fontSize = 18.sp, fontWeight = FontWeight.ExtraBold)
+            Text(value, color = Color(0xFF1F2E4A), fontSize = 15.sp, fontWeight = FontWeight.ExtraBold)
         }
     }
 }
