@@ -70,6 +70,7 @@ import com.google.firebase.auth.FirebaseAuthWeakPasswordException
 import androidx.compose.animation.core.*
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.tooling.preview.Preview
+import com.example.rma.game.ui.NeedCoinsDialog
 import kotlin.math.roundToInt
 import kotlin.math.min
 
