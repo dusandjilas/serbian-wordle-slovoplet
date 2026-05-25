@@ -57,14 +57,14 @@ data class ShopOfferUi(
 )
 
 
-private val SHOP_NAVY = Color(0xFF162B4A)
-private val SHOP_NAVY_DARK = Color(0xFF0F1E33)
-private val SHOP_NAVY_MID = Color(0xFF243B5C)
-private val SHOP_GRAY = Color(0xFF8995A3)
-private val SHOP_GRAY_LIGHT = Color(0xFFD7DEE8)
-private val SHOP_GRAY_MID = Color(0xFFA8B1BE)
-private val SHOP_RED = Color(0xFFC11521)
-private val SHOP_RED_DARK = Color(0xFF8F111A)
+private val SHOP_NAVY = Color(0xFF2C437D)
+private val SHOP_NAVY_DARK = Color(0xFF2C437D)
+private val SHOP_NAVY_MID = Color(0xFF3B547D)
+private val SHOP_GRAY = Color(0xFF446C94)
+private val SHOP_GRAY_LIGHT = Color(0xFF7DB4C9)
+private val SHOP_GRAY_MID = Color(0xFF5180B0)
+private val SHOP_RED = Color(0xFF5180B0)
+private val SHOP_RED_DARK = Color(0xFF3B547D)
 
 @Composable
 fun ShopScreen(
