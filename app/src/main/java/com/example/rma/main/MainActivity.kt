@@ -207,6 +207,7 @@ private fun MainScreen(
     var showSettings by remember { mutableStateOf(false) }
     var showLeaderboard by remember { mutableStateOf(false) }
     var showDailyAlreadyPlayedPopup by remember { mutableStateOf(false) }
+    var showRemoveAdsDialog by remember { mutableStateOf(false) }
 
     Box(
         modifier = Modifier
@@ -243,10 +244,7 @@ private fun MainScreen(
                     avatarEmoji = avatarEmoji,
                     scale      = scale,
                     widthScale = widthScale,
-                    onAdClick  = {
-                        pendingReward = 25
-                        showNeedCoinsPopup = true
-                    },
+                    onAdClick  = { showRemoveAdsDialog = true },
                     onAvatarClick = {
                         if (isGuest) showAuthDialog = true else context.startActivity(Intent(context, ProfileActivity::class.java))
                     },
@@ -284,6 +282,8 @@ private fun MainScreen(
             )
 
 
+            BannerAdContainer()
+
         }
 
         if (showStats) {
@@ -319,6 +319,15 @@ private fun MainScreen(
                     }
                 },
                 onNoThanks = { showNeedCoinsPopup = false }
+            )
+        }
+        if (showRemoveAdsDialog) {
+            RemoveAdsDialog(
+                onDismiss = { showRemoveAdsDialog = false },
+                onBuy = {
+                    showRemoveAdsDialog = false
+                    onOpenShop()
+                }
             )
         }
         if (showWordChoiceInfo) {
