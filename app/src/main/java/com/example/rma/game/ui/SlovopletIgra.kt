@@ -117,14 +117,14 @@ import androidx.compose.ui.unit.*
 
 val fonttri = FontFamily(Font(R.font.fonttri))
 
-private val BG            = Color(0xFF1F3A2E)
+private val BG            = Color(0xFFC2C7EA)
 private val CELL_EMPTY_BG = Color(0xFF2F3338)
 private val CELL_BORDER   = Color(0xFF4A5058)
 private val KEY_DEFAULT   = Color(0xFF6A7482)
 private val KEY_CORRECT   = Color(0xFF4CAF50)
 private val KEY_PRESENT   = Color(0xFFF4C542)
 private val KEY_ABSENT    = Color(0xFF3A3A3C)
-private val HINT_ORANGE   = Color(0xFFFF9C3A)
+private val HINT_GRAY   = Color(0xFFFFFFFF)
 private val SUBMIT_GRAY   = Color(0xFF9E9E9E)
 private val SUBMIT_BLUE   = Color(0xFF2979FF)
 private val SUBMIT_RED    = Color(0xFFD32F2F)
@@ -975,13 +975,13 @@ private fun HintButton(emoji: String, cost: Int, onClick: () -> Unit) {
     Column(horizontalAlignment = Alignment.CenterHorizontally, modifier = Modifier.width(60.dp)) {
         Box(
             modifier = Modifier.size(50.dp).shadow(4.dp, RoundedCornerShape(25.dp))
-                .clip(RoundedCornerShape(25.dp)).background(HINT_ORANGE).clickable { onClick() },
+                .clip(RoundedCornerShape(25.dp)).background(HINT_GRAY).clickable { onClick() },
             contentAlignment = Alignment.Center
         ) { Text(emoji, fontSize = 22.sp) }
         Spacer(Modifier.height(3.dp))
         Row(verticalAlignment = Alignment.CenterVertically) {
-            Text("🪙", fontSize = 11.sp); Spacer(Modifier.width(2.dp))
-            Text(cost.toString(), fontSize = 11.sp, fontWeight = FontWeight.Bold, color = Color(0xFF444433))
+            Text("", fontSize = 11.sp); Spacer(Modifier.width(2.dp))
+            Text(cost.toString(), fontSize = 11.sp, fontWeight = FontWeight.Bold, color = Color(0xFFFFFFFF))
         }
     }
 }
